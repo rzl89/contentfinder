@@ -8,6 +8,7 @@ import { TrendRadarPage } from '@/pages/trend-radar-page';
 import { ByokPage } from '@/pages/byok-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { SettingsPage } from '@/pages/settings-page';
+import { PricingPage } from '@/pages/pricing-page';
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
             <Route path="trends" element={<TrendRadarPage />} />
             <Route path="byok" element={<ByokPage />} />
             <Route path="projects" element={<ProjectsPage />} />
+            <Route path="pricing" element={<PricingPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

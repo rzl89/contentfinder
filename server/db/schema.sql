@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT,
   avatar_url TEXT,
-  plan_tier TEXT DEFAULT 'free' CHECK (plan_tier IN ('free', 'pro', 'studio')),
+  plan_tier TEXT DEFAULT 'free' CHECK (plan_tier IN ('free', 'trial', 'pro', 'studio')),
+  subscription_status TEXT DEFAULT 'trial' CHECK (subscription_status IN ('trial', 'active', 'expired')),
+  trial_started_at TIMESTAMPTZ DEFAULT NOW(),
+  subscription_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -182,9 +185,27 @@ CREATE TABLE IF NOT EXISTS trend_observations (
   category_relevance JSONB NOT NULL DEFAULT '[]'::jsonb
 );
 
+-- 12. Subscription Orders (Indonesian Manual Bank Transfer / QRIS)
+CREATE TABLE IF NOT EXISTS subscription_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  invoice_number TEXT NOT NULL UNIQUE,
+  plan_tier TEXT NOT NULL CHECK (plan_tier IN ('pro', 'studio')),
+  billing_cycle TEXT NOT NULL CHECK (billing_cycle IN ('monthly', 'yearly')),
+  amount INTEGER NOT NULL,
+  unique_code INTEGER NOT NULL,
+  total_amount INTEGER NOT NULL,
+  payment_method TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Indexes for high-performance querying
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_scenes_project_id ON scenes(project_id);
 CREATE INDEX IF NOT EXISTS idx_ideas_user_id ON ideas(user_id);
 CREATE INDEX IF NOT EXISTS idx_provider_creds_user ON provider_credentials(user_id);
 CREATE INDEX IF NOT EXISTS idx_video_jobs_user ON video_generation_jobs(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_user ON subscription_orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_inv ON subscription_orders(invoice_number);

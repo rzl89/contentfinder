@@ -10,13 +10,19 @@ import {
   KeyRound,
   Settings,
   ShieldCheck,
+  CreditCard,
+  Zap,
 } from 'lucide-react';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 
 interface SidebarProps {
   collapsed?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
+  const { subscription, getRemainingTrialHours } = useSubscriptionStore();
+  const remainingHours = getRemainingTrialHours();
+
   const navItems = [
     {
       to: '/',
@@ -45,6 +51,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       label: 'BYOK Video Connectors',
       icon: <KeyRound className="w-4 h-4" />,
       badge: 'Secure',
+    },
+    {
+      to: '/pricing',
+      label: 'Langganan & Paket',
+      icon: <CreditCard className="w-4 h-4" />,
+      badge:
+        subscription.tier === 'pro'
+          ? 'Pro'
+          : subscription.tier === 'studio'
+          ? 'Studio'
+          : `Trial ${remainingHours}j`,
     },
     {
       to: '/settings',
@@ -133,16 +150,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
       {/* Footer Info Box */}
       {!collapsed && (
-        <div className="p-4 border-t border-white/5">
-          <div className="p-3 rounded-xl bg-[#121216] border border-white/5 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Prompt Studio Mode</span>
+        <div className="p-4 border-t border-white/5 space-y-2">
+          {subscription.tier === 'pro' || subscription.tier === 'studio' ? (
+            <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Paket {subscription.tier.toUpperCase()} Aktif</span>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Akses tanpa batas ke seluruh studio & fitur prompt compiler.
+              </p>
             </div>
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Default profil <span className="text-amber-400 font-medium">Indonesia Natural</span> aktif. Tanpa biaya video kredit paksaan.
-            </p>
-          </div>
+          ) : (
+            <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-amber-400">
+                <span className="flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5 fill-amber-400" />
+                  Free Trial 1 Hari
+                </span>
+                <span className="text-[10px] font-mono bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300">
+                  {remainingHours}j lagi
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Upgrade ke Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> untuk akses selamanya.
+              </p>
+              <NavLink
+                to="/pricing"
+                className="block text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition-colors shadow"
+              >
+                Langganan Sekarang
+              </NavLink>
+            </div>
+          )}
         </div>
       )}
     </aside>

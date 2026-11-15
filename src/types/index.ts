@@ -378,3 +378,32 @@ export interface NavItem {
   path: string;
   badge?: string | number;
 }
+
+// ---------------------------------------------------------------------------
+// Subscription & Monetization
+// ---------------------------------------------------------------------------
+
+export type PlanTier = 'trial' | 'pro' | 'studio' | 'free';
+export type BillingCycle = 'monthly' | 'yearly';
+export type PaymentMethodType = 'bca' | 'mandiri' | 'bri' | 'qris' | 'gopay' | 'dana' | 'shopeepay';
+
+export interface SubscriptionOrder {
+  invoiceNumber: string;
+  planTier: PlanTier;
+  billingCycle: BillingCycle;
+  amount: number;
+  uniqueCode: number;
+  totalAmount: number;
+  paymentMethod: PaymentMethodType;
+  status: 'pending' | 'verified' | 'rejected';
+  createdAt: string;
+}
+
+export interface UserSubscription {
+  tier: PlanTier;
+  billingCycle?: BillingCycle;
+  status: 'active' | 'trial' | 'expired' | 'pending_verification';
+  trialStartedAt: string;
+  trialEndsAt: string;
+  expiresAt?: string;
+}

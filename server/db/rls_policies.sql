@@ -110,3 +110,15 @@ DROP POLICY IF EXISTS "Public read for verified trends" ON trend_observations;
 CREATE POLICY "Public read for verified trends"
   ON trend_observations FOR SELECT
   USING (true);
+
+-- 10. Subscription Orders: Tenant Isolation
+ALTER TABLE subscription_orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own subscription orders" ON subscription_orders;
+CREATE POLICY "Users can view own subscription orders"
+  ON subscription_orders FOR SELECT
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create own subscription orders" ON subscription_orders;
+CREATE POLICY "Users can create own subscription orders"
+  ON subscription_orders FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
