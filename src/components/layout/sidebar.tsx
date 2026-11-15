@@ -59,9 +59,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       badge:
         subscription.tier === 'pro'
           ? 'Pro'
-          : subscription.tier === 'studio'
-          ? 'Studio'
-          : `Trial ${remainingHours}j`,
+          : remainingHours > 0
+          ? `Trial ${remainingHours}j`
+          : 'Habis',
     },
     {
       to: '/settings',
@@ -136,6 +136,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : item.badge === 'Secure'
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        : item.badge === 'Pro'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
+                        : item.badge === 'Habis'
+                        ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                        : String(item.badge).startsWith('Trial')
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                         : 'bg-zinc-800 text-zinc-300 border-white/5'
                     )}
                   >
@@ -155,13 +161,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
             <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Paket {subscription.tier.toUpperCase()} Aktif</span>
+                <span>Paket CREATOR PRO Aktif</span>
               </div>
               <p className="text-[11px] text-zinc-400">
                 Akses tanpa batas ke seluruh studio & fitur prompt compiler.
               </p>
             </div>
-          ) : (
+          ) : remainingHours > 0 ? (
             <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20 space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-amber-400">
                 <span className="flex items-center gap-1">
@@ -180,6 +186,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                 className="block text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition-colors shadow"
               >
                 Langganan Sekarang
+              </NavLink>
+            </div>
+          ) : (
+            <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-red-400">
+                <span>Masa Trial Habis</span>
+                <span className="text-[10px] font-mono bg-red-500/20 px-1.5 py-0.5 rounded text-red-300">
+                  Expired
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Aktifkan akun Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> untuk lanjut.
+              </p>
+              <NavLink
+                to="/pricing"
+                className="block text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors shadow"
+              >
+                Beli Paket Pro
               </NavLink>
             </div>
           )}

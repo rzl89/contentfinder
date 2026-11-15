@@ -53,18 +53,26 @@ describe('TemporaForge AI — Subscription & Monetization System', () => {
   it('handles feature access control based on subscription tier', () => {
     const store = useSubscriptionStore.getState();
 
-    // Trial tier
+    // Active Trial tier gives full access
     expect(store.isFeatureAccessible('basic')).toBe(true);
     expect(store.isFeatureAccessible('pro')).toBe(true);
-    expect(store.isFeatureAccessible('byok')).toBe(false);
-
-    // Upgraded to Pro
-    store.manualUpgradeTier('pro');
-    expect(store.isFeatureAccessible('pro')).toBe(true);
-    expect(store.isFeatureAccessible('byok')).toBe(false);
-
-    // Upgraded to Studio
-    store.manualUpgradeTier('studio');
     expect(store.isFeatureAccessible('byok')).toBe(true);
+
+    // Upgraded to Pro gives full access
+    store.manualUpgradeTier('pro');
+    expect(store.isFeatureAccessible('basic')).toBe(true);
+    expect(store.isFeatureAccessible('pro')).toBe(true);
+    expect(store.isFeatureAccessible('byok')).toBe(true);
+
+    // Expired trial without active subscription restricts access
+    useSubscriptionStore.setState({
+      subscription: {
+        tier: 'trial',
+        status: 'expired',
+        trialStartedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+        trialEndsAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      },
+    });
+    expect(store.isFeatureAccessible('pro')).toBe(false);
   });
 });

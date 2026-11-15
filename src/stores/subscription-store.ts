@@ -74,7 +74,7 @@ export const PRICING_PLANS = {
     features: [
       'Akses penuh 19 Kategori Konten',
       'Context Engine Indonesia Natural (9 Golden Rules)',
-      'Generator 5 ide per request',
+      'Generator ide hook 1-3 detik & story beats',
       'Prompt Compiler Universal, Veo, Kling, Runway, Luma',
       'Character & World Bible Story Studio',
       'QC Engine & Trend Radar',
@@ -82,33 +82,21 @@ export const PRICING_PLANS = {
     ],
   },
   pro: {
-    name: 'Creator Pro',
+    name: 'Creator Pro (Akses Penuh)',
     monthlyPrice: 59000,
     yearlyPrice: 499000, // ~41.500/bulan (hemat ~30%)
     popular: true,
-    description: 'Pilihan utama untuk solo content creator short-form video profesional.',
+    description: 'Langganan terjangkau untuk kreator video pendek tanpa batasan kuota.',
     features: [
       'Semua fitur Free Trial tanpa batas durasi',
-      'Unlimited Ide Konten & Variasi Scene',
+      'Unlimited Ide Konten & Variasi Scene Storyboard',
       'Story Studio lengkap dengan Continuity Anchors',
       'Ekspor Prompt JSON & TXT tanpa watermark',
-      'Trend Radar Live tervalidasi TikTok, Reels & Shorts',
-      'Dukungan sinkronisasi Cloud Supabase Database',
-      'Customer Support prioritas via WhatsApp',
-    ],
-  },
-  studio: {
-    name: 'Studio / Agency',
-    monthlyPrice: 149000,
-    yearlyPrice: 1290000, // ~107.500/bulan
-    description: 'Dirancang untuk tim konten, production house, dan agency periklanan.',
-    features: [
-      'Semua fitur Creator Pro',
+      'Compiler Video Prompt Veo, Kling 1.5, Runway, Luma',
       'Akses BYOK (Bring Your Own Key) Direct Video Generation',
-      'KMS Server-Side Secret Envelope Encryption Vault',
-      'Multi-Project Batch Exporter (ZIP/JSON)',
-      'Custom Context Presets per Client / Brand',
-      'Konsultasi alur produksi video AI 1-on-1 via WhatsApp',
+      'Trend Radar Live tervalidasi TikTok, Reels & Shorts',
+      'Sinkronisasi Cloud Supabase Database otomatis',
+      'Konfirmasi cepat & CS prioritas via WhatsApp',
     ],
   },
 };
@@ -191,11 +179,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
   createOrder: (planTier, billingCycle, paymentMethod) => {
     const basePrice =
-      planTier === 'studio'
-        ? billingCycle === 'yearly'
-          ? PRICING_PLANS.studio.yearlyPrice
-          : PRICING_PLANS.studio.monthlyPrice
-        : billingCycle === 'yearly'
+      billingCycle === 'yearly'
         ? PRICING_PLANS.pro.yearlyPrice
         : PRICING_PLANS.pro.monthlyPrice;
 
@@ -231,7 +215,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
   generateWhatsAppLink: (order) => {
     const adminWA = get().adminWhatsApp;
-    const planName = PRICING_PLANS[order.planTier === 'studio' ? 'studio' : 'pro'].name;
+    const planName = PRICING_PLANS.pro.name;
     const cycle = order.billingCycle === 'yearly' ? 'Tahunan (1 Tahun)' : 'Bulanan (1 Bulan)';
     const bank = PAYMENT_ACCOUNTS.find((a) => a.id === order.paymentMethod)?.name || order.paymentMethod.toUpperCase();
 
@@ -275,15 +259,11 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
     return Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60)));
   },
 
-  isFeatureAccessible: (feature) => {
+  isFeatureAccessible: (_feature) => {
     const { tier, trialEndsAt } = get().subscription;
-    if (tier === 'studio') return true;
-    if (tier === 'pro') return feature !== 'byok';
-    // Trial check
+    if (tier === 'pro' || tier === 'studio') return true;
+    // Trial check: 24 jam akses penuh
     const isTrialActive = new Date(trialEndsAt).getTime() > Date.now();
-    if (isTrialActive) {
-      return feature !== 'byok'; // Trial can access all features except raw BYOK
-    }
-    return false;
+    return isTrialActive;
   },
 }));
