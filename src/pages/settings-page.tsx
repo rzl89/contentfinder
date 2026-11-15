@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 import { CONTEXT_PRESETS, DEFAULT_CONTEXT_PROFILE } from '@/context-engine';
 import {
   BentoTile,
@@ -15,15 +17,17 @@ import {
   Globe,
   Sliders,
   BookOpen,
-  Database,
-  KeyRound,
+  CheckCircle2,
+  CreditCard,
+  Cloud,
 } from 'lucide-react';
-import { getSupabaseConfig, setSupabaseCredentials } from '@/lib/supabase';
 import type { ContextProfilePreset, EnvironmentType, VisualStyle, DialogLanguage } from '@/types';
 
 export const SettingsPage: React.FC = () => {
   const { showToast } = useToast();
   const { currentProject, updateCurrentProject } = useProjectStore();
+  const { subscription, getRemainingTrialHours } = useSubscriptionStore();
+  const remainingHours = getRemainingTrialHours();
 
   const activeProfile = currentProject?.contextProfile || DEFAULT_CONTEXT_PROFILE;
 
@@ -32,23 +36,6 @@ export const SettingsPage: React.FC = () => {
   const [environment, setEnvironment] = useState<EnvironmentType>(activeProfile.environment);
   const [visualStyle, setVisualStyle] = useState<VisualStyle>(activeProfile.visualStyle);
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>(activeProfile.dialogLanguage);
-
-  const supabaseConfig = getSupabaseConfig();
-  const [supabaseUrl, setSupabaseUrl] = useState(supabaseConfig.url);
-  const [supabaseAnonKeyInput, setSupabaseAnonKeyInput] = useState('');
-
-  const handleSaveSupabase = () => {
-    if (!supabaseAnonKeyInput.trim() && !supabaseConfig.isConfigured) {
-      showToast({ type: 'warning', title: 'Anon Key Kosong', message: 'Masukkan Supabase Anon Key proyek Anda.' });
-      return;
-    }
-    setSupabaseCredentials(supabaseUrl, supabaseAnonKeyInput.trim());
-    showToast({
-      type: 'success',
-      title: 'Koneksi Supabase Disimpan',
-      message: `Proyek tersinkronisasi ke project_ref: ${supabaseConfig.projectRef}`,
-    });
-  };
 
   const handleApplyPreset = (chosenPreset: ContextProfilePreset) => {
     setPreset(chosenPreset);
@@ -218,66 +205,58 @@ export const SettingsPage: React.FC = () => {
             </div>
           </BentoTile>
 
-          {/* Supabase Database Cloud Persistence Card */}
+          {/* Cloud Database & Account Status Card (User-Facing) */}
           <BentoTile className="p-6 space-y-4 bg-[#111115] border-white/10">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-emerald-400" />
+                <Cloud className="w-4 h-4 text-emerald-400" />
                 <h3 className="text-sm font-semibold text-zinc-100">
-                  Supabase Cloud Database Persistence
+                  Cloud Synchronization & Keamanan
                 </h3>
               </div>
-              <Badge variant={supabaseConfig.isConfigured ? 'emerald' : 'zinc'}>
-                {supabaseConfig.isConfigured ? 'Connected' : 'Project Ref Configured'}
+              <Badge variant="emerald">
+                Aktif & Terenkripsi
               </Badge>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1.5 text-xs">
+            <div className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Target Project Ref:</span>
-                <span className="font-mono text-emerald-400 font-bold">
-                  {supabaseConfig.projectRef}
+                <span className="text-zinc-400">Sinkronisasi Proyek:</span>
+                <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Otomatis (Cloud DB)
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Database Endpoint:</span>
-                <span className="font-mono text-zinc-300 text-[11px]">
-                  {supabaseConfig.url}
+                <span className="text-zinc-400">Isolasi Tenant:</span>
+                <span className="text-zinc-300 font-mono text-[11px]">
+                  Row Level Security (RLS) Active
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-zinc-400">Anon Key Status:</span>
-                <span className="font-mono text-zinc-300 text-[11px]">
-                  {supabaseConfig.anonKeyMasked}
+                <span className="text-zinc-400">Status Akun:</span>
+                <span className="text-amber-400 font-bold">
+                  {subscription.tier === 'pro'
+                    ? 'Creator Pro (Aktif)'
+                    : remainingHours > 0
+                    ? `Free Trial (~${remainingHours} Jam)`
+                    : 'Trial Berakhir'}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3 pt-1">
-              <Input
-                label="Supabase Project URL"
-                value={supabaseUrl}
-                onChange={(e) => setSupabaseUrl(e.target.value)}
-              />
-              <Input
-                type="password"
-                label="Supabase Publishable / Anon Key"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                value={supabaseAnonKeyInput}
-                onChange={(e) => setSupabaseAnonKeyInput(e.target.value)}
-                helperText="Masukkan anon key untuk sinkronisasi cloud real-time antar perangkat."
-              />
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Seluruh proyek, ide konten, karakter, dan prompt Anda tersimpan otomatis di cloud database yang terisolasi per akun secara privat.
+            </p>
 
-              <div className="flex justify-end pt-1">
-                <Button
-                  variant="emerald"
-                  size="sm"
-                  icon={<KeyRound className="w-3.5 h-3.5" />}
-                  onClick={handleSaveSupabase}
-                >
-                  Hubungkan Database Supabase
-                </Button>
-              </div>
+            <div className="pt-1 flex justify-end">
+              <NavLink
+                to="/pricing"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition-colors shadow"
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                Kelola Langganan
+              </NavLink>
             </div>
           </BentoTile>
         </div>

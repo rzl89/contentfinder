@@ -12,29 +12,13 @@ import type { Project } from '@/types';
 
 export const SUPABASE_PROJECT_REF = 'uoxoljiucezwdpqfnuga';
 export const SUPABASE_DEFAULT_URL = `https://${SUPABASE_PROJECT_REF}.supabase.co`;
+export const SUPABASE_DEFAULT_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVveG9saml1Y2V6d2RwcWZudWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTM4NzQsImV4cCI6MjExMDMyOTg3NH0.KR2gmO2jx0rQ4msUcFZmct9_eMzeLyqImUADqlnLWfo';
 
-function safeGetStorage(key: string): string | null {
-  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-    try {
-      return window.localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || SUPABASE_DEFAULT_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || SUPABASE_DEFAULT_ANON_KEY;
 
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  safeGetStorage('temporaforge_supabase_url') ||
-  SUPABASE_DEFAULT_URL;
-
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  safeGetStorage('temporaforge_supabase_anon_key') ||
-  '';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey || 'dummy-anon-key-placeholder', {
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -50,15 +34,7 @@ export function getSupabaseConfig() {
     url: supabaseUrl,
     projectRef: SUPABASE_PROJECT_REF,
     isConfigured: isSupabaseConfigured(),
-    anonKeyMasked: supabaseAnonKey ? `...${supabaseAnonKey.slice(-6)}` : 'Belum dikonfigurasi',
   };
-}
-
-export function setSupabaseCredentials(url: string, anonKey: string) {
-  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-    if (url) window.localStorage.setItem('temporaforge_supabase_url', url.trim());
-    if (anonKey) window.localStorage.setItem('temporaforge_supabase_anon_key', anonKey.trim());
-  }
 }
 
 /**
