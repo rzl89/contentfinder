@@ -14,8 +14,8 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
   {
     id: 'bca',
     name: 'BCA (Bank Central Asia)',
-    accountNumber: '8290-8812-9901',
-    accountHolder: 'TEMPORAFORGE AI / RIZAL',
+    accountNumber: (import.meta.env.VITE_PAYMENT_BCA_NO as string) || '8290-8812-9901',
+    accountHolder: (import.meta.env.VITE_PAYMENT_BCA_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
     icon: '🏦',
     instructions: [
       'Buka BCA mobile atau myBCA.',
@@ -27,8 +27,8 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
   {
     id: 'mandiri',
     name: 'Bank Mandiri',
-    accountNumber: '1370-0199-8821-2',
-    accountHolder: 'TEMPORAFORGE AI / RIZAL',
+    accountNumber: (import.meta.env.VITE_PAYMENT_MANDIRI_NO as string) || '1370-0199-8821-2',
+    accountHolder: (import.meta.env.VITE_PAYMENT_MANDIRI_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
     icon: '🏦',
     instructions: [
       'Buka Livin\' by Mandiri.',
@@ -40,8 +40,8 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
   {
     id: 'qris',
     name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
-    accountNumber: 'NMID: ID1020268899120',
-    accountHolder: 'TEMPORAFORGE CREATIVE STUDIO',
+    accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
+    accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
     icon: '📱',
     instructions: [
       'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
@@ -53,8 +53,8 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
   {
     id: 'dana',
     name: 'DANA / GoPay E-Wallet',
-    accountNumber: '0812-3456-7890',
-    accountHolder: 'RIZAL - TEMPORAFORGE',
+    accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
+    accountHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
     icon: '💳',
     instructions: [
       'Buka aplikasi DANA atau GoPay.',
@@ -160,7 +160,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   subscription: initial.subscription,
   orders: initial.orders,
   activeOrder: null,
-  adminWhatsApp: '6281234567890', // Nomor WhatsApp konfirmasi admin
+  adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6281234567890', // Nomor WhatsApp konfirmasi admin
 
   initializeTrial: () => {
     const current = get().subscription;
@@ -253,7 +253,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
   getRemainingTrialHours: () => {
     const { trialEndsAt, tier } = get().subscription;
-    if (tier === 'pro' || tier === 'studio') return 9999;
+    if (tier === 'pro') return 9999;
     const remainingMs = new Date(trialEndsAt).getTime() - Date.now();
     if (remainingMs <= 0) return 0;
     return Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60)));
@@ -261,7 +261,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
   isFeatureAccessible: (_feature) => {
     const { tier, trialEndsAt } = get().subscription;
-    if (tier === 'pro' || tier === 'studio') return true;
+    if (tier === 'pro') return true;
     // Trial check: 24 jam akses penuh
     const isTrialActive = new Date(trialEndsAt).getTime() > Date.now();
     return isTrialActive;

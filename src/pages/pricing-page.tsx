@@ -42,7 +42,7 @@ export const PricingPage: React.FC = () => {
 
   const remainingHours = getRemainingTrialHours();
   const isTrialActive = subscription.status === 'trial' && remainingHours > 0;
-  const isPaidActive = subscription.status === 'active' && (subscription.tier === 'pro' || subscription.tier === 'studio');
+  const isPaidActive = subscription.status === 'active' && subscription.tier === 'pro';
 
   const handleSelectPlan = (tier: PlanTier) => {
     if (tier === 'trial') return;

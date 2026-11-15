@@ -50,7 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       to: '/byok',
       label: 'BYOK Video Connectors',
       icon: <KeyRound className="w-4 h-4" />,
-      badge: 'Secure',
+      badge: subscription.tier === 'pro' ? 'Secure' : 'PRO',
     },
     {
       to: '/pricing',
@@ -136,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : item.badge === 'Secure'
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        : item.badge === 'Pro'
+                        : item.badge === 'Pro' || item.badge === 'PRO'
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
                         : item.badge === 'Habis'
                         ? 'bg-red-500/20 text-red-300 border-red-500/40'
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       {/* Footer Info Box */}
       {!collapsed && (
         <div className="p-4 border-t border-white/5 space-y-2">
-          {subscription.tier === 'pro' || subscription.tier === 'studio' ? (
+          {subscription.tier === 'pro' ? (
             <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-1.5">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />

@@ -383,7 +383,7 @@ export interface NavItem {
 // Subscription & Monetization
 // ---------------------------------------------------------------------------
 
-export type PlanTier = 'trial' | 'pro' | 'studio' | 'free';
+export type PlanTier = 'trial' | 'pro' | 'free';
 export type BillingCycle = 'monthly' | 'yearly';
 export type PaymentMethodType = 'bca' | 'mandiri' | 'bri' | 'qris' | 'gopay' | 'dana' | 'shopeepay';
 
