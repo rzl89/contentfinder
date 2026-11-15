@@ -1,0 +1,130 @@
+import type { ModelCapability } from '@/types';
+
+/**
+ * ============================================================================
+ * MODEL CAPABILITY CATALOG
+ * ============================================================================
+ *
+ * Rules:
+ * - If a capability is unverified in official vendor docs, it is marked 'unknown' or 'needs_verification'.
+ * - NEVER fabricate parameter support (e.g. lip-sync, camera control flags, duration options).
+ * - Last verification date and documentation URLs are tracked for each model.
+ */
+
+export const MODEL_CAPABILITIES: ModelCapability[] = [
+  {
+    modelId: 'universal-neutral',
+    provider: 'Universal / Studio Neutral',
+    displayName: 'Universal AI Prompt (Standardized)',
+    supportedDurations: ['5s', '10s', '15s', '30s', 'Custom'],
+    aspectRatios: ['9:16 (Shorts/Reels)', '16:9 (Landscape)', '1:1 (Square)'],
+    resolutions: ['1080p', '4k', 'Custom'],
+    audioMode: 'Separate audio track or prompt-agnostic',
+    dialogueLipSync: 'unknown',
+    inputTypes: ['text-to-video', 'image-to-video', 'text-to-image'],
+    maxReferences: 'unknown',
+    endpointAvailable: false,
+    regions: ['Global'],
+    commercialUse: true,
+    documentationUrl: 'https://temporaforge.internal/docs/universal-spec',
+    lastVerifiedAt: '2025-02-15T00:00:00Z',
+    verificationStatus: 'verified',
+  },
+  {
+    modelId: 'google-veo-2',
+    provider: 'Google DeepMind',
+    displayName: 'Google Veo 2',
+    supportedDurations: ['5s', '8s', 'Custom clip sequences'],
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    resolutions: ['1080p', '4K (production pipeline)'],
+    audioMode: 'Visual generation; external audio sync pipeline',
+    dialogueLipSync: 'unknown',
+    inputTypes: ['text-to-video', 'image-to-video', 'video-to-video'],
+    maxReferences: 3,
+    endpointAvailable: true,
+    regions: ['US / Vertex AI whitelisted regions'],
+    commercialUse: true,
+    documentationUrl: 'https://deepmind.google/technologies/veo/',
+    lastVerifiedAt: '2025-01-20T00:00:00Z',
+    verificationStatus: 'verified',
+  },
+  {
+    modelId: 'kling-1-5',
+    provider: 'Kuaishou Technology',
+    displayName: 'Kling 1.5 Pro',
+    supportedDurations: ['5s', '10s'],
+    aspectRatios: ['9:16', '16:9', '1:1'],
+    resolutions: ['720p', '1080p'],
+    audioMode: 'Native sound effects generation on select modes',
+    dialogueLipSync: true,
+    inputTypes: ['text-to-video', 'image-to-video', 'elements-reference'],
+    maxReferences: 4,
+    endpointAvailable: true,
+    regions: ['Global / API endpoint availability'],
+    commercialUse: true,
+    documentationUrl: 'https://klingai.com/docs',
+    lastVerifiedAt: '2025-02-05T00:00:00Z',
+    verificationStatus: 'verified',
+  },
+  {
+    modelId: 'runway-gen3-alpha',
+    provider: 'RunwayML',
+    displayName: 'Runway Gen-3 Alpha Turbo',
+    supportedDurations: ['5s', '10s'],
+    aspectRatios: ['16:9', '9:16'],
+    resolutions: ['720p', '1080p'],
+    audioMode: 'Video generation only; Audio tools in separate Runway suite',
+    dialogueLipSync: false,
+    inputTypes: ['text-to-video', 'image-to-video'],
+    maxReferences: 1,
+    endpointAvailable: true,
+    regions: ['Global'],
+    commercialUse: true,
+    documentationUrl: 'https://docs.runwayml.com/gen3',
+    lastVerifiedAt: '2025-01-28T00:00:00Z',
+    verificationStatus: 'verified',
+  },
+  {
+    modelId: 'luma-dream-machine',
+    provider: 'Luma AI',
+    displayName: 'Luma Ray 2 / Dream Machine',
+    supportedDurations: ['5s', 'Extend +5s'],
+    aspectRatios: ['16:9', '9:16', '1:1', '4:3', '21:9'],
+    resolutions: ['720p', '1080p'],
+    audioMode: 'Sound effects generator available on web portal',
+    dialogueLipSync: 'unknown',
+    inputTypes: ['text-to-video', 'image-to-video', 'camera-motion-control'],
+    maxReferences: 2,
+    endpointAvailable: true,
+    regions: ['Global'],
+    commercialUse: true,
+    documentationUrl: 'https://lumalabs.ai/dream-machine/api',
+    lastVerifiedAt: '2025-02-12T00:00:00Z',
+    verificationStatus: 'verified',
+  },
+];
+
+export function getModelCapability(modelId: string): ModelCapability {
+  const found = MODEL_CAPABILITIES.find((m) => m.modelId === modelId);
+  if (found) return found;
+
+  // Unknown fallback
+  return {
+    modelId,
+    provider: 'Unknown Provider',
+    displayName: `Custom Model (${modelId})`,
+    supportedDurations: ['unknown'],
+    aspectRatios: ['unknown'],
+    resolutions: ['unknown'],
+    audioMode: 'unknown',
+    dialogueLipSync: 'unknown',
+    inputTypes: ['unknown'],
+    maxReferences: 'unknown',
+    endpointAvailable: false,
+    regions: ['unknown'],
+    commercialUse: 'unknown',
+    documentationUrl: '',
+    lastVerifiedAt: new Date().toISOString(),
+    verificationStatus: 'unknown',
+  };
+}
