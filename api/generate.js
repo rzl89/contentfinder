@@ -340,8 +340,14 @@ CRITICAL ANTI-SLOP & PRODUCTION STANDARDS:
      * If Luma: Emphasize smooth tracking and realistic weight.
 3. CONTINUITY ANCHORS:
    - Detail at least 3 immutable physical anchors for the character (exact clothing color/material, accessory, hairstyle) so they do NOT mutate across scenes.
-4. DIALOGUE & NARRATION:
-   - Follow ${languageInstruction}.
+4. VOICE & DIALOGUE (MANDATORY — every scene MUST have a dialogue line):
+   - Language: ${languageInstruction}.
+   - Every single scene must include a "dialogue" field with an authentic spoken line in ${languageInstruction} that fits the character's personality and the scene beat.
+   - The character's voiceStyle must describe how they sound and speak (e.g. "Bicara pelan tapi tegas, nada rendah tenang — tidak pernah panik"), and all dialogue lines must reflect that voiceStyle consistently.
+   - Dialogue must be natural, grounded, and plot-relevant — not generic filler.
+   - Scene 1 (hook): a short punchy line that stops the scroll.
+   - Middle scenes: conversational or reactive lines showing character depth.
+   - Final scene: memorable closing line fitting the story resolution.
 
 Respond ONLY with a valid JSON object matching:
 {
@@ -351,6 +357,7 @@ Respond ONLY with a valid JSON object matching:
     "appearance": "string",
     "clothing": "string",
     "personality": "string",
+    "voiceStyle": "string (e.g. Nada hangat, bicara mengalir dengan humor ringan. Tidak pernah berteriak.)",
     "consistencyAnchors": ["anchor1 (e.g. navy corduroy jacket)", "anchor2", "anchor3"]
   },
   "worldBible": {
@@ -384,7 +391,7 @@ Respond ONLY with a valid JSON object matching:
         "framing": "Rule of thirds / Center framed"
       },
       "lighting": "string (e.g. Warm afternoon sunlight with soft shadow falloff)",
-      "dialogue": "string",
+      "dialogue": "WAJIB diisi � kalimat dialog dalam bahasa yang ditentukan, natural dan sesuai kepribadian karakter serta beat adegan ini",
       "narration": "string",
       "continuityAnchors": ["string"],
       "imagePrompt": "string (in descriptive English with camera, lens, lighting)",

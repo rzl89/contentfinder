@@ -274,6 +274,7 @@ export async function developStoryFromIdea(
           appearance: char.appearance || 'Pria muda berpenampilan rapi dengan pandangan tajam.',
           clothing: char.clothing || 'Jaket katun gelap dengan kaos polos.',
           personality: char.personality || 'Tenang, analitis, dan adaptif.',
+          voiceStyle: char.voiceStyle || 'Bicara pelan tapi tegas, nada rendah tenang.',
           consistencyAnchors: Array.isArray(char.consistencyAnchors)
             ? char.consistencyAnchors
             : ['Jaket katun gelap kanonis', 'Jam tangan kulit cokelat'],
@@ -364,6 +365,8 @@ export async function developStoryFromIdea(
       personality: 'Cerdas, tenang, mudah penasaran terhadap hal-hal ganjil di sekitarnya.',
       role: 'Protagonis Utama',
       backstory: 'Seorang profesional muda yang gemar mendokumentasikan fenomena visual unik.',
+      voiceStyle:
+        'Bicara pelan tapi tegas, nada rendah tenang. Jarang berteriak. Ketika penasaran, suaranya melembut dan lambat. Ketika terkejut, kalimatnya singkat dan tajam.',
       consistencyAnchors: [
         'Jaket overshirt abu-abu tua katun',
         'Jam tangan kulit cokelat tua di tangan kiri',
@@ -400,6 +403,16 @@ export async function developStoryFromIdea(
     { title: 'Bonus Epilogue', purpose: 'Penutup opsional dengan implikasi masa depan' },
   ];
 
+  // Fallback dialogue pool — setiap scene ada dialog, nada sesuai karakter Rian yang tenang & analitis
+  const fallbackDialogues = [
+    'Tunggu... ini bukan tempat yang seharusnya.',
+    'Ada yang aneh di sini. Aku perlu waktu sebentar.',
+    'Ini bukan kebetulan. Tidak mungkin.',
+    'Aku sudah melihat ini sebelumnya — tapi di tempat yang berbeda.',
+    'Semuanya berubah mulai detik ini.',
+    'Jadi ini yang sebenarnya terjadi selama ini.',
+  ];
+
   for (let s = 1; s <= targetSceneCount; s++) {
     const beat = beats[(s - 1) % beats.length];
 
@@ -418,7 +431,7 @@ export async function developStoryFromIdea(
       },
       characterActions: `Rian inspects the surroundings carefully, turning his head towards camera with focused expression.`,
       props: ['Smartphone with illuminated screen', 'Leather notebook'],
-      dialogue: s === 1 ? 'Tunggu... ini bukan tempat yang seharusnya.' : s === targetSceneCount ? 'Semuanya berubah mulai detik ini.' : undefined,
+      dialogue: fallbackDialogues[(s - 1) % fallbackDialogues.length],
       narration: s === 2 ? 'Setiap detik membawa petunjuk baru yang tak terduga.' : undefined,
       camera: {
         shot: s === 1 ? 'Medium Close-Up' : s === 2 ? 'Tracking Wide Shot' : 'Slow Push-in Close-Up',

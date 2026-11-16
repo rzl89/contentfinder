@@ -768,23 +768,39 @@ export const PromptDeskPage: React.FC = () => {
               </div>
 
               {/* Dialogue & Narration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Dialog Kanonis (Bahasa Indonesia)"
-                  placeholder="Kutipan dialog persis yang diucapkan karakter..."
-                  value={currentScene.dialogue || ''}
-                  onChange={(e) =>
-                    updateScene(currentScene.sceneNumber, { dialogue: e.target.value })
-                  }
-                />
-                <Input
-                  label="Narasi Voiceover (Opsional)"
-                  placeholder="Teks narasi pendukung..."
-                  value={currentScene.narration || ''}
-                  onChange={(e) =>
-                    updateScene(currentScene.sceneNumber, { narration: e.target.value })
-                  }
-                />
+              <div className="space-y-3">
+                {/* Voice style hint from character bible */}
+                {currentProject?.characters?.[0]?.voiceStyle && (
+                  <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                    <span className="text-purple-300 text-xs mt-0.5">🎙️</span>
+                    <div>
+                      <span className="text-[10px] font-semibold text-purple-400 uppercase tracking-wider">
+                        Karakter Suara — {currentProject.characters[0].name}
+                      </span>
+                      <p className="text-xs text-purple-200/80 mt-0.5 leading-relaxed">
+                        {currentProject.characters[0].voiceStyle}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="💬 Dialog Kanonis (Bahasa Indonesia)"
+                    placeholder="Kalimat dialog persis yang diucapkan karakter..."
+                    value={currentScene.dialogue || ''}
+                    onChange={(e) =>
+                      updateScene(currentScene.sceneNumber, { dialogue: e.target.value })
+                    }
+                  />
+                  <Input
+                    label="Narasi Voiceover (Opsional)"
+                    placeholder="Teks narasi pendukung..."
+                    value={currentScene.narration || ''}
+                    onChange={(e) =>
+                      updateScene(currentScene.sceneNumber, { narration: e.target.value })
+                    }
+                  />
+                </div>
               </div>
 
               {/* Final Compiled Prompts (English Technical) */}

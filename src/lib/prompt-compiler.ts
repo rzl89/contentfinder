@@ -40,6 +40,9 @@ export function compileScenePrompt(
     .map((c) => `${c.name}: ${c.appearance}, wearing ${c.clothing}`)
     .join('; ');
 
+  // Pull voiceStyle from the first character (primary speaker)
+  const primaryVoiceStyle = characters[0]?.voiceStyle;
+
   // Base English Visual description
   const visualContext = [
     `Setting: ${scene.location.description}, ${scene.location.timeOfDay}, ${scene.location.weather}.`,
@@ -64,11 +67,12 @@ export function compileScenePrompt(
   // 3. Audio & Dialogue instructions tailored to model capability
   let audioInstruction: string | undefined = undefined;
   if (scene.dialogue?.trim()) {
+    const voiceNote = primaryVoiceStyle ? ` [Karakter suara: ${primaryVoiceStyle}]` : '';
     if (model.dialogueLipSync === true) {
-      audioInstruction = `Spoken dialogue (exact): "${scene.dialogue}"`;
+      audioInstruction = `Spoken dialogue (exact): "${scene.dialogue}"${voiceNote}`;
       compiledVideoPrompt += ` Character speaks line: "${scene.dialogue}".`;
     } else {
-      audioInstruction = `Dialogue to be mixed in post-production: "${scene.dialogue}"`;
+      audioInstruction = `Dialogue to be dubbed in post-production: "${scene.dialogue}"${voiceNote}`;
     }
   }
 
@@ -152,6 +156,9 @@ export function exportProductionSheetMarkdown(project: Project): string {
       lines.push(`- **Penampilan:** ${char.appearance}`);
       lines.push(`- **Pakaian:** ${char.clothing}`);
       lines.push(`- **Kepribadian:** ${char.personality}`);
+      if (char.voiceStyle) {
+        lines.push(`- **🎙️ Karakter Suara:** ${char.voiceStyle}`);
+      }
       if (char.consistencyAnchors?.length > 0) {
         lines.push(`- **Jangkar Konsistensi:** ${char.consistencyAnchors.join('; ')}`);
       }
