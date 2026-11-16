@@ -319,7 +319,7 @@ export const LandingPage: React.FC = () => {
               <Compass className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Context Engine & 9 Golden Rules</h3>
+              <h3 className="text-base font-bold text-white">Context Engine & Narasi Autentik</h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                 Menghilangkan stereotip malas pada AI. Dialog dapat dipilih dalam Bahasa Indonesia santai, Jawa, Sunda, atau Inggris. Latar cerita dirancang natural tanpa memaksakan warung atau motor jika cerita tidak membutuhkannya.
               </p>
@@ -457,9 +457,9 @@ export const LandingPage: React.FC = () => {
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  '19 kategori konten short-form',
+                  '3 kategori konten unggulan aktif',
+                  'Maksimal 3x generate storyboard adegan',
                   'Akses Prompt Production Desk',
-                  'Simpan hingga 3 proyek aktif',
                   'Ekspor storyboard Markdown & JSON',
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">

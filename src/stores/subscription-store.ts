@@ -128,20 +128,28 @@ export function getPaymentAccounts(): BankAccountInfo[] {
   }
 }
 
+export const FREE_TRIAL_ALLOWED_CATEGORY_IDS = [
+  'time-travel',
+  'stickman',
+  'pov-experience',
+] as const;
+
+export const FREE_TRIAL_MAX_STORYBOARD_GENERATIONS = 3;
+
 export const PRICING_PLANS = {
   trial: {
     name: 'Free Trial (1 Hari)',
     monthlyPrice: 0,
     yearlyPrice: 0,
-    description: 'Akses penuh seluruh 19 kategori dan generator AI selama 24 jam.',
+    description: 'Akses uji coba untuk 3 kategori pilihan dan hingga 3x generate storyboard.',
     features: [
-      'Akses penuh 19 Kategori Konten',
-      'Context Engine Indonesia Natural (9 Golden Rules)',
+      '3 Kategori Konten Aktif (Time Travel, Stickman, POV)',
+      'Batas 3x Generate Storyboard Adegan',
       'Generator ide hook 1-3 detik & story beats',
-      'Prompt Compiler Universal, Veo, Kling, Runway, Luma',
+      'Preview Prompt Compiler (Universal, Kling, Veo 2, Runway)',
       'Character & World Bible Story Studio',
-      'QC Engine & Trend Radar',
       'Masa aktif 24 jam sejak pertama dibuka',
+      'Konektor BYOK & 16 Kategori lainnya khusus Creator Pro',
     ],
   },
   pro: {
@@ -151,12 +159,12 @@ export const PRICING_PLANS = {
     popular: true,
     description: 'Langganan terjangkau untuk kreator video pendek tanpa batasan kuota.',
     features: [
-      'Semua fitur Free Trial tanpa batas durasi',
-      'Unlimited Ide Konten & Variasi Scene Storyboard',
+      'Semua 19 Kategori Konten Terbuka Penuh',
+      'Unlimited Generate Storyboard & Variasi Scene',
+      'Akses BYOK (Bring Your Own Key) Direct Video Generation',
       'Story Studio lengkap dengan Continuity Anchors',
       'Ekspor Prompt JSON & TXT tanpa watermark',
-      'Compiler Video Prompt Veo, Kling 1.5, Runway, Luma',
-      'Akses BYOK (Bring Your Own Key) Direct Video Generation',
+      'Compiler Video Prompt Veo 2, Kling 1.5, Runway Gen-3, Luma',
       'Trend Radar Live tervalidasi TikTok, Reels & Shorts',
       'Sinkronisasi Cloud Supabase Database otomatis',
       'Konfirmasi cepat & CS prioritas via WhatsApp',
@@ -169,6 +177,7 @@ interface SubscriptionState {
   orders: SubscriptionOrder[];
   activeOrder: SubscriptionOrder | null;
   adminWhatsApp: string;
+  storyboardGenerationsCount: number;
 
   // Actions
   initializeTrial: () => void;
@@ -178,11 +187,19 @@ interface SubscriptionState {
   manualUpgradeTier: (tier: PlanTier, expiresAt?: string) => void;
   getRemainingTrialHours: () => number;
   isFeatureAccessible: (feature: 'basic' | 'pro' | 'byok') => boolean;
+  incrementStoryboardCount: () => void;
+  canGenerateStoryboard: () => boolean;
+  isCategoryAccessible: (categoryId: string) => boolean;
+  isByokAccessible: () => boolean;
 }
 
 const STORAGE_KEY = 'temporaforge_subscription_store';
 
-function loadInitialState(): { subscription: UserSubscription; orders: SubscriptionOrder[] } {
+function loadInitialState(): {
+  subscription: UserSubscription;
+  orders: SubscriptionOrder[];
+  storyboardGenerationsCount: number;
+} {
   const defaultSub: UserSubscription = {
     tier: 'trial',
     status: 'trial',
@@ -191,23 +208,28 @@ function loadInitialState(): { subscription: UserSubscription; orders: Subscript
   };
 
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return { subscription: defaultSub, orders: [] };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
   }
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { subscription: defaultSub, orders: [] };
+    if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
     const parsed = JSON.parse(raw);
     return {
       subscription: parsed.subscription || defaultSub,
       orders: parsed.orders || [],
+      storyboardGenerationsCount: Number(parsed.storyboardGenerationsCount) || 0,
     };
   } catch {
-    return { subscription: defaultSub, orders: [] };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
   }
 }
 
-function saveState(state: { subscription: UserSubscription; orders: SubscriptionOrder[] }) {
+function saveState(state: {
+  subscription: UserSubscription;
+  orders: SubscriptionOrder[];
+  storyboardGenerationsCount?: number;
+}) {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -224,6 +246,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   orders: initial.orders,
   activeOrder: null,
   adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6281234567890', // Nomor WhatsApp konfirmasi admin
+  storyboardGenerationsCount: initial.storyboardGenerationsCount,
 
   initializeTrial: () => {
     const current = get().subscription;
@@ -236,7 +259,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
         trialEndsAt: new Date(now + 24 * 60 * 60 * 1000).toISOString(),
       };
       set({ subscription: newSub });
-      saveState({ subscription: newSub, orders: get().orders });
+      saveState({
+        subscription: newSub,
+        orders: get().orders,
+        storyboardGenerationsCount: get().storyboardGenerationsCount,
+      });
     }
   },
 
@@ -280,7 +307,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       orders: newOrders,
       activeOrder: newOrder,
     });
-    saveState({ subscription: get().subscription, orders: newOrders });
+    saveState({
+      subscription: get().subscription,
+      orders: newOrders,
+      storyboardGenerationsCount: get().storyboardGenerationsCount,
+    });
 
     return newOrder;
   },
@@ -330,7 +361,11 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
       subscription: updatedSub,
       activeOrder: null,
     });
-    saveState({ subscription: updatedSub, orders: get().orders });
+    saveState({
+      subscription: updatedSub,
+      orders: get().orders,
+      storyboardGenerationsCount: get().storyboardGenerationsCount,
+    });
   },
 
   getRemainingTrialHours: () => {
@@ -341,11 +376,39 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
     return Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60)));
   },
 
-  isFeatureAccessible: (_feature) => {
+  isFeatureAccessible: (feature) => {
     const { tier, trialEndsAt } = get().subscription;
     if (tier === 'pro') return true;
-    // Trial check: 24 jam akses penuh
+    // BYOK is locked for free trial
+    if (feature === 'byok') return false;
+    // Trial check: 24 jam akses dasar
     const isTrialActive = new Date(trialEndsAt).getTime() > Date.now();
     return isTrialActive;
+  },
+
+  incrementStoryboardCount: () => {
+    const newCount = get().storyboardGenerationsCount + 1;
+    set({ storyboardGenerationsCount: newCount });
+    saveState({
+      subscription: get().subscription,
+      orders: get().orders,
+      storyboardGenerationsCount: newCount,
+    });
+  },
+
+  canGenerateStoryboard: () => {
+    const { tier } = get().subscription;
+    if (tier === 'pro') return true;
+    return get().storyboardGenerationsCount < FREE_TRIAL_MAX_STORYBOARD_GENERATIONS;
+  },
+
+  isCategoryAccessible: (categoryId: string) => {
+    const { tier } = get().subscription;
+    if (tier === 'pro') return true;
+    return (FREE_TRIAL_ALLOWED_CATEGORY_IDS as readonly string[]).includes(categoryId);
+  },
+
+  isByokAccessible: () => {
+    return get().subscription.tier === 'pro';
   },
 }));

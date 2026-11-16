@@ -14,6 +14,10 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
+import {
+  useSubscriptionStore,
+  FREE_TRIAL_MAX_STORYBOARD_GENERATIONS,
+} from '@/stores/subscription-store';
 import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
   ContentIdea,
@@ -35,6 +39,7 @@ import {
   CheckCircle2,
   Info,
   Tv,
+  Lock,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
@@ -42,6 +47,13 @@ export const IdeaStudioPage: React.FC = () => {
   const { showToast } = useToast();
   const { currentProject, createProject, setSelectedIdea, setScenes, updateWorldBible, addCharacter } =
     useProjectStore();
+  const {
+    subscription,
+    isCategoryAccessible,
+    canGenerateStoryboard,
+    incrementStoryboardCount,
+    storyboardGenerationsCount,
+  } = useSubscriptionStore();
 
   // Search & filter for categories
   const [categorySearch, setCategorySearch] = useState('');
@@ -119,6 +131,18 @@ export const IdeaStudioPage: React.FC = () => {
   };
 
   const handleDevelopIdea = async (idea: ContentIdea) => {
+    // Check Free Trial Storyboard quota limit (max 3x)
+    if (!canGenerateStoryboard()) {
+      showToast({
+        type: 'warning',
+        title: 'Batas Trial Tercapai (3/3)',
+        message:
+          'Anda telah mencapai batas 3x generate storyboard di paket Free Trial. Upgrade ke Creator Pro untuk akses tanpa batas!',
+      });
+      navigate('/pricing');
+      return;
+    }
+
     setDevelopingIdeaId(idea.id);
     try {
       // 1. Ensure a project exists or create one
@@ -138,13 +162,16 @@ export const IdeaStudioPage: React.FC = () => {
       updateWorldBible(developed.worldBible);
       setScenes(developed.scenes);
 
+      // 4. Increment trial usage counter
+      incrementStoryboardCount();
+
       showToast({
         type: 'success',
         title: 'Storyboard Siap di Production Desk!',
         message: 'Karakter, World Bible, dan 4 adegan telah disusun lengkap.',
       });
 
-      // 4. Navigate to Prompt Desk
+      // 5. Navigate to Prompt Desk
       navigate('/prompt-desk');
     } catch (err: any) {
       showToast({
@@ -193,12 +220,22 @@ export const IdeaStudioPage: React.FC = () => {
       <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-amber-400" />
-              <span>1. Pilih Kategori Konten ({CONTENT_CATEGORIES.length} Kategori Tersedia)</span>
-            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-amber-400" />
+                <span>1. Pilih Kategori Konten ({CONTENT_CATEGORIES.length} Kategori)</span>
+              </h3>
+              {subscription.tier !== 'pro' && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300">
+                  <Lock className="w-3 h-3 text-amber-400" />
+                  Free Trial: 3 Kategori Aktif • Kuota Storyboard: {storyboardGenerationsCount}/{FREE_TRIAL_MAX_STORYBOARD_GENERATIONS}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              Setiap kategori menggunakan creative framework dan hook style yang berbeda.
+              {subscription.tier === 'pro'
+                ? 'Seluruh 19 kategori terbuka dengan creative framework dan hook style spesifik.'
+                : 'Free Trial membuka 3 kategori unggulan. Upgrade ke Creator Pro untuk membuka seluruh 19 kategori.'}
             </p>
           </div>
 
@@ -235,26 +272,43 @@ export const IdeaStudioPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[360px] overflow-y-auto p-1 pr-2">
           {filteredCategories.map((cat) => {
             const isSelected = selectedCategoryId === cat.id;
+            const isAccessible = isCategoryAccessible(cat.id);
             return (
               <div
                 key={cat.id}
                 onClick={() => {
+                  if (!isAccessible) {
+                    showToast({
+                      type: 'warning',
+                      title: 'Kategori Khusus Creator Pro',
+                      message: `Kategori "${cat.name}" dikunci di paket Free Trial. Upgrade ke Creator Pro untuk membuka seluruh 19 kategori!`,
+                    });
+                    return;
+                  }
                   setSelectedCategoryId(cat.id);
                   setSelectedSubcatId(cat.subcategories[0]?.id || '');
                 }}
                 className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between ${
-                  isSelected
+                  !isAccessible
+                    ? 'bg-[#0f0f13] border-white/5 opacity-70 hover:opacity-100 hover:border-amber-500/30'
+                    : isSelected
                     ? 'bg-amber-500/10 border-amber-500/60 shadow-[0_0_15px_-3px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/40'
                     : 'bg-[#111115] border-white/8 hover:border-white/20 hover:bg-[#16161c]'
                 }`}
               >
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-1.5">
                     <span className="text-xs font-semibold text-zinc-200 line-clamp-1">
                       {cat.name}
                     </span>
                     {isSelected && (
                       <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    )}
+                    {!isAccessible && (
+                      <span className="flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-white/10 shrink-0">
+                        <Lock className="w-2.5 h-2.5 text-amber-400" />
+                        PRO
+                      </span>
                     )}
                   </div>
                   <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">

@@ -75,7 +75,7 @@ export const PricingPage: React.FC = () => {
           Investasi Terjangkau untuk Konten Video AI Berkualitas
         </h1>
         <p className="text-gray-400 text-sm sm:text-base">
-          Mulai dengan <strong>Free Trial 1 Hari</strong> akses penuh. Lanjutkan dengan langganan terjangkau mulai 
+          Mulai dengan <strong>Free Trial 24 Jam</strong> untuk mencoba 3 kategori unggulan dan storyboard studio. Lanjutkan dengan langganan terjangkau mulai 
           dari <strong>Rp 59.000 / bulan</strong> tanpa kartu kredit rumit — bayar via QRIS, BCA, Mandiri, atau E-Wallet.
         </p>
 

@@ -6,7 +6,15 @@ import { useProjectStore } from '@/stores/project-store';
 
 export const AppLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState<'id' | 'en'>(() => {
+    return (localStorage.getItem('temporaforge_lang') as 'id' | 'en') || 'id';
+  });
   const currentProject = useProjectStore((s) => s.currentProject);
+
+  const handleToggleLang = (lang: 'id' | 'en') => {
+    setCurrentLang(lang);
+    localStorage.setItem('temporaforge_lang', lang);
+  };
 
   return (
     <div className="min-h-screen flex bg-[#09090b] text-zinc-100 font-sans">
@@ -59,12 +67,32 @@ export const AppLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-              <Globe className="w-3.5 h-3.5" />
-              <span>Indonesia Natural Engine</span>
-            </div>
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-800 border border-white/10 text-zinc-300 text-xs font-mono">
-              <span>BYOK: Client-Safe</span>
+            {/* Language Switcher (ID / EN) */}
+            <div className="flex items-center p-0.5 rounded-xl bg-zinc-900 border border-white/10 text-xs">
+              <button
+                type="button"
+                onClick={() => handleToggleLang('id')}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  currentLang === 'id'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                }`}
+                title="Bahasa Indonesia"
+              >
+                <span>ID</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleLang('en')}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  currentLang === 'en'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                }`}
+                title="English"
+              >
+                <span>EN</span>
+              </button>
             </div>
           </div>
         </header>

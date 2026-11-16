@@ -1,25 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Sparkles, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import {
+  Sparkles,
+  Mail,
+  Lock,
+  LogIn,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  RefreshCw,
+} from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, loading, user, initialized } = useAuthStore();
+  const location = useLocation();
+  const { signIn, resendConfirmation, loading, user, initialized } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isEmailUnconfirmed, setIsEmailUnconfirmed] = useState(false);
+  const [resending, setResending] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+
+  const destination = (location.state as any)?.from?.pathname || '/studio';
+
+  // Check URL hash for error parameters from Supabase email link redirects
+  useEffect(() => {
+    try {
+      const fullHash = window.location.hash;
+      if (fullHash.includes('error=')) {
+        const errorMatch = fullHash.match(/error_description=([^&]+)/);
+        if (errorMatch && errorMatch[1]) {
+          const decoded = decodeURIComponent(errorMatch[1].replace(/\+/g, ' '));
+          setError(`Tautan tidak valid atau telah kedaluwarsa: ${decoded}`);
+        }
+      }
+
+      // Check for incoming flash message
+      if ((location.state as any)?.message) {
+        setSuccessMessage((location.state as any).message);
+      }
+    } catch {
+      // ignore hash parsing error
+    }
+  }, [location]);
 
   // Redirect if already logged in
   useEffect(() => {
     if (initialized && user) {
-      navigate('/studio', { replace: true });
+      navigate(destination, { replace: true });
     }
-  }, [initialized, user, navigate]);
+  }, [initialized, user, navigate, destination]);
 
   const validate = (): boolean => {
     const errors: { email?: string; password?: string } = {};
@@ -34,20 +71,52 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
+    setIsEmailUnconfirmed(false);
+
     if (!validate()) return;
 
     const { error: authError } = await signIn(email.trim().toLowerCase(), password);
 
     if (authError) {
-      if (authError.message.includes('Invalid login credentials')) {
+      const msg = authError.message || '';
+      if (
+        msg.includes('Invalid login credentials') ||
+        msg.includes('invalid_grant') ||
+        msg.includes('Invalid email or password')
+      ) {
         setError('Email atau password salah. Periksa kembali dan coba lagi.');
-      } else if (authError.message.includes('Email not confirmed')) {
-        setError('Email belum dikonfirmasi. Cek inbox Anda dan klik link konfirmasi.');
+      } else if (msg.includes('Email not confirmed') || msg.includes('email_not_confirmed')) {
+        setError('Email belum dikonfirmasi. Silakan periksa inbox atau spam email Anda.');
+        setIsEmailUnconfirmed(true);
+      } else if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+        setError('Terlalu banyak percobaan. Silakan tunggu beberapa saat sebelum mencoba lagi.');
       } else {
-        setError(authError.message);
+        setError(msg || 'Terjadi kesalahan saat masuk. Coba lagi.');
       }
     } else {
-      navigate('/studio', { replace: true });
+      navigate(destination, { replace: true });
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email.trim()) {
+      setFieldErrors({ email: 'Masukkan email terlebih dahulu' });
+      return;
+    }
+    setResending(true);
+    try {
+      const { error: resendErr } = await resendConfirmation(email.trim().toLowerCase());
+      if (resendErr) {
+        setError(resendErr.message);
+      } else {
+        setSuccessMessage('Email konfirmasi baru telah dikirim! Cek inbox atau folder spam Anda.');
+        setIsEmailUnconfirmed(false);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Gagal mengirim ulang email');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -81,10 +150,31 @@ export const LoginPage: React.FC = () => {
 
         {/* Form Card */}
         <div className="bg-[#0f0f13] border border-white/10 rounded-2xl p-7 space-y-5 shadow-xl">
+          {successMessage && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
           {error && (
-            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+
+              {isEmailUnconfirmed && (
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={resending}
+                  className="w-full py-2 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30 flex items-center justify-center gap-2 transition-colors"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
+                  <span>{resending ? 'Mengirim ulang...' : 'Kirim Ulang Email Konfirmasi'}</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -97,6 +187,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="email"
                   value={email}
+                  disabled={loading}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
@@ -123,6 +214,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
+                  disabled={loading}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
@@ -163,11 +255,9 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <p className="text-center text-[11px] text-zinc-600">
-          Dengan masuk, Anda menyetujui{' '}
-          <span className="text-zinc-500">Syarat Layanan</span> TemporaForge AI.
+          Dengan masuk, Anda menyetujui Ketentuan Layanan TemporaForge AI.
         </p>
       </div>
     </div>
   );
 };
-

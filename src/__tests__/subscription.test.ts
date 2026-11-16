@@ -53,16 +53,30 @@ describe('TemporaForge AI — Subscription & Monetization System', () => {
   it('handles feature access control based on subscription tier', () => {
     const store = useSubscriptionStore.getState();
 
-    // Active Trial tier gives full access
+    // Active Trial tier allows basic, but locks BYOK, limits to 3 categories and 3 storyboards
     expect(store.isFeatureAccessible('basic')).toBe(true);
-    expect(store.isFeatureAccessible('pro')).toBe(true);
-    expect(store.isFeatureAccessible('byok')).toBe(true);
+    expect(store.isFeatureAccessible('byok')).toBe(false);
+    expect(store.isByokAccessible()).toBe(false);
+    expect(store.isCategoryAccessible('time-travel')).toBe(true);
+    expect(store.isCategoryAccessible('stickman')).toBe(true);
+    expect(store.isCategoryAccessible('pov-experience')).toBe(true);
+    expect(store.isCategoryAccessible('microdrama')).toBe(false);
 
-    // Upgraded to Pro gives full access
+    // Storyboard quota check (3 max in trial)
+    expect(store.canGenerateStoryboard()).toBe(true);
+    store.incrementStoryboardCount(); // 1
+    store.incrementStoryboardCount(); // 2
+    store.incrementStoryboardCount(); // 3
+    expect(store.canGenerateStoryboard()).toBe(false);
+
+    // Upgraded to Pro gives full access to all categories, unlimited storyboards, and BYOK
     store.manualUpgradeTier('pro');
     expect(store.isFeatureAccessible('basic')).toBe(true);
     expect(store.isFeatureAccessible('pro')).toBe(true);
     expect(store.isFeatureAccessible('byok')).toBe(true);
+    expect(store.isByokAccessible()).toBe(true);
+    expect(store.isCategoryAccessible('microdrama')).toBe(true);
+    expect(store.canGenerateStoryboard()).toBe(true);
 
     // Expired trial without active subscription restricts access
     useSubscriptionStore.setState({
