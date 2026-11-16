@@ -2,3 +2,6 @@ project_id = "contentfinder"
 
 [db]
 major_version = 17
+
+[db.seed]
+enabled = false
