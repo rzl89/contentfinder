@@ -61,8 +61,9 @@ export async function generateContentIdeas(
 
     if (res.ok) {
       const data = await res.json();
-      if (data.success && Array.isArray(data.ideas) && data.ideas.length > 0) {
-        return data.ideas.map((raw: any, idx: number): ContentIdea => ({
+      const rawList = Array.isArray(data.ideas) ? data.ideas : data.ideas ? [data.ideas] : [];
+      if (data.success && rawList.length > 0) {
+        return rawList.map((raw: any, idx: number): ContentIdea => ({
           id: `idea_ai_${Date.now()}_${idx + 1}`,
           title: raw.title || `${category.name} #${idx + 1}`,
           hook: raw.hook || '[Detik 0-3] Hook pembuka dramatis',

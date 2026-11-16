@@ -175,10 +175,21 @@ ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
       );
 
       let parsed = JSON.parse(content);
-      if (!Array.isArray(parsed) && parsed.ideas && Array.isArray(parsed.ideas)) {
+      if (Array.isArray(parsed)) {
+        // already array
+      } else if (parsed.ideas && Array.isArray(parsed.ideas)) {
         parsed = parsed.ideas;
-      } else if (!Array.isArray(parsed) && Object.values(parsed)[0] && Array.isArray(Object.values(parsed)[0])) {
-        parsed = Object.values(parsed)[0];
+      } else if (parsed.ideas && typeof parsed.ideas === 'object' && parsed.ideas.title) {
+        parsed = [parsed.ideas];
+      } else if (typeof parsed === 'object') {
+        const values = Object.values(parsed);
+        if (values.length > 0 && Array.isArray(values[0])) {
+          parsed = values[0];
+        } else if (values.length > 0 && typeof values[0] === 'object' && values[0].title) {
+          parsed = values;
+        } else if (parsed.title) {
+          parsed = [parsed];
+        }
       }
 
       return res.status(200).json({ success: true, ideas: parsed, modelUsed });
