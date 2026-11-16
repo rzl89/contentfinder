@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription } from '@/types';
 import { useAdminStore } from './admin-store';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -620,7 +620,60 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
       }
       if (!uid) return;
 
-      // Check manual local activations first
+      // ── 1. Supabase DB is the source of truth ────────────────────────────
+      // Always read from DB first so admin activations take effect immediately.
+      // Check Supabase profile
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('plan_tier, subscription_status, subscription_expires_at')
+        .eq('id', uid)
+        .single();
+
+      if (!error && profile) {
+        if (
+          profile.plan_tier === 'pro' &&
+          profile.subscription_status === 'active' &&
+          profile.subscription_expires_at &&
+          new Date(profile.subscription_expires_at).getTime() > Date.now()
+        ) {
+          const activeSub: UserSubscription = {
+            tier: 'pro',
+            status: 'active',
+            expiresAt: profile.subscription_expires_at,
+            trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
+            trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
+          };
+          set({ subscription: activeSub });
+          saveState({
+            subscription: activeSub,
+            orders: get().orders,
+            storyboardGenerationsCount: get().storyboardGenerationsCount,
+            manualActivations: get().manualActivations,
+          });
+          return;
+        } else if (
+          profile.subscription_expires_at &&
+          new Date(profile.subscription_expires_at).getTime() <= Date.now()
+        ) {
+          const expiredSub: UserSubscription = {
+            tier: 'free',
+            status: 'expired',
+            expiresAt: profile.subscription_expires_at,
+            trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
+            trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
+          };
+          set({ subscription: expiredSub });
+          saveState({
+            subscription: expiredSub,
+            orders: get().orders,
+            storyboardGenerationsCount: get().storyboardGenerationsCount,
+            manualActivations: get().manualActivations,
+          });
+          return;
+        }
+      }
+
+      // ── 2. Fallback to local manualActivations if offline or DB record empty ──
       if (email) {
         const manual = get().manualActivations.find(
           (m) =>
@@ -637,51 +690,13 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
             trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
           };
           set({ subscription: activeSub });
-          return;
+          saveState({
+            subscription: activeSub,
+            orders: get().orders,
+            storyboardGenerationsCount: get().storyboardGenerationsCount,
+            manualActivations: get().manualActivations,
+          });
         }
-      }
-
-      // Check Supabase profile
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('plan_tier, subscription_status, subscription_expires_at')
-        .eq('id', uid)
-        .single();
-
-      if (error || !profile) return;
-
-      if (
-        profile.plan_tier === 'pro' &&
-        profile.subscription_status === 'active' &&
-        profile.subscription_expires_at &&
-        new Date(profile.subscription_expires_at).getTime() > Date.now()
-      ) {
-        const activeSub: UserSubscription = {
-          tier: 'pro',
-          status: 'active',
-          expiresAt: profile.subscription_expires_at,
-          trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
-          trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
-        };
-        set({ subscription: activeSub });
-        saveState({
-          subscription: activeSub,
-          orders: get().orders,
-          storyboardGenerationsCount: get().storyboardGenerationsCount,
-          manualActivations: get().manualActivations,
-        });
-      } else if (
-        profile.subscription_expires_at &&
-        new Date(profile.subscription_expires_at).getTime() <= Date.now()
-      ) {
-        const expiredSub: UserSubscription = {
-          tier: 'free',
-          status: 'expired',
-          expiresAt: profile.subscription_expires_at,
-          trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
-          trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
-        };
-        set({ subscription: expiredSub });
       }
     } catch (e) {
       console.warn('Failed to sync subscription with profile:', e);
