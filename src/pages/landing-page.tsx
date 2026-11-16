@@ -92,7 +92,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="flex items-center gap-3">
             {user ? (
-              /* â”€â”€ Logged in: show user badge + go to studio â”€â”€ */
+              /* -- Logged in: show user badge + go to studio -- */
               <>
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-zinc-400">
                   <UserCircle2 className="w-3.5 h-3.5 text-amber-400" />
@@ -108,7 +108,7 @@ export const LandingPage: React.FC = () => {
                 </Button>
               </>
             ) : (
-              /* â”€â”€ Guest: show login + signup â”€â”€ */
+              /* -- Guest: show login + signup -- */
               <>
                 <NavLink
                   to="/login"
@@ -162,7 +162,7 @@ export const LandingPage: React.FC = () => {
               icon={<ArrowRight className="w-4 h-4 text-black" />}
               className="w-full sm:w-auto"
             >
-              {user ? 'Buka Studio' : 'Mulai Gratis â€” Tanpa Kartu Kredit'}
+              {user ? 'Buka Studio' : 'Mulai Gratis - Tanpa Kartu Kredit'}
             </Button>
 
             <a
@@ -174,7 +174,7 @@ export const LandingPage: React.FC = () => {
             </a>
           </div>
 
-          {/* Social proof metric chips Ã¢â‚¬â€ truthful and concrete */}
+          {/* Social proof metric chips -  truthful and concrete */}
           <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
               <div className="text-xl font-bold font-mono text-amber-400">19</div>
@@ -401,7 +401,7 @@ export const LandingPage: React.FC = () => {
             {[
               { title: 'Time Travel & Masa Lalu', desc: 'Kontras era historis vs modern' },
               { title: 'POV Kamera Tersembunyi', desc: 'Sudut pandang mikro benda mati' },
-              { title: 'Transformasi Ruang 360Ã‚Â°', desc: 'Evolusi lokasi dalam satu adegan' },
+              { title: 'Transformasi Ruang 360°', desc: 'Evolusi lokasi dalam satu adegan' },
               { title: 'Micro-Documentary Misteri', desc: 'Fakta aneh dan arsip sejarah' },
               { title: 'Dua Pilihan Hidup Ekstrem', desc: 'Dilema moral interaktif penonton' },
               { title: 'Evolusi Objek & Desain', desc: 'Metamorfosis bentuk per dekade' },
@@ -604,7 +604,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-zinc-600">
-            Ã‚Â© {new Date().getFullYear()} TemporaForge AI. Built for Indonesian creators.
+            © {new Date().getFullYear()} TemporaForge AI. Built for Indonesian creators.
           </div>
         </div>
       </footer>

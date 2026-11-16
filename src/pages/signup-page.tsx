@@ -87,9 +87,9 @@ export const SignupPage: React.FC = () => {
             </p>
           </div>
           <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-500 text-left space-y-1">
-            <p>â€¢ Cek folder <strong className="text-zinc-400">Spam</strong> jika tidak masuk inbox</p>
-            <p>â€¢ Link berlaku selama <strong className="text-zinc-400">24 jam</strong></p>
-            <p>â€¢ Belum dapat email? Tunggu 2â€“3 menit</p>
+            <p>• Cek folder <strong className="text-zinc-400">Spam</strong> jika tidak masuk inbox</p>
+            <p>• Link berlaku selama <strong className="text-zinc-400">24 jam</strong></p>
+            <p>• Belum dapat email? Tunggu 2-3 menit</p>
           </div>
           <NavLink
             to="/login"

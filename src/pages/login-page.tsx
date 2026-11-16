@@ -127,7 +127,7 @@ export const LoginPage: React.FC = () => {
                     setPassword(e.target.value);
                     if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
                   }}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   autoComplete="current-password"
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.password
