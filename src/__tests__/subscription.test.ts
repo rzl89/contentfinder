@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useSubscriptionStore, PRICING_PLANS } from '@/stores/subscription-store';
 
 describe('Fixprom â€” Subscription & Monetization System', () => {
