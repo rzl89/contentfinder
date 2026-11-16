@@ -82,7 +82,7 @@ describe('Prompt Compiler & Exporter', () => {
   it('should generate a complete Markdown production sheet', () => {
     const sheet = exportProductionSheetMarkdown(sampleProject);
 
-    expect(sheet).toContain('# TEMPORAFORGE AI — PRODUCTION SHEET');
+    expect(sheet).toContain('# FIXPROM — PRODUCTION SHEET');
     expect(sheet).toContain('Nusantara Relic Chronicles');
     expect(sheet).toContain('CHARACTER BIBLE');
     expect(sheet).toContain('Rian');

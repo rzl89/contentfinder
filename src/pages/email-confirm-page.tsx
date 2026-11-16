@@ -17,10 +17,10 @@ export const EmailConfirmPage: React.FC = () => {
 
         <div className="space-y-2">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-black" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30">
+              <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
             </div>
-            <span className="text-sm font-bold text-white">TemporaForge AI</span>
+            <span className="text-sm font-bold text-white">Fixprom</span>
           </div>
           <h1 className="text-xl font-bold text-white">Email Dikonfirmasi!</h1>
           <p className="text-sm text-zinc-400 leading-relaxed">

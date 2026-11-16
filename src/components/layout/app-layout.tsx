@@ -7,13 +7,13 @@ import { useProjectStore } from '@/stores/project-store';
 export const AppLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState<'id' | 'en'>(() => {
-    return (localStorage.getItem('temporaforge_lang') as 'id' | 'en') || 'id';
+    return (localStorage.getItem('fixprom_lang') as 'id' | 'en') || 'id';
   });
   const currentProject = useProjectStore((s) => s.currentProject);
 
   const handleToggleLang = (lang: 'id' | 'en') => {
     setCurrentLang(lang);
-    localStorage.setItem('temporaforge_lang', lang);
+    localStorage.setItem('fixprom_lang', lang);
   };
 
   return (

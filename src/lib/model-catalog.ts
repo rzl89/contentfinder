@@ -26,7 +26,7 @@ export const MODEL_CAPABILITIES: ModelCapability[] = [
     endpointAvailable: false,
     regions: ['Global'],
     commercialUse: true,
-    documentationUrl: 'https://temporaforge.internal/docs/universal-spec',
+    documentationUrl: 'https://fixprom.com/docs/universal-spec',
     lastVerifiedAt: '2025-02-15T00:00:00Z',
     verificationStatus: 'verified',
   },

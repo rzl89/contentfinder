@@ -41,12 +41,12 @@ describe('BYOK Security & Envelope Encryption Vault', () => {
       'Content-Type': 'application/json',
       Authorization: 'Bearer sk-super-secret-12345',
       'X-Api-Key': 'secret-key-abc',
-      'User-Agent': 'TemporaForge-Studio/1.0',
+      'User-Agent': 'Fixprom-Studio/1.0',
     };
 
     const redacted = redactSecretHeaders(rawHeaders);
-    expect(redacted.Authorization).toBe('[REDACTED_BY_TEMPORAFORGE_VAULT]');
-    expect(redacted['X-Api-Key']).toBe('[REDACTED_BY_TEMPORAFORGE_VAULT]');
+    expect(redacted.Authorization).toBe('[REDACTED_BY_FIXPROM_VAULT]');
+    expect(redacted['X-Api-Key']).toBe('[REDACTED_BY_FIXPROM_VAULT]');
     expect(redacted['Content-Type']).toBe('application/json');
   });
 

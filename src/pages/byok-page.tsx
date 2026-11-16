@@ -162,7 +162,7 @@ export const ByokPage: React.FC = () => {
                 Nol Biaya Kredit Video
               </span>
               <p className="text-zinc-400 leading-relaxed text-[11px]">
-                TemporaForge AI adalah studio ide dan prompt independen. Biaya generasi video dibebankan langsung oleh vendor (Google, Runway, Kling, Luma) ke akun API Anda sendiri. Kami tidak menjual kredit video.
+                Fixprom adalah studio ide dan prompt independen. Biaya generasi video dibebankan langsung oleh vendor (Google, Runway, Kling, Luma) ke akun API Anda sendiri. Kami tidak menjual kredit video.
               </p>
             </div>
           </div>

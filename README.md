@@ -1,6 +1,6 @@
-# TemporaForge AI — AI Content Idea & Prompt Studio
+# Fixprom — AI Content Idea & Prompt Studio
 
-> **AI Content Idea & Prompt Studio** untuk kreator video pendek. Temukan ide berbasis 19 kategori dan pola tren terverifikasi, kunci identitas karakter dan dunia cerita, lalu kompilasi image prompt dan video prompt siap pakai untuk berbagai model AI (Universal, Google Veo, Kling, Runway, Luma).
+> **Fixprom: AI Content Idea & Prompt Studio** untuk kreator video pendek. Temukan ide berbasis 19 kategori dan pola tren terverifikasi, kunci identitas karakter dan dunia cerita, lalu kompilasi image prompt dan video prompt siap pakai untuk berbagai model AI (Universal, Google Veo, Kling, Runway, Luma).
 
 ---
 
@@ -27,7 +27,7 @@
   - Menampilkan observasi tren terverifikasi dari TikTok Creative Center, YouTube Culture & Trends, dan Meta Creator Report.
   - Bebas angka fiktif atau klaim viralitas halusinasi LLM.
 - **BYOK (Bring Your Own Key) & Zero Video Markup**:
-  - TemporaForge adalah Prompt Studio, bukan penjual kredit video.
+  - Fixprom adalah Prompt Studio, bukan penjual kredit video.
   - Desain keamanan Envelope Encryption (AES-256-GCM + Cloud KMS).
   - Jika KMS belum dikonfigurasi, sistem menampilkan status `Belum dikonfigurasi` dan mengunci operasi direct dispatch demi melindungi kunci Anda.
 

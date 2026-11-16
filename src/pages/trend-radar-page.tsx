@@ -79,7 +79,7 @@ export const TrendRadarPage: React.FC = () => {
             <p className="text-zinc-400 leading-relaxed text-[11px]">
               {isLiveFeedAvailable
                 ? 'Terhubung ke Live API platform.'
-                : 'Data live API saat ini belum terhubung. Seluruh entri di bawah diambil langsung dari publikasi resmi platform (Creative Center Q1 Report, Meta Best Practices, YouTube Trends). TemporaForge AI tidak pernah mengarang angka views atau melabeli konten "viral" tanpa bukti terverifikasi.'}
+                : 'Data live API saat ini belum terhubung. Seluruh entri di bawah diambil langsung dari publikasi resmi platform (Creative Center Q1 Report, Meta Best Practices, YouTube Trends). Fixprom tidak pernah mengarang angka views atau melabeli konten "viral" tanpa bukti terverifikasi.'}
             </p>
           </div>
         </div>

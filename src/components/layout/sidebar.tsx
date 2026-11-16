@@ -90,16 +90,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       {/* Brand Header */}
       <div className="p-5 border-b border-white/5 flex items-center justify-between">
         <NavLink to="/" className="flex items-center gap-3 min-w-0 group hover:opacity-90 transition-opacity">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-500/20 shrink-0">
-            <Sparkles className="w-5 h-5 text-black" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border border-amber-500/30 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+            <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <h1 className="text-sm font-bold tracking-tight text-zinc-100 flex items-center gap-1.5">
-                <span>TemporaForge</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  AI
-                </span>
+              <h1 className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                <span>Fixprom</span>
               </h1>
               <p className="text-[11px] text-zinc-400 truncate">Idea & Prompt Studio</p>
             </div>

@@ -114,7 +114,7 @@ export const PromptDeskPage: React.FC = () => {
   };
 
   const handleDownloadFile = () => {
-    const filename = `${currentProject?.name.toLowerCase().replace(/\s+/g, '_') || 'temporaforge_project'}.${
+    const filename = `${currentProject?.name.toLowerCase().replace(/\s+/g, '_') || 'fixprom_project'}.${
       exportFormat === 'markdown' ? 'md' : 'json'
     }`;
     const blob = new Blob([exportContent], {

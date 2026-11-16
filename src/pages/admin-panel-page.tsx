@@ -254,7 +254,7 @@ export const AdminPanelPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-              <p className="text-xs text-zinc-500 mt-0.5">TemporaForge — Secure Access Only</p>
+              <p className="text-xs text-zinc-500 mt-0.5">Fixprom — Secure Access Only</p>
             </div>
           </div>
 
@@ -357,7 +357,7 @@ export const AdminPanelPage: React.FC = () => {
             </div>
             <div>
               <h1 className="text-sm font-bold text-white leading-none">Admin Panel</h1>
-              <p className="text-[11px] text-zinc-500">TemporaForge Master Control</p>
+              <p className="text-[11px] text-zinc-500">Fixprom Master Control</p>
             </div>
             <Badge variant="amber">MASTER</Badge>
           </div>

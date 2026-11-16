@@ -1,7 +1,7 @@
 import type { ContentCategory } from '@/types';
 
 /**
- * TemporaForge AI — Full 19-Category Content Catalog
+ * Fixprom — Full 19-Category Content Catalog
  *
  * Every category carries its own creative framework, hook style,
  * visual guidance, and (where relevant) Indonesia-specific context.

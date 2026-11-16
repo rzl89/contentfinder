@@ -1,4 +1,4 @@
-# TemporaForge AI — Project Guidelines
+# Fixprom — Project Guidelines
 
 <!-- antislop:start -->
 ## antislop

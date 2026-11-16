@@ -89,10 +89,19 @@ export const SignupPage: React.FC = () => {
               Klik link di email untuk mengaktifkan akun, lalu login.
             </p>
           </div>
-          <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-500 text-left space-y-1">
-            <p>• Cek folder <strong className="text-zinc-400">Spam</strong> jika tidak masuk inbox</p>
-            <p>• Link berlaku selama <strong className="text-zinc-400">24 jam</strong></p>
-            <p>• Belum dapat email? Tunggu 2-3 menit</p>
+          <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-400 text-left space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+              <span>Cek folder <strong className="text-zinc-200">Spam</strong> jika tidak masuk inbox</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+              <span>Link berlaku selama <strong className="text-zinc-200">24 jam</strong></span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+              <span>Belum dapat email? Tunggu 2-3 menit</span>
+            </div>
           </div>
           <NavLink
             to="/login"
@@ -114,11 +123,11 @@ export const SignupPage: React.FC = () => {
         {/* Logo */}
         <div className="text-center space-y-3">
           <NavLink to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-black" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform border border-amber-500/30 shrink-0">
+              <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
             </div>
             <div className="text-left">
-              <span className="text-base font-bold tracking-tight text-white block">TemporaForge AI</span>
+              <span className="text-base font-bold tracking-tight text-white block">Fixprom</span>
               <span className="text-[11px] text-zinc-500">Idea & Prompt Studio</span>
             </div>
           </NavLink>

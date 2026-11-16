@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useSubscriptionStore, PRICING_PLANS } from '@/stores/subscription-store';
 
-describe('TemporaForge AI — Subscription & Monetization System', () => {
+describe('Fixprom — Subscription & Monetization System', () => {
   beforeEach(() => {
     // Reset store state
     useSubscriptionStore.setState({

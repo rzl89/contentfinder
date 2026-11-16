@@ -155,7 +155,7 @@ export function redactSecretHeaders(headers: Record<string, string>): Record<str
 
   for (const k of Object.keys(redacted)) {
     if (sensitiveKeys.includes(k.toLowerCase())) {
-      redacted[k] = '[REDACTED_BY_TEMPORAFORGE_VAULT]';
+      redacted[k] = '[REDACTED_BY_FIXPROM_VAULT]';
     }
   }
 

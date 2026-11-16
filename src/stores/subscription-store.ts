@@ -193,7 +193,7 @@ interface SubscriptionState {
   isByokAccessible: () => boolean;
 }
 
-const STORAGE_KEY = 'temporaforge_subscription_store';
+const STORAGE_KEY = 'fixprom_subscription_store';
 
 function loadInitialState(): {
   subscription: UserSubscription;
@@ -332,7 +332,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     const accounts = getPaymentAccounts();
     const bank = accounts.find((a) => a.id === order.paymentMethod)?.name || order.paymentMethod.toUpperCase();
 
-    const rawMessage = `Halo Admin TemporaForge AI, saya ingin konfirmasi pembayaran langganan:
+    const rawMessage = `Halo Admin Fixprom, saya ingin konfirmasi pembayaran langganan:
 
 🧾 *Nomor Invoice:* ${order.invoiceNumber}
 📦 *Paket:* ${planName} (${cycle})

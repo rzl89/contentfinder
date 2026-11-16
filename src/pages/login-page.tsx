@@ -123,11 +123,11 @@ export const LoginPage: React.FC = () => {
         {/* Logo */}
         <div className="text-center space-y-3">
           <NavLink to="/" className="inline-flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-black" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform border border-amber-500/30 shrink-0">
+              <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
             </div>
             <div className="text-left">
-              <span className="text-base font-bold tracking-tight text-white block">TemporaForge AI</span>
+              <span className="text-base font-bold tracking-tight text-white block">Fixprom</span>
               <span className="text-[11px] text-zinc-500">Idea & Prompt Studio</span>
             </div>
           </NavLink>
@@ -249,7 +249,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         <p className="text-center text-[11px] text-zinc-600">
-          Dengan masuk, Anda menyetujui Ketentuan Layanan TemporaForge AI.
+          Dengan masuk, Anda menyetujui Ketentuan Layanan Fixprom.
         </p>
       </div>
     </div>

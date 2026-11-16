@@ -27,12 +27,12 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Interactive Demo state: comparison between standard AI slop and TemporaForge prompt
-  const [activeTab, setActiveTab] = useState<'temporaforge' | 'generic'>('temporaforge');
+  // Interactive Demo state: comparison between standard AI slop and Fixprom prompt
+  const [activeTab, setActiveTab] = useState<'fixprom' | 'generic'>('fixprom');
   const [copied, setCopied] = useState(false);
 
   const samplePrompt = {
-    temporaforge: {
+    fixprom: {
       model: 'Kling 1.5 Pro / Google Veo 2',
       camera: 'Tracking forward, 35mm anamorphic, f/2.0, eye-level',
       lighting: 'Volumetric golden hour with soft rim light',
@@ -55,8 +55,8 @@ export const LandingPage: React.FC = () => {
 
   const handleCopyPrompt = () => {
     const text =
-      activeTab === 'temporaforge'
-        ? `[Camera: ${samplePrompt.temporaforge.camera}] Subject: ${samplePrompt.temporaforge.subject} Lighting: ${samplePrompt.temporaforge.lighting}. Negative: ${samplePrompt.temporaforge.negative}`
+      activeTab === 'fixprom'
+        ? `[Camera: ${samplePrompt.fixprom.camera}] Subject: ${samplePrompt.fixprom.subject} Lighting: ${samplePrompt.fixprom.lighting}. Negative: ${samplePrompt.fixprom.negative}`
         : samplePrompt.generic.subject;
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -69,15 +69,12 @@ export const LandingPage: React.FC = () => {
       <header className="sticky top-0 z-50 bg-[#06060a]/90 backdrop-blur-md border-b border-white/5 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-black" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border border-amber-500/30 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+              <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
             </div>
             <div>
               <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-                <span>TemporaForge</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  AI
-                </span>
+                <span>Fixprom</span>
               </span>
               <p className="text-[10px] text-zinc-500 leading-none">Studio Ide & Prompt Video AI</p>
             </div>
@@ -204,7 +201,7 @@ export const LandingPage: React.FC = () => {
               Bukan Prompt AI Sembarangan. Ini Bahasa Sutradara.
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
-              Perhatikan perbedaan antara prompt AI generik yang boros token vs prompt terstruktur TemporaForge yang dipahami engine AI video.
+              Perhatikan perbedaan antara prompt AI generik yang boros token vs prompt terstruktur Fixprom yang dipahami engine AI video.
             </p>
           </div>
 
@@ -212,15 +209,15 @@ export const LandingPage: React.FC = () => {
           <div className="flex justify-center">
             <div className="inline-flex p-1 rounded-xl bg-black/60 border border-white/10 text-xs">
               <button
-                onClick={() => setActiveTab('temporaforge')}
+                onClick={() => setActiveTab('fixprom')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  activeTab === 'temporaforge'
+                  activeTab === 'fixprom'
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Prompt TemporaForge (Director-Grade)
+                Prompt Fixprom (Director-Grade)
               </button>
               <button
                 onClick={() => setActiveTab('generic')}
@@ -241,7 +238,7 @@ export const LandingPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span
                   className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
-                    activeTab === 'temporaforge'
+                    activeTab === 'fixprom'
                       ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       : 'bg-red-500/20 text-red-300 border border-red-500/30'
                   }`}
@@ -338,7 +335,7 @@ export const LandingPage: React.FC = () => {
             <div>
               <h3 className="text-base font-bold text-white">Multi-Model Syntax Compiler</h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Tiap generator video punya format berbeda. TemporaForge mengonversi storyboard Anda ke format perintah kamera Kling (<code className="text-amber-300 font-mono">[Camera: ...]</code>), Veo 2, Runway Gen-3, atau Luma Dream Machine secara otomatis.
+                Tiap generator video punya format berbeda. Fixprom mengonversi storyboard Anda ke format perintah kamera Kling (<code className="text-amber-300 font-mono">[Camera: ...]</code>), Veo 2, Runway Gen-3, atau Luma Dream Machine secara otomatis.
               </p>
             </div>
           </div>
@@ -579,11 +576,11 @@ export const LandingPage: React.FC = () => {
       <footer className="border-t border-white/5 px-6 py-12 bg-[#06060a] text-xs text-zinc-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center text-black font-extrabold">
-              <Sparkles className="w-4 h-4 text-black" />
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-amber-500/30">
+              <img src="/fixprom-icon.png" alt="Fixprom" className="w-full h-full object-cover" />
             </div>
             <div>
-              <span className="font-bold text-zinc-300">TemporaForge AI</span>
+              <span className="font-bold text-zinc-300">Fixprom</span>
               <p className="text-[11px] text-zinc-600">Short-form Video Prompt & Context Studio</p>
             </div>
           </div>
@@ -604,7 +601,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-zinc-600">
-            © {new Date().getFullYear()} TemporaForge AI. Built for Indonesian creators.
+            © 2026 Fixprom. Built for Indonesian creators
           </div>
         </div>
       </footer>
