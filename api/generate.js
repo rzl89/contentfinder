@@ -40,23 +40,35 @@ export default async function handler(req, res) {
    */
   async function callOpenAI(messages, temperature = 0.75, targetModel = requestedModel) {
     let activeModel = targetModel;
+    const isLunaOrReasoning =
+      activeModel.includes('luna') ||
+      activeModel.startsWith('o1') ||
+      activeModel.startsWith('o3');
+
+    const requestBody = {
+      model: activeModel,
+      messages,
+      response_format: { type: 'json_object' },
+    };
+
+    // Luna & reasoning models only support default temperature (1) or omitting temperature
+    if (!isLunaOrReasoning) {
+      requestBody.temperature = temperature;
+    }
+
     let response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey.trim()}`,
       },
-      body: JSON.stringify({
-        model: activeModel,
-        messages,
-        temperature,
-        response_format: { type: 'json_object' },
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    // If requested model (e.g. gpt-6-luna) is not available or restricted on this account, fallback smoothly to gpt-4o-mini
-    if (!response.ok && response.status === 404 && activeModel !== 'gpt-4o-mini') {
-      console.warn(`Model ${activeModel} not found on account, falling back to gpt-4o-mini`);
+    // If requested model (e.g. gpt-6-luna) returns 404 or unsupported on this tier, fallback smoothly to gpt-4o-mini
+    if (!response.ok && (response.status === 404 || response.status === 400) && activeModel !== 'gpt-4o-mini') {
+      const errCheck = await response.clone().json().catch(() => ({}));
+      console.warn(`Model ${activeModel} error (${errCheck.error?.message}), falling back to gpt-4o-mini`);
       activeModel = 'gpt-4o-mini';
       response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
