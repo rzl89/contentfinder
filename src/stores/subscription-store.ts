@@ -1,6 +1,18 @@
 import { create } from 'zustand';
 import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription } from '@/types';
 import { useAdminStore } from './admin-store';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+
+export interface ManualActivationRecord {
+  id: string;
+  emailOrUserId: string;
+  planTier: PlanTier;
+  status: 'active' | 'expired' | 'revoked';
+  activatedAt: string;
+  expiresAt: string;
+  durationLabel: string;
+  notes?: string;
+}
 
 interface BankAccountInfo {
   id: PaymentMethodType;
@@ -178,6 +190,7 @@ interface SubscriptionState {
   activeOrder: SubscriptionOrder | null;
   adminWhatsApp: string;
   storyboardGenerationsCount: number;
+  manualActivations: ManualActivationRecord[];
 
   // Actions
   initializeTrial: () => void;
@@ -191,6 +204,23 @@ interface SubscriptionState {
   canGenerateStoryboard: () => boolean;
   isCategoryAccessible: (categoryId: string) => boolean;
   isByokAccessible: () => boolean;
+  activateUserSubscription: (
+    emailOrUserId: string,
+    planTier: PlanTier,
+    expiresAt: string,
+    durationLabel: string,
+    notes?: string
+  ) => Promise<{ success: boolean; message: string }>;
+  deactivateUserSubscription: (idOrEmail: string) => Promise<{ success: boolean; message: string }>;
+  syncSubscriptionWithProfile: (userId?: string) => Promise<void>;
+  listUserProfilesFromSupabase: (searchQuery?: string) => Promise<Array<{
+    id: string;
+    email: string;
+    plan_tier: string;
+    subscription_status: string;
+    subscription_expires_at: string | null;
+    created_at: string;
+  }>>;
 }
 
 const STORAGE_KEY = 'fixprom_subscription_store';
@@ -199,6 +229,7 @@ function loadInitialState(): {
   subscription: UserSubscription;
   orders: SubscriptionOrder[];
   storyboardGenerationsCount: number;
+  manualActivations: ManualActivationRecord[];
 } {
   const defaultSub: UserSubscription = {
     tier: 'trial',
@@ -208,20 +239,21 @@ function loadInitialState(): {
   };
 
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
   }
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
+    if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
     const parsed = JSON.parse(raw);
     return {
       subscription: parsed.subscription || defaultSub,
       orders: parsed.orders || [],
       storyboardGenerationsCount: Number(parsed.storyboardGenerationsCount) || 0,
+      manualActivations: parsed.manualActivations || [],
     };
   } catch {
-    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0 };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
   }
 }
 
@@ -229,6 +261,7 @@ function saveState(state: {
   subscription: UserSubscription;
   orders: SubscriptionOrder[];
   storyboardGenerationsCount?: number;
+  manualActivations?: ManualActivationRecord[];
 }) {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
@@ -247,6 +280,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   activeOrder: null,
   adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6281234567890', // Nomor WhatsApp konfirmasi admin
   storyboardGenerationsCount: initial.storyboardGenerationsCount,
+  manualActivations: initial.manualActivations,
 
   initializeTrial: () => {
     const current = get().subscription;
@@ -410,5 +444,262 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
   isByokAccessible: () => {
     return get().subscription.tier === 'pro';
+  },
+
+  activateUserSubscription: async (emailOrUserId, planTier, expiresAt, durationLabel, notes) => {
+    const trimmedTarget = emailOrUserId.trim();
+    if (!trimmedTarget) {
+      return { success: false, message: 'Email atau User ID wajib diisi.' };
+    }
+
+    const newRecord: ManualActivationRecord = {
+      id: `act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      emailOrUserId: trimmedTarget,
+      planTier,
+      status: 'active',
+      activatedAt: new Date().toISOString(),
+      expiresAt,
+      durationLabel,
+      notes: notes?.trim() || undefined,
+    };
+
+    // 1. Update local activations registry
+    const updatedActivations = [
+      newRecord,
+      ...get().manualActivations.filter(
+        (a) => a.emailOrUserId.toLowerCase() !== trimmedTarget.toLowerCase()
+      ),
+    ];
+
+    set({ manualActivations: updatedActivations });
+
+    // 2. Check if target is current session or current user
+    let isCurrentSession =
+      trimmedTarget.toLowerCase() === 'current' ||
+      trimmedTarget.toLowerCase() === 'me' ||
+      trimmedTarget === '';
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const currentUser = authData?.user;
+      if (
+        currentUser &&
+        (currentUser.email?.toLowerCase() === trimmedTarget.toLowerCase() ||
+          currentUser.id === trimmedTarget)
+      ) {
+        isCurrentSession = true;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (isCurrentSession) {
+      const updatedSub: UserSubscription = {
+        tier: planTier,
+        status: 'active',
+        trialStartedAt: get().subscription.trialStartedAt,
+        trialEndsAt: get().subscription.trialEndsAt,
+        expiresAt,
+      };
+      set({ subscription: updatedSub, activeOrder: null });
+      saveState({
+        subscription: updatedSub,
+        orders: get().orders,
+        storyboardGenerationsCount: get().storyboardGenerationsCount,
+        manualActivations: updatedActivations,
+      });
+    } else {
+      saveState({
+        subscription: get().subscription,
+        orders: get().orders,
+        storyboardGenerationsCount: get().storyboardGenerationsCount,
+        manualActivations: updatedActivations,
+      });
+    }
+
+    // 3. Sync to Supabase if configured
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.rpc('admin_activate_subscription_by_email', {
+          target_email: trimmedTarget,
+          new_tier: planTier,
+          expires_at: expiresAt,
+        });
+
+        if (error) {
+          console.warn('Supabase admin RPC warning:', error.message);
+          return {
+            success: true,
+            message: `Aktivasi lokal berhasil untuk ${trimmedTarget}. (Catatan Cloud: ${error.message})`,
+          };
+        }
+
+        if (data && !data.success) {
+          return {
+            success: true,
+            message: `Aktivasi lokal berhasil. Cloud: ${data.message || 'Disimpan secara lokal'}`,
+          };
+        }
+      } catch (err: any) {
+        console.warn('Failed cloud activation RPC:', err);
+      }
+    }
+
+    const tierName = planTier === 'pro' ? 'Creator Pro' : planTier.toUpperCase();
+    return {
+      success: true,
+      message: `Paket ${tierName} berhasil diaktifkan untuk ${trimmedTarget} hingga ${new Date(expiresAt).toLocaleDateString('id-ID')}.`,
+    };
+  },
+
+  deactivateUserSubscription: async (idOrEmail) => {
+    const target = idOrEmail.toLowerCase();
+    const updated = get().manualActivations.map((a) =>
+      a.id === idOrEmail || a.emailOrUserId.toLowerCase() === target
+        ? { ...a, status: 'revoked' as const }
+        : a
+    );
+    set({ manualActivations: updated });
+
+    // Check if current user is affected
+    let affectsCurrent = false;
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const currentUser = authData?.user;
+      if (
+        currentUser &&
+        (currentUser.email?.toLowerCase() === target || currentUser.id === idOrEmail)
+      ) {
+        affectsCurrent = true;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (affectsCurrent || get().subscription.tier === 'pro') {
+      const reverted: UserSubscription = {
+        tier: 'trial',
+        status: 'expired',
+        trialStartedAt: get().subscription.trialStartedAt,
+        trialEndsAt: get().subscription.trialEndsAt,
+      };
+      set({ subscription: reverted });
+    }
+
+    saveState({
+      subscription: get().subscription,
+      orders: get().orders,
+      storyboardGenerationsCount: get().storyboardGenerationsCount,
+      manualActivations: updated,
+    });
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.rpc('admin_activate_subscription_by_email', {
+          target_email: idOrEmail,
+          new_tier: 'free',
+          expires_at: new Date(Date.now() - 1000).toISOString(),
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    return { success: true, message: `Langganan untuk ${idOrEmail} telah dinonaktifkan.` };
+  },
+
+  syncSubscriptionWithProfile: async (userId?: string) => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      let uid = userId;
+      let email: string | undefined;
+      if (!uid) {
+        const { data: authData } = await supabase.auth.getUser();
+        uid = authData.user?.id;
+        email = authData.user?.email;
+      }
+      if (!uid) return;
+
+      // Check manual local activations first
+      if (email) {
+        const manual = get().manualActivations.find(
+          (m) =>
+            m.emailOrUserId.toLowerCase() === email?.toLowerCase() &&
+            m.status === 'active' &&
+            new Date(m.expiresAt).getTime() > Date.now()
+        );
+        if (manual) {
+          const activeSub: UserSubscription = {
+            tier: manual.planTier,
+            status: 'active',
+            expiresAt: manual.expiresAt,
+            trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
+            trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
+          };
+          set({ subscription: activeSub });
+          return;
+        }
+      }
+
+      // Check Supabase profile
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('plan_tier, subscription_status, subscription_expires_at')
+        .eq('id', uid)
+        .single();
+
+      if (error || !profile) return;
+
+      if (
+        profile.plan_tier === 'pro' &&
+        profile.subscription_status === 'active' &&
+        profile.subscription_expires_at &&
+        new Date(profile.subscription_expires_at).getTime() > Date.now()
+      ) {
+        const activeSub: UserSubscription = {
+          tier: 'pro',
+          status: 'active',
+          expiresAt: profile.subscription_expires_at,
+          trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
+          trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
+        };
+        set({ subscription: activeSub });
+        saveState({
+          subscription: activeSub,
+          orders: get().orders,
+          storyboardGenerationsCount: get().storyboardGenerationsCount,
+          manualActivations: get().manualActivations,
+        });
+      } else if (
+        profile.subscription_expires_at &&
+        new Date(profile.subscription_expires_at).getTime() <= Date.now()
+      ) {
+        const expiredSub: UserSubscription = {
+          tier: 'trial',
+          status: 'expired',
+          expiresAt: profile.subscription_expires_at,
+          trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
+          trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
+        };
+        set({ subscription: expiredSub });
+      }
+    } catch (e) {
+      console.warn('Failed to sync subscription with profile:', e);
+    }
+  },
+
+  listUserProfilesFromSupabase: async (searchQuery = '') => {
+    if (!isSupabaseConfigured()) return [];
+    try {
+      const { data, error } = await supabase.rpc('admin_list_user_profiles', {
+        search_query: searchQuery,
+        limit_count: 30,
+      });
+
+      if (error || !data) return [];
+      return data;
+    } catch {
+      return [];
+    }
   },
 }));

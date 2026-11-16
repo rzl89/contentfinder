@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAdminStore, DEFAULT_ADMIN_SETTINGS } from '@/stores/admin-store';
 import { useProjectStore } from '@/stores/project-store';
-import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useSubscriptionStore, type ManualActivationRecord } from '@/stores/subscription-store';
 import { useByokStore } from '@/stores/byok-store';
+import { useAuthStore } from '@/stores/auth-store';
+import type { PlanTier } from '@/types';
 import {
   BentoTile,
   Button,
@@ -32,6 +34,11 @@ import {
   Shield,
   XCircle,
   ChevronRight,
+  Users,
+  Calendar,
+  UserCheck,
+  UserX,
+  Plus,
 } from 'lucide-react';
 
 const PIN_SALT = 'temporaforge_salt_v1';
@@ -67,7 +74,14 @@ export const AdminPanelPage: React.FC = () => {
   } = useAdminStore();
 
   const { projects } = useProjectStore();
-  const { subscription, getRemainingTrialHours } = useSubscriptionStore();
+  const { user: authUser } = useAuthStore();
+  const {
+    subscription,
+    getRemainingTrialHours,
+    manualActivations,
+    activateUserSubscription,
+    deactivateUserSubscription,
+  } = useSubscriptionStore();
   const { credentials, purgeAllCredentials } = useByokStore();
   const remainingHours = getRemainingTrialHours();
 
@@ -76,7 +90,19 @@ export const AdminPanelPage: React.FC = () => {
   const [showPin, setShowPin] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [activeTab, setActiveTab] = useState<'llm' | 'byok' | 'payment' | 'system'>('llm');
+  const [activeTab, setActiveTab] = useState<'llm' | 'subscriptions' | 'payment' | 'byok' | 'system'>('llm');
+
+  // ── Manual Subscription Activation form state ───────────────────────────────
+  const [targetUser, setTargetUser] = useState('');
+  const [targetTier, setTargetTier] = useState<PlanTier>('pro');
+  const [durationPreset, setDurationPreset] = useState<'1m' | '3m' | '6m' | '1y' | 'lifetime' | 'custom'>('1m');
+  const [customExpiresAt, setCustomExpiresAt] = useState(() => {
+    const d = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 16);
+  });
+  const [activationNotes, setActivationNotes] = useState('');
+  const [isActivating, setIsActivating] = useState(false);
+  const [activationSearch, setActivationSearch] = useState('');
 
   // ── Settings form state ──────────────────────────────────────────────────────
   const [localSettings, setLocalSettings] = useState(settings);
@@ -230,6 +256,95 @@ export const AdminPanelPage: React.FC = () => {
     showToast({ type: 'success', title: 'PIN Diubah', message: 'PIN admin berhasil diperbarui.' });
   };
 
+  // ── Manual Subscription Activation Handlers ──────────────────────────────
+  const getComputedExpiresAt = (): { iso: string; label: string } => {
+    const now = Date.now();
+    if (durationPreset === '1m') {
+      const d = new Date(now + 30 * 24 * 60 * 60 * 1000);
+      return { iso: d.toISOString(), label: '1 Bulan (30 Hari)' };
+    }
+    if (durationPreset === '3m') {
+      const d = new Date(now + 90 * 24 * 60 * 60 * 1000);
+      return { iso: d.toISOString(), label: '3 Bulan (90 Hari)' };
+    }
+    if (durationPreset === '6m') {
+      const d = new Date(now + 180 * 24 * 60 * 60 * 1000);
+      return { iso: d.toISOString(), label: '6 Bulan (180 Hari)' };
+    }
+    if (durationPreset === '1y') {
+      const d = new Date(now + 365 * 24 * 60 * 60 * 1000);
+      return { iso: d.toISOString(), label: '1 Tahun (365 Hari)' };
+    }
+    if (durationPreset === 'lifetime') {
+      const d = new Date(now + 3650 * 24 * 60 * 60 * 1000);
+      return { iso: d.toISOString(), label: 'Lifetime (10 Tahun)' };
+    }
+    // Custom datetime
+    const parsed = new Date(customExpiresAt);
+    return {
+      iso: isNaN(parsed.getTime()) ? new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString() : parsed.toISOString(),
+      label: 'Kustom (Pilihan Admin)',
+    };
+  };
+
+  const handleActivateSubscription = async () => {
+    const target = targetUser.trim() || authUser?.email || 'current';
+    if (!target) {
+      showToast({ type: 'warning', title: 'Target Pengguna Diperlukan', message: 'Masukkan email atau User ID pengguna.' });
+      return;
+    }
+
+    setIsActivating(true);
+    try {
+      const { iso, label } = getComputedExpiresAt();
+      const res = await activateUserSubscription(target, targetTier, iso, label, activationNotes);
+      if (res.success) {
+        showToast({
+          type: 'success',
+          title: 'Langganan Berhasil Diaktifkan!',
+          message: res.message,
+        });
+        setTargetUser('');
+        setActivationNotes('');
+      } else {
+        showToast({
+          type: 'error',
+          title: 'Gagal Aktivasi',
+          message: res.message,
+        });
+      }
+    } catch (e: any) {
+      showToast({ type: 'error', title: 'Error', message: e.message || 'Terjadi kesalahan sistem.' });
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleExtendSubscription = async (record: ManualActivationRecord) => {
+    try {
+      const currentExp = new Date(record.expiresAt).getTime();
+      const baseTime = currentExp > Date.now() ? currentExp : Date.now();
+      const newExp = new Date(baseTime + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const res = await activateUserSubscription(
+        record.emailOrUserId,
+        record.planTier,
+        newExp,
+        'Perpanjangan +30 Hari',
+        record.notes ? `${record.notes} (+30h)` : 'Diperpanjang +30 Hari'
+      );
+      showToast({ type: 'success', title: 'Berhasil Diperpanjang', message: res.message });
+    } catch (e: any) {
+      showToast({ type: 'error', title: 'Gagal Perpanjang', message: e.message });
+    }
+  };
+
+  const handleDeactivate = async (record: ManualActivationRecord) => {
+    if (window.confirm(`Yakin nonaktifkan langganan untuk ${record.emailOrUserId}?`)) {
+      const res = await deactivateUserSubscription(record.id);
+      showToast({ type: 'info', title: 'Langganan Dinonaktifkan', message: res.message });
+    }
+  };
+
   // ── Format session time ───────────────────────────────────────────────────
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -341,8 +456,9 @@ export const AdminPanelPage: React.FC = () => {
   // ═══════════════════════════════════════════════════════════════════════════
   const tabs = [
     { id: 'llm' as const, label: 'AI & Model LLM', icon: <Bot className="w-3.5 h-3.5" /> },
-    { id: 'byok' as const, label: 'BYOK Security', icon: <KeyRound className="w-3.5 h-3.5" /> },
+    { id: 'subscriptions' as const, label: 'Kelola Langganan', icon: <Users className="w-3.5 h-3.5" /> },
     { id: 'payment' as const, label: 'Pembayaran', icon: <CreditCard className="w-3.5 h-3.5" /> },
+    { id: 'byok' as const, label: 'BYOK Security', icon: <KeyRound className="w-3.5 h-3.5" /> },
     { id: 'system' as const, label: 'Sistem', icon: <Layers className="w-3.5 h-3.5" /> },
   ] as const;
 
@@ -491,6 +607,201 @@ export const AdminPanelPage: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </BentoTile>
+          </div>
+        )}
+
+        {/* ══ TAB: Kelola Langganan ═══════════════════════════════════════ */}
+        {activeTab === 'subscriptions' && (
+          <div className="space-y-6">
+            {/* Panel 1: Activate New Subscription */}
+            <BentoTile className="p-6 space-y-6 bg-[#111115] border-white/10">
+              <div className="flex items-center gap-2 pb-3 border-b border-white/5">
+                <UserCheck className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-semibold text-zinc-200">Aktivasi Langganan Manual</h3>
+              </div>
+
+              {/* Row 1: Email/UserID + Tier */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Email atau User ID Pengguna"
+                  placeholder="user@email.com atau UUID (kosong = akun saya sendiri)"
+                  value={targetUser}
+                  onChange={(e) => setTargetUser(e.target.value)}
+                />
+                <Select
+                  label="Paket Langganan"
+                  value={targetTier}
+                  onChange={(e) => setTargetTier(e.target.value as PlanTier)}
+                  options={[
+                    { value: 'pro', label: 'Creator Pro (Full Access)' },
+                  ]}
+                />
+              </div>
+
+              {/* Row 2: Duration preset */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400">Durasi Aktif</label>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { id: '1m', label: '1 Bulan' },
+                    { id: '3m', label: '3 Bulan' },
+                    { id: '6m', label: '6 Bulan' },
+                    { id: '1y', label: '1 Tahun' },
+                    { id: 'lifetime', label: 'Lifetime' },
+                    { id: 'custom', label: 'Kustom' },
+                  ].map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => setDurationPreset(d.id as typeof durationPreset)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                        durationPreset === d.id
+                          ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                          : 'bg-black/30 border-white/5 text-zinc-400 hover:text-zinc-200'
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+                {durationPreset === 'custom' && (
+                  <input
+                    type="datetime-local"
+                    value={customExpiresAt}
+                    onChange={(e) => setCustomExpiresAt(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-zinc-200 mt-2"
+                  />
+                )}
+                <p className="text-[11px] text-zinc-500">
+                  Aktif hingga:{' '}
+                  <span className="text-amber-300 font-mono">
+                    {new Date(getComputedExpiresAt().iso).toLocaleDateString('id-ID', {
+                      day: '2-digit',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>{' '}
+                  ({getComputedExpiresAt().label})
+                </p>
+              </div>
+
+              {/* Notes */}
+              <Input
+                label="Catatan Admin (Opsional)"
+                placeholder="Nomor invoice, referensi pembayaran, keterangan..."
+                value={activationNotes}
+                onChange={(e) => setActivationNotes(e.target.value)}
+              />
+
+              <div className="flex justify-end">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={isActivating}
+                  icon={<Plus className="w-4 h-4 text-black" />}
+                  onClick={handleActivateSubscription}
+                >
+                  Aktifkan Langganan
+                </Button>
+              </div>
+            </BentoTile>
+
+            {/* Panel 2: Activation History */}
+            <BentoTile className="p-6 space-y-4 bg-[#111115] border-white/10">
+              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-amber-400" />
+                  Riwayat Aktivasi Manual
+                </h3>
+                <span className="text-xs text-zinc-500 font-mono">{manualActivations.length} Aktivasi</span>
+              </div>
+
+              {/* Search filter */}
+              <Input
+                label=""
+                placeholder="Cari email, User ID, atau catatan..."
+                value={activationSearch}
+                onChange={(e) => setActivationSearch(e.target.value)}
+              />
+
+              {manualActivations.length === 0 ? (
+                <p className="text-xs text-zinc-600 text-center py-6">
+                  Belum ada aktivasi manual. Gunakan form di atas untuk mengaktifkan langganan pengguna.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {manualActivations
+                    .filter(
+                      (a) =>
+                        activationSearch === '' ||
+                        a.emailOrUserId.toLowerCase().includes(activationSearch.toLowerCase()) ||
+                        (a.notes || '').toLowerCase().includes(activationSearch.toLowerCase())
+                    )
+                    .map((record) => {
+                      const isExpired = new Date(record.expiresAt).getTime() < Date.now();
+                      const isRevoked = record.status === 'revoked';
+                      return (
+                        <div
+                          key={record.id}
+                          className={`p-4 rounded-xl border space-y-2 text-xs ${
+                            isRevoked || isExpired
+                              ? 'bg-red-950/10 border-red-500/10 opacity-60'
+                              : 'bg-black/30 border-white/5'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="space-y-0.5">
+                              <p className="font-mono font-semibold text-zinc-200">{record.emailOrUserId}</p>
+                              <p className="text-zinc-500">
+                                Paket:{' '}
+                                <span className="text-amber-300">{record.planTier.toUpperCase()}</span>
+                                {' • '}
+                                Aktif:{' '}
+                                <span className="font-mono">
+                                  {new Date(record.activatedAt).toLocaleDateString('id-ID')}
+                                </span>
+                                {' → '}
+                                Exp:{' '}
+                                <span
+                                  className={`font-mono ${isExpired ? 'text-red-400' : 'text-emerald-400'}`}
+                                >
+                                  {new Date(record.expiresAt).toLocaleDateString('id-ID')}
+                                </span>
+                              </p>
+                              {record.notes && (
+                                <p className="text-zinc-600 italic">{record.notes}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant={isRevoked || isExpired ? 'zinc' : 'emerald'}>
+                                {isRevoked ? 'Dicabut' : isExpired ? 'Expired' : 'Aktif'}
+                              </Badge>
+                              {!isRevoked && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => handleExtendSubscription(record)}
+                                  >
+                                    +30 Hari
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeactivate(record)}
+                                    className="text-red-400 hover:text-red-300"
+                                  >
+                                    Cabut
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </BentoTile>
           </div>
         )}
