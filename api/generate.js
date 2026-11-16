@@ -391,7 +391,7 @@ Respond ONLY with a valid JSON object matching:
         "framing": "Rule of thirds / Center framed"
       },
       "lighting": "string (e.g. Warm afternoon sunlight with soft shadow falloff)",
-      "dialogue": "WAJIB diisi — kalimat dialog dalam bahasa yang ditentukan, natural dan sesuai kepribadian karakter serta beat adegan ini",
+      "dialogue": "WAJIB diisi ï¿½ kalimat dialog dalam bahasa yang ditentukan, natural dan sesuai kepribadian karakter serta beat adegan ini",
       "narration": "string",
       "continuityAnchors": ["string"],
       "imagePrompt": "string (in descriptive English with camera, lens, lighting)",
