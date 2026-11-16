@@ -68,6 +68,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       label: 'Settings & Context',
       icon: <Settings className="w-4 h-4" />,
     },
+    {
+      to: '/admin',
+      label: 'Panel Admin',
+      icon: <ShieldCheck className="w-4 h-4 text-amber-400" />,
+      badge: 'Master',
+    },
   ];
 
   return (
@@ -136,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : item.badge === 'Secure'
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        : item.badge === 'Pro' || item.badge === 'PRO'
+                        : item.badge === 'Pro' || item.badge === 'PRO' || item.badge === 'Master'
                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
                         : item.badge === 'Habis'
                         ? 'bg-red-500/20 text-red-300 border-red-500/40'

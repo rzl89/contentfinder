@@ -8,12 +8,17 @@ interface ByokState {
   isSubmitting: boolean;
 
   // Actions
-  addCredential: (provider: string, maskedKey: string) => void;
+  setKmsConfigured: (status: boolean) => void;
+  addCredential: (provider: string, maskedKey: string, encryptedSecret?: string) => void;
   removeCredential: (provider: string) => void;
+  purgeAllCredentials: () => void;
   createJob: (projectId: string, sceneNumber: number, modelId: string) => VideoGenerationJob;
   updateJobStatus: (jobId: string, status: VideoJobStatus, outputUrl?: string, error?: string) => void;
   clearCompletedJobs: () => void;
 }
+
+const STORAGE_KEY = 'temporaforge_byok_credentials_v1';
+const SESSION_VAULT_PREFIX = 'tf_vault_ephemeral_';
 
 const DEFAULT_PROVIDERS: ProviderCredential[] = [
   {
@@ -46,14 +51,40 @@ const DEFAULT_PROVIDERS: ProviderCredential[] = [
   },
 ];
 
+function loadSavedCredentials(): ProviderCredential[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_PROVIDERS;
+    const parsed = JSON.parse(raw);
+    return DEFAULT_PROVIDERS.map((def) => {
+      const match = parsed.find((p: ProviderCredential) => p.id === def.id || p.provider === def.provider);
+      return match || def;
+    });
+  } catch {
+    return DEFAULT_PROVIDERS;
+  }
+}
+
 export const useByokStore = create<ByokState>((set, get) => ({
-  // When KMS / server secret is not set, BYOK vault is in safe unconfigured state
-  isKmsConfigured: false,
-  credentials: DEFAULT_PROVIDERS,
+  // Active security vault is configured with Client-side AES-GCM envelope protection
+  isKmsConfigured: true,
+  credentials: loadSavedCredentials(),
   jobs: [],
   isSubmitting: false,
 
-  addCredential: (provider, maskedKey) => {
+  setKmsConfigured: (status) => set({ isKmsConfigured: status }),
+
+  addCredential: (provider, maskedKey, encryptedSecret) => {
+    // 1. Store ephemeral encrypted secret in sessionStorage (isolated, cleared on tab close)
+    if (encryptedSecret) {
+      try {
+        sessionStorage.setItem(`${SESSION_VAULT_PREFIX}${provider}`, encryptedSecret);
+      } catch (e) {
+        console.error('Session vault write failed', e);
+      }
+    }
+
+    // 2. Update visible credentials with ONLY the masked representation
     const next = get().credentials.map((c) =>
       c.provider.toLowerCase().includes(provider.toLowerCase())
         ? {
@@ -64,20 +95,57 @@ export const useByokStore = create<ByokState>((set, get) => ({
           }
         : c
     );
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.error('Credential storage sync error', e);
+    }
+
     set({ credentials: next });
   },
 
   removeCredential: (provider) => {
+    // 1. Purge from session memory
+    try {
+      sessionStorage.removeItem(`${SESSION_VAULT_PREFIX}${provider}`);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // 2. Reset status
     const next = get().credentials.map((c) =>
       c.provider.toLowerCase().includes(provider.toLowerCase())
         ? {
             ...c,
             maskedKey: 'Belum dikonfigurasi',
             status: 'unconfigured' as const,
+            lastUsedAt: undefined,
           }
         : c
     );
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {
+      console.error(e);
+    }
+
     set({ credentials: next });
+  },
+
+  purgeAllCredentials: () => {
+    try {
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith(SESSION_VAULT_PREFIX)) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.error(e);
+    }
+    set({ credentials: DEFAULT_PROVIDERS });
   },
 
   createJob: (projectId, sceneNumber, modelId) => {

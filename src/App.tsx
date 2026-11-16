@@ -9,6 +9,7 @@ import { ByokPage } from '@/pages/byok-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { PricingPage } from '@/pages/pricing-page';
+import { AdminPage } from '@/pages/admin-page';
 
 export function App() {
   return (
@@ -23,6 +24,7 @@ export function App() {
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

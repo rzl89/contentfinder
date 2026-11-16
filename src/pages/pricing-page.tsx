@@ -20,7 +20,7 @@ import { useToast } from '@/components/ui/toast';
 import {
   useSubscriptionStore,
   PRICING_PLANS,
-  PAYMENT_ACCOUNTS,
+  getPaymentAccounts,
 } from '@/stores/subscription-store';
 import type { BillingCycle, PlanTier, PaymentMethodType, SubscriptionOrder } from '@/types';
 
@@ -60,7 +60,8 @@ export const PricingPage: React.FC = () => {
     });
   };
 
-  const selectedAccountInfo = PAYMENT_ACCOUNTS.find((a) => a.id === selectedPayment) || PAYMENT_ACCOUNTS[0];
+  const paymentAccounts = getPaymentAccounts();
+  const selectedAccountInfo = paymentAccounts.find((a) => a.id === selectedPayment) || paymentAccounts[0];
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
@@ -295,7 +296,7 @@ export const PricingPage: React.FC = () => {
             <div className="space-y-2">
               <label className="text-xs font-semibold text-gray-300">Pilih Rekening / Metode Pembayaran:</label>
               <div className="grid grid-cols-2 gap-2">
-                {PAYMENT_ACCOUNTS.map((account) => (
+                {paymentAccounts.map((account) => (
                   <button
                     key={account.id}
                     onClick={() => {

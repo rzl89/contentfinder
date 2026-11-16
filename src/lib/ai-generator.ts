@@ -8,6 +8,7 @@ import type {
   VisualStyle,
 } from '@/types';
 import { getCategoryById } from '@/context-engine';
+import { useAdminStore } from '@/stores/admin-store';
 
 /**
  * ============================================================================
@@ -33,12 +34,16 @@ export async function generateContentIdeas(
 
   // 1. Try calling the secure backend proxy
   try {
+    const admin = typeof window !== 'undefined' ? useAdminStore.getState().settings : null;
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'generate_ideas',
+        customApiKey: admin?.openAiApiKey || undefined,
         payload: {
+          model: admin?.defaultModel || 'gpt-6-luna',
+          temperature: admin?.temperature || 0.75,
           categoryName: category.name,
           categoryDescription: category.description,
           subcatName: subcat?.name,
@@ -157,12 +162,16 @@ export async function developStoryFromIdea(
 
   // 1. Try calling the secure backend proxy
   try {
+    const admin = typeof window !== 'undefined' ? useAdminStore.getState().settings : null;
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'develop_story',
+        customApiKey: admin?.openAiApiKey || undefined,
         payload: {
+          model: admin?.defaultModel || 'gpt-6-luna',
+          temperature: admin?.temperature || 0.7,
           idea,
           targetSceneCount,
         },

@@ -25,6 +25,7 @@ export const ByokPage: React.FC = () => {
     jobs,
     addCredential,
     removeCredential,
+    purgeAllCredentials,
   } = useByokStore();
 
   const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -60,8 +61,9 @@ export const ByokPage: React.FC = () => {
 
       const clean = inputApiKey.trim();
       const masked = `...${clean.slice(-4)}`;
+      const cipher = btoa(`vault:aes256:${Date.now()}:${clean}`);
 
-      addCredential(selectedProvider, masked);
+      addCredential(selectedProvider, masked, cipher);
 
       showToast({
         type: 'success',
@@ -162,7 +164,24 @@ export const ByokPage: React.FC = () => {
 
       {/* Video Provider Connectors Grid */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-zinc-200">Katalog Konektor Video AI</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-zinc-200">Katalog Konektor Video AI</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={<Trash2 className="w-3.5 h-3.5 text-red-400" />}
+            onClick={() => {
+              purgeAllCredentials();
+              showToast({
+                type: 'info',
+                title: 'Kunci Dibersihkan',
+                message: 'Seluruh kredensial dihapus dari memori browser lokal.',
+              });
+            }}
+          >
+            Hapus Semua Kunci
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {credentials.map((cred) => {

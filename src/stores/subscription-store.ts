@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription } from '@/types';
+import { useAdminStore } from './admin-store';
 
 interface BankAccountInfo {
   id: PaymentMethodType;
@@ -64,6 +65,68 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     ],
   },
 ];
+
+export function getPaymentAccounts(): BankAccountInfo[] {
+  try {
+    const admin = useAdminStore.getState().settings;
+    return [
+      {
+        id: 'bca',
+        name: 'BCA (Bank Central Asia)',
+        accountNumber: admin.bcaNumber || '8290-8812-9901',
+        accountHolder: admin.bcaHolder || 'TEMPORAFORGE AI / RIZAL',
+        icon: '🏦',
+        instructions: [
+          'Buka BCA mobile atau myBCA.',
+          'Pilih m-Transfer > Antar Rekening.',
+          'Masukkan nomor rekening dan nominal transfer TEPAT beserta 3 digit kode unik.',
+          'Simpan bukti transfer / struk untuk konfirmasi WhatsApp.',
+        ],
+      },
+      {
+        id: 'mandiri',
+        name: 'Bank Mandiri',
+        accountNumber: admin.mandiriNumber || '1370-0199-8821-2',
+        accountHolder: admin.mandiriHolder || 'TEMPORAFORGE AI / RIZAL',
+        icon: '🏦',
+        instructions: [
+          'Buka Livin\' by Mandiri.',
+          'Pilih Transfer Rupiah > Rekening Mandiri.',
+          'Masukkan nominal transfer TEPAT beserta 3 digit kode unik.',
+          'Simpan screenshot resi transaksi.',
+        ],
+      },
+      {
+        id: 'qris',
+        name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
+        accountNumber: admin.qrisNmid || 'NMID: ID1020268899120',
+        accountHolder: admin.qrisHolder || 'TEMPORAFORGE CREATIVE STUDIO',
+        icon: '📱',
+        instructions: [
+          'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
+          'Pindai (Scan) QRIS yang tertera pada layar.',
+          'Input nominal transfer TEPAT sesuai invoice.',
+          'Simpan bukti pembayaran berhasil.',
+        ],
+      },
+      {
+        id: 'dana',
+        name: 'DANA / GoPay E-Wallet',
+        accountNumber: admin.danaNumber || '0812-3456-7890',
+        accountHolder: admin.danaHolder || 'RIZAL - TEMPORAFORGE',
+        icon: '💳',
+        instructions: [
+          'Buka aplikasi DANA atau GoPay.',
+          'Kirim uang ke nomor HP di atas.',
+          'Pastikan nama penerima sesuai sebelum konfirmasi PIN.',
+          'Screenshot bukti transfer berhasil.',
+        ],
+      },
+    ];
+  } catch {
+    return PAYMENT_ACCOUNTS;
+  }
+}
 
 export const PRICING_PLANS = {
   trial: {
@@ -178,10 +241,19 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   },
 
   createOrder: (planTier, billingCycle, paymentMethod) => {
-    const basePrice =
+    let basePrice =
       billingCycle === 'yearly'
         ? PRICING_PLANS.pro.yearlyPrice
         : PRICING_PLANS.pro.monthlyPrice;
+
+    try {
+      const admin = useAdminStore.getState().settings;
+      if (admin) {
+        basePrice = billingCycle === 'yearly' ? admin.proPriceYearly : admin.proPriceMonthly;
+      }
+    } catch {
+      // fallback to static pricing
+    }
 
     // Generate 3 digit unique code (e.g. 100 - 999) for easy transfer verification
     const uniqueCode = Math.floor(Math.random() * 899) + 100;
@@ -214,10 +286,20 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   },
 
   generateWhatsAppLink: (order) => {
-    const adminWA = get().adminWhatsApp;
+    let adminWA = get().adminWhatsApp;
+    try {
+      const admin = useAdminStore.getState().settings;
+      if (admin?.adminWhatsApp) {
+        adminWA = admin.adminWhatsApp;
+      }
+    } catch {
+      // fallback
+    }
+
     const planName = PRICING_PLANS.pro.name;
     const cycle = order.billingCycle === 'yearly' ? 'Tahunan (1 Tahun)' : 'Bulanan (1 Bulan)';
-    const bank = PAYMENT_ACCOUNTS.find((a) => a.id === order.paymentMethod)?.name || order.paymentMethod.toUpperCase();
+    const accounts = getPaymentAccounts();
+    const bank = accounts.find((a) => a.id === order.paymentMethod)?.name || order.paymentMethod.toUpperCase();
 
     const rawMessage = `Halo Admin TemporaForge AI, saya ingin konfirmasi pembayaran langganan:
 

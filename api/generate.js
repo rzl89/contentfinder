@@ -1,6 +1,7 @@
 /**
  * Vercel Serverless Function — Secure AI Gateway
  * Protected backend endpoint: reads process.env.OPENAI_API_KEY securely.
+ * Default Model: gpt-6-luna (with resilient automatic fallback)
  */
 
 export default async function handler(req, res) {
@@ -21,7 +22,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = req.body?.customApiKey || process.env.OPENAI_API_KEY;
 
   if (!apiKey || apiKey.trim().length < 5) {
     return res.status(500).json({
@@ -30,10 +31,76 @@ export default async function handler(req, res) {
     });
   }
 
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  // Model default: gpt-6-luna per user specification
+  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-6-luna';
   const { action, payload } = req.body || {};
 
+  /**
+   * Helper function to call OpenAI with graceful model fallback
+   */
+  async function callOpenAI(messages, temperature = 0.75, targetModel = requestedModel) {
+    let activeModel = targetModel;
+    let response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey.trim()}`,
+      },
+      body: JSON.stringify({
+        model: activeModel,
+        messages,
+        temperature,
+        response_format: { type: 'json_object' },
+      }),
+    });
+
+    // If requested model (e.g. gpt-6-luna) is not available or restricted on this account, fallback smoothly to gpt-4o-mini
+    if (!response.ok && response.status === 404 && activeModel !== 'gpt-4o-mini') {
+      console.warn(`Model ${activeModel} not found on account, falling back to gpt-4o-mini`);
+      activeModel = 'gpt-4o-mini';
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey.trim()}`,
+        },
+        body: JSON.stringify({
+          model: activeModel,
+          messages,
+          temperature,
+          response_format: { type: 'json_object' },
+        }),
+      });
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `OpenAI API returned status ${response.status}`);
+    }
+
+    const completion = await response.json();
+    return {
+      content: completion.choices?.[0]?.message?.content,
+      modelUsed: activeModel,
+    };
+  }
+
   try {
+    if (action === 'test_connection') {
+      const result = await callOpenAI(
+        [
+          { role: 'system', content: 'You are an AI assistant.' },
+          { role: 'user', content: 'Reply with JSON: {"status": "ok", "message": "Connection verified"}' },
+        ],
+        0.5
+      );
+      return res.status(200).json({
+        success: true,
+        modelUsed: result.modelUsed,
+        raw: JSON.parse(result.content),
+      });
+    }
+
     if (action === 'generate_ideas') {
       const {
         categoryName,
@@ -47,9 +114,10 @@ export default async function handler(req, res) {
         targetAudience,
         additionalTheme,
         count = 5,
+        temperature = 0.75,
       } = payload || {};
 
-      const systemPrompt = `You are TemporaForge AI, an elite content strategist and creative director for Indonesian short-form video creators (TikTok, Instagram Reels, YouTube Shorts).
+      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, an elite content strategist and creative director for Indonesian short-form video creators (TikTok, Instagram Reels, YouTube Shorts).
 Your task is to generate ${count} high-retention, creative video ideas.
 
 RULES OF AUTHENTICITY (9 GOLDEN RULES):
@@ -86,46 +154,28 @@ Target Market: ${targetMarket || 'Indonesia'}
 Target Audience: ${targetAudience || 'Digital youth & creator audience'}
 ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey.trim()}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.75,
-          response_format: { type: 'json_object' },
-        }),
-      });
+      const { content, modelUsed } = await callOpenAI(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `OpenAI API returned status ${response.status}`);
-      }
-
-      const completion = await response.json();
-      const content = completion.choices?.[0]?.message?.content;
       let parsed = JSON.parse(content);
-      
-      // Handle if wrapped in { "ideas": [...] }
       if (!Array.isArray(parsed) && parsed.ideas && Array.isArray(parsed.ideas)) {
         parsed = parsed.ideas;
       } else if (!Array.isArray(parsed) && Object.values(parsed)[0] && Array.isArray(Object.values(parsed)[0])) {
         parsed = Object.values(parsed)[0];
       }
 
-      return res.status(200).json({ success: true, ideas: parsed, modelUsed: model });
+      return res.status(200).json({ success: true, ideas: parsed, modelUsed });
     }
 
     if (action === 'develop_story') {
-      const { idea, targetSceneCount = 4 } = payload || {};
+      const { idea, targetSceneCount = 4, temperature = 0.7 } = payload || {};
 
-      const systemPrompt = `You are TemporaForge AI, a Hollywood-grade visual director & prompt engineer for video AI models (Google Veo, Kling 1.5, Runway Gen-3, Luma Dream Machine).
+      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer for video AI models (Google Veo, Kling 1.5, Runway Gen-3, Luma Dream Machine).
 Transform this short video idea into a fully articulated production package with 1 character, 1 world bible, and ${targetSceneCount} storyboard scenes.
 
 CRITICAL REQUIREMENTS:
@@ -192,39 +242,23 @@ Synopsis: ${idea.synopsis}
 Visual Style: ${idea.visualStyle}
 Duration: ${idea.estimatedDuration}`;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey.trim()}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.7,
-          response_format: { type: 'json_object' },
-        }),
-      });
+      const { content, modelUsed } = await callOpenAI(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `OpenAI API returned status ${response.status}`);
-      }
-
-      const completion = await response.json();
-      const parsed = JSON.parse(completion.choices?.[0]?.message?.content);
-
-      return res.status(200).json({ success: true, package: parsed, modelUsed: model });
+      const parsed = JSON.parse(content);
+      return res.status(200).json({ success: true, package: parsed, modelUsed });
     }
 
     return res.status(400).json({ error: 'INVALID_ACTION', message: `Unknown action: ${action}` });
   } catch (error) {
-    console.error('AI Proxy Error:', error);
+    console.error('AI Gateway Error:', error);
     return res.status(500).json({
-      error: 'AI_PROXY_FAILED',
+      error: 'AI_GATEWAY_FAILED',
       message: error.message || 'Internal error in AI proxy',
     });
   }
