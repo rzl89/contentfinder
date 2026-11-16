@@ -843,9 +843,24 @@ export const PromptDeskPage: React.FC = () => {
 
                 {/* Negative Prompt */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-red-400 tracking-wide block">
-                    🚫 Negative Prompt
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-red-400 tracking-wide flex items-center gap-1.5">
+                      <span>🚫 Negative Prompt (Anti-Slop & Distortion)</span>
+                    </label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<Copy className="w-3 h-3" />}
+                      onClick={() =>
+                        handleCopyText(
+                          currentScene.negativePrompt,
+                          `Negative Prompt Scene ${currentScene.sceneNumber}`
+                        )
+                      }
+                    >
+                      Copy
+                    </Button>
+                  </div>
                   <input
                     className="w-full rounded-xl bg-[#0c0c10] border border-white/10 px-3.5 py-2 font-mono text-xs text-zinc-400 focus:outline-none focus:border-red-500"
                     value={currentScene.negativePrompt}
