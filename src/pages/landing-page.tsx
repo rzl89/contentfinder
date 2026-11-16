@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -21,14 +21,11 @@ import {
   LogIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useAuthStore } from '@/stores/auth-store';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { subscription, getRemainingTrialHours } = useSubscriptionStore();
   const { user } = useAuthStore();
-  const remainingHours = getRemainingTrialHours();
 
   // Interactive Demo state: comparison between standard AI slop and TemporaForge prompt
   const [activeTab, setActiveTab] = useState<'temporaforge' | 'generic'>('temporaforge');
@@ -68,7 +65,7 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#06060a] text-zinc-100 selection:bg-amber-500/30 selection:text-amber-200">
-      {/* â”€â”€ Navbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Navbar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <header className="sticky top-0 z-50 bg-[#06060a]/90 backdrop-blur-md border-b border-white/5 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-3 group">
@@ -95,9 +92,9 @@ export const LandingPage: React.FC = () => {
 
           <div className="flex items-center gap-3">
             {user ? (
-              /* ── Logged in: show user badge + go to studio ── */
+              /* â”€â”€ Logged in: show user badge + go to studio â”€â”€ */
               <>
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/8 text-xs text-zinc-400">
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-zinc-400">
                   <UserCircle2 className="w-3.5 h-3.5 text-amber-400" />
                   <span className="max-w-[120px] truncate">{user.email}</span>
                 </div>
@@ -111,7 +108,7 @@ export const LandingPage: React.FC = () => {
                 </Button>
               </>
             ) : (
-              /* ── Guest: show login + signup ── */
+              /* â”€â”€ Guest: show login + signup â”€â”€ */
               <>
                 <NavLink
                   to="/login"
@@ -134,7 +131,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* â”€â”€ Hero Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section className="relative px-6 pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden">
         {/* Subtle ambient lighting backdrop */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -165,7 +162,7 @@ export const LandingPage: React.FC = () => {
               icon={<ArrowRight className="w-4 h-4 text-black" />}
               className="w-full sm:w-auto"
             >
-              {user ? 'Buka Studio' : 'Mulai Gratis — Tanpa Kartu Kredit'}
+              {user ? 'Buka Studio' : 'Mulai Gratis â€” Tanpa Kartu Kredit'}
             </Button>
 
             <a
@@ -177,7 +174,7 @@ export const LandingPage: React.FC = () => {
             </a>
           </div>
 
-          {/* Social proof metric chips â€” truthful and concrete */}
+          {/* Social proof metric chips Ã¢â‚¬â€ truthful and concrete */}
           <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
               <div className="text-xl font-bold font-mono text-amber-400">19</div>
@@ -199,7 +196,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* â”€â”€ Interactive Prompt Comparison Demo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Interactive Prompt Comparison Demo Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="demo" className="px-6 py-16 bg-[#0b0b0e] border-y border-white/5">
         <div className="max-w-5xl mx-auto space-y-8">
           <div className="text-center space-y-2">
@@ -304,7 +301,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* â”€â”€ Feature Bento Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Feature Bento Grid Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="fitur" className="px-6 py-20 max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -378,7 +375,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* â”€â”€ 19 Categories Showcase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ 19 Categories Showcase Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="kategori" className="px-6 py-16 bg-[#0b0b0e] border-y border-white/5">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -404,7 +401,7 @@ export const LandingPage: React.FC = () => {
             {[
               { title: 'Time Travel & Masa Lalu', desc: 'Kontras era historis vs modern' },
               { title: 'POV Kamera Tersembunyi', desc: 'Sudut pandang mikro benda mati' },
-              { title: 'Transformasi Ruang 360Â°', desc: 'Evolusi lokasi dalam satu adegan' },
+              { title: 'Transformasi Ruang 360Ã‚Â°', desc: 'Evolusi lokasi dalam satu adegan' },
               { title: 'Micro-Documentary Misteri', desc: 'Fakta aneh dan arsip sejarah' },
               { title: 'Dua Pilihan Hidup Ekstrem', desc: 'Dilema moral interaktif penonton' },
               { title: 'Evolusi Objek & Desain', desc: 'Metamorfosis bentuk per dekade' },
@@ -430,7 +427,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* â”€â”€ Pricing Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Pricing Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <section id="harga" className="px-6 py-20 max-w-5xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -578,7 +575,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <footer className="border-t border-white/5 px-6 py-12 bg-[#06060a] text-xs text-zinc-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
@@ -592,9 +589,9 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-6 text-[11px]">
-            <NavLink to="/studio" className="hover:text-zinc-300 transition-colors">Buka Studio</NavLink>
+            <NavLink to={user ? '/studio' : '/signup'} className="hover:text-zinc-300 transition-colors">Buka Studio</NavLink>
             <NavLink to="/pricing" className="hover:text-zinc-300 transition-colors">Langganan</NavLink>
-            <NavLink to="/byok" className="hover:text-zinc-300 transition-colors">Konektor BYOK</NavLink>
+            <NavLink to={user ? '/byok' : '/login'} className="hover:text-zinc-300 transition-colors">Konektor BYOK</NavLink>
             <a
               href="https://github.com/rzl89/contentfinder"
               target="_blank"
@@ -607,11 +604,12 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="text-[11px] text-zinc-600">
-            Â© {new Date().getFullYear()} TemporaForge AI. Built for Indonesian creators.
+            Ã‚Â© {new Date().getFullYear()} TemporaForge AI. Built for Indonesian creators.
           </div>
         </div>
       </footer>
     </div>
   );
 };
+
 

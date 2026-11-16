@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sparkles, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
@@ -86,10 +86,10 @@ export const SignupPage: React.FC = () => {
               Klik link di email untuk mengaktifkan akun, lalu login.
             </p>
           </div>
-          <div className="p-4 bg-[#0f0f13] border border-white/8 rounded-xl text-xs text-zinc-500 text-left space-y-1">
-            <p>• Cek folder <strong className="text-zinc-400">Spam</strong> jika tidak masuk inbox</p>
-            <p>• Link berlaku selama <strong className="text-zinc-400">24 jam</strong></p>
-            <p>• Belum dapat email? Tunggu 2–3 menit</p>
+          <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-500 text-left space-y-1">
+            <p>â€¢ Cek folder <strong className="text-zinc-400">Spam</strong> jika tidak masuk inbox</p>
+            <p>â€¢ Link berlaku selama <strong className="text-zinc-400">24 jam</strong></p>
+            <p>â€¢ Belum dapat email? Tunggu 2â€“3 menit</p>
           </div>
           <NavLink
             to="/login"
@@ -131,7 +131,7 @@ export const SignupPage: React.FC = () => {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#0f0f13] border border-white/8 rounded-2xl p-7 space-y-5 shadow-xl">
+        <div className="bg-[#0f0f13] border border-white/10 rounded-2xl p-7 space-y-5 shadow-xl">
           {error && (
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
@@ -157,7 +157,7 @@ export const SignupPage: React.FC = () => {
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.email
                       ? 'border-red-500/50 focus:border-red-500'
-                      : 'border-white/8 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
                   }`}
                 />
               </div>
@@ -181,7 +181,7 @@ export const SignupPage: React.FC = () => {
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.password
                       ? 'border-red-500/50 focus:border-red-500'
-                      : 'border-white/8 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
                   }`}
                 />
                 <button
@@ -239,7 +239,7 @@ export const SignupPage: React.FC = () => {
                       ? 'border-red-500/50 focus:border-red-500'
                       : confirmPassword && confirmPassword === password
                       ? 'border-emerald-500/40 focus:border-emerald-500/60'
-                      : 'border-white/8 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
                   }`}
                 />
                 <button
@@ -279,3 +279,4 @@ export const SignupPage: React.FC = () => {
     </div>
   );
 };
+

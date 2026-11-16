@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sparkles, Mail, Lock, LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
@@ -80,7 +80,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#0f0f13] border border-white/8 rounded-2xl p-7 space-y-5 shadow-xl">
+        <div className="bg-[#0f0f13] border border-white/10 rounded-2xl p-7 space-y-5 shadow-xl">
           {error && (
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.email
                       ? 'border-red-500/50 focus:border-red-500'
-                      : 'border-white/8 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
                   }`}
                 />
               </div>
@@ -127,12 +127,12 @@ export const LoginPage: React.FC = () => {
                     setPassword(e.target.value);
                     if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
                   }}
-                  placeholder="••••••••"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                   autoComplete="current-password"
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.password
                       ? 'border-red-500/50 focus:border-red-500'
-                      : 'border-white/8 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
                   }`}
                 />
                 <button
@@ -170,3 +170,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+
