@@ -227,13 +227,13 @@ CREATE TABLE IF NOT EXISTS public.subscription_orders (
 );
 
 -- Existing non-constraint indexes captured from production.
-CREATE INDEX idx_ideas_user_id ON public.ideas USING btree (user_id);
-CREATE INDEX idx_projects_user_id ON public.projects USING btree (user_id);
-CREATE INDEX idx_provider_creds_user ON public.provider_credentials USING btree (user_id);
-CREATE INDEX idx_scenes_project_id ON public.scenes USING btree (project_id);
-CREATE INDEX idx_subscription_orders_inv ON public.subscription_orders USING btree (invoice_number);
-CREATE INDEX idx_subscription_orders_user ON public.subscription_orders USING btree (user_id);
-CREATE INDEX idx_video_jobs_user ON public.video_generation_jobs USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_ideas_user_id ON public.ideas USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_provider_creds_user ON public.provider_credentials USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_scenes_project_id ON public.scenes USING btree (project_id);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_inv ON public.subscription_orders USING btree (invoice_number);
+CREATE INDEX IF NOT EXISTS idx_subscription_orders_user ON public.subscription_orders USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_video_jobs_user ON public.video_generation_jobs USING btree (user_id);
 
 -- Ensure all existing application tables have RLS enabled before any grants
 -- or policies are applied by the subsequent security migration.
