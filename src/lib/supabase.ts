@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Project } from '@/types';
+import type { Project, ContentIdea } from '@/types';
 
 /**
  * ============================================================================
@@ -106,4 +106,173 @@ export async function deleteProjectFromSupabase(projectId: string): Promise<bool
   } catch {
     return false;
   }
+}
+
+// ─── PERSISTENT IDEA MEMORY (SUPABASE + LOCAL CACHE) ─────────────────────────
+
+const LOCAL_IDEA_MEMORY_KEY = 'fixprom_recent_ideas_v1';
+
+export interface RecentIdeaMemory {
+  title: string;
+  hook: string;
+  premise: string;
+  categoryId?: string;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Saves newly generated ideas to Supabase public.ideas and updates local memory.
+ */
+export async function saveIdeasToSupabase(
+  ideas: ContentIdea[],
+  projectId?: string
+): Promise<{ success: boolean; savedCount: number; error?: string }> {
+  if (!ideas || ideas.length === 0) return { success: true, savedCount: 0 };
+
+  // Always update local persistent memory for immediate cross-request awareness
+  try {
+    const existingRaw = localStorage.getItem(LOCAL_IDEA_MEMORY_KEY);
+    const existing: RecentIdeaMemory[] = existingRaw ? JSON.parse(existingRaw) : [];
+    const newItems: RecentIdeaMemory[] = ideas.map((i) => ({
+      title: i.title,
+      hook: i.hook,
+      premise: i.premise,
+      categoryId: i.categoryId,
+    }));
+    // Keep most recent 50
+    const merged = [...newItems, ...existing].slice(0, 50);
+    localStorage.setItem(LOCAL_IDEA_MEMORY_KEY, JSON.stringify(merged));
+  } catch (e) {
+    console.warn('Could not cache ideas locally:', e);
+  }
+
+  if (!isSupabaseConfigured()) {
+    return { success: true, savedCount: ideas.length };
+  }
+
+  try {
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) {
+      // Guest or unauthenticated user: safely cached in localStorage
+      return { success: true, savedCount: ideas.length };
+    }
+
+    // Verify if projectId is a valid UUID and exists in DB
+    let validProjectId: string | null = null;
+    if (projectId && UUID_REGEX.test(projectId)) {
+      const { data: projExists } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('id', projectId)
+        .single();
+      if (projExists) {
+        validProjectId = projectId;
+      }
+    }
+
+    const rowsToInsert = ideas.map((idea) => {
+      // Ensure id is a valid UUID for postgres uuid column
+      const dbId = UUID_REGEX.test(idea.id) ? idea.id : crypto.randomUUID();
+      return {
+        id: dbId,
+        project_id: validProjectId,
+        user_id: userId,
+        title: idea.title,
+        hook: idea.hook,
+        premise: idea.premise,
+        synopsis: idea.synopsis || idea.premise || '',
+        story_beats: idea.storyBeats || [],
+        conflict: idea.conflict || '',
+        ending: idea.ending || '',
+        estimated_duration: idea.estimatedDuration || '30-60s',
+        visual_style: idea.visualStyle || 'cinematic_realistic',
+        suggested_location: idea.suggestedLocation || '',
+        localization_notes: idea.localizationNotes || '',
+        creative_rationale: idea.creativeRationale || '',
+        trend_evidence: idea.trendEvidence || null,
+        category_id: idea.categoryId,
+        subcategory_id: idea.subcategoryId || null,
+        is_favorite: false,
+        created_at: idea.createdAt || new Date().toISOString(),
+      };
+    });
+
+    const { error } = await supabase.from('ideas').insert(rowsToInsert);
+    if (error) {
+      console.warn('Supabase save ideas error:', error.message);
+      return { success: false, savedCount: 0, error: error.message };
+    }
+
+    return { success: true, savedCount: ideas.length };
+  } catch (err: any) {
+    console.warn('Error saving ideas to Supabase:', err);
+    return { success: false, savedCount: 0, error: err.message };
+  }
+}
+
+/**
+ * Fetches recent ideas to provide memory context to the AI generator.
+ */
+export async function fetchRecentIdeasFromSupabase(
+  categoryId?: string,
+  limit = 20
+): Promise<RecentIdeaMemory[]> {
+  const memoryList: RecentIdeaMemory[] = [];
+
+  // 1. Fetch from Supabase if user authenticated
+  if (isSupabaseConfigured()) {
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user?.id) {
+        let query = supabase
+          .from('ideas')
+          .select('title, hook, premise, category_id')
+          .eq('user_id', authData.user.id)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (categoryId) {
+          query = query.eq('category_id', categoryId);
+        }
+
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          for (const row of data) {
+            memoryList.push({
+              title: row.title,
+              hook: row.hook,
+              premise: row.premise,
+              categoryId: row.category_id,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to read recent ideas from Supabase:', e);
+    }
+  }
+
+  // 2. Supplement from local memory cache
+  try {
+    const raw = localStorage.getItem(LOCAL_IDEA_MEMORY_KEY);
+    if (raw) {
+      const localItems: RecentIdeaMemory[] = JSON.parse(raw);
+      for (const item of localItems) {
+        if (!categoryId || item.categoryId === categoryId) {
+          const alreadyExists = memoryList.some(
+            (m) => m.title.toLowerCase() === item.title.toLowerCase()
+          );
+          if (!alreadyExists && memoryList.length < limit) {
+            memoryList.push(item);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore local parse error
+  }
+
+  return memoryList.slice(0, limit);
 }

@@ -127,9 +127,15 @@ export default async function handler(req, res) {
         dialogLanguage = 'indonesian',
         trendApproach = 'trend_first',
         additionalTheme,
+        topic,
         count = 5,
-        temperature = 0.75,
+        temperature = 0.8,
+        ideaMemory,
+        assignedAngles = [],
+        creativeEntropy,
       } = payload || {};
+
+      const effectiveTopic = (additionalTheme || topic || '').trim();
 
       const languageInstruction =
         dialogLanguage === 'javanese'
@@ -149,8 +155,29 @@ export default async function handler(req, res) {
           ? 'STRATEGI VIRAL & RETENSI TINGGI: Hook 0-3 detik agresif tervalidasi dari pola retensi short-form (visual shock, pertanyaan tak terduga, atau adegan tengah konflik).'
           : 'STRATEGI NARRATIVE-FIRST: Alur dramatik berbobot, karakter mendalam, dan payoff emosional yang berkesan.';
 
+      // Format previous ideas for negative constraint / anti-repetition
+      const recentList = Array.isArray(ideaMemory?.recentIdeas) ? ideaMemory.recentIdeas : [];
+      const historyContext =
+        recentList.length > 0
+          ? `\nPREVIOUSLY GENERATED IDEAS (DO NOT REPEAT OR CLOSELY PARAPHRASE THESE CONCEPTS):\n${recentList
+              .slice(0, 15)
+              .map(
+                (item, idx) =>
+                  `- [History #${idx + 1}] "${item.title}": ${item.hook} — ${item.premise}`
+              )
+              .join('\n')}\nCRITICAL: The ideas you generate now MUST be substantially different from all the above in premise, core conflict, and setting.\n`
+          : '';
+
+      // Format angle diversity directions
+      const anglesContext =
+        assignedAngles.length > 0
+          ? `\nASSIGNED CREATIVE ANGLES (Apply one distinct angle to each idea):\n${assignedAngles
+              .map((ang, idx) => `Idea #${idx + 1} angle directive: ${ang}`)
+              .join('\n')}\n`
+          : '';
+
       const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
-Your task is to generate EXACTLY ${count} high-retention, creative video ideas.
+Your task is to generate EXACTLY ${count} high-retention, creative, and completely DIVERSE video ideas.
 
 RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
 1. NO AI-CLICHÉ HOOKS: Do NOT use tired AI openings like "Pernahkah kamu membayangkan...", "Tahukah kamu bahwa...", "Bayangkan jika...", or "Unlock the secret". Start with an immediate concrete situation, dialogue snippet, or unexpected visual conflict.
@@ -159,6 +186,13 @@ RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
 4. STRATEGY ALIGNMENT: ${trendInstruction}
 5. VISUAL INTEGRITY: Ground visual style cleanly in "${visualStyle}".
 
+BATCH DIVERSITY & NON-REPETITION MANDATE (CRITICAL):
+- Every idea in this batch MUST have a fundamentally different central conflict, point-of-view, setting, and payoff.
+- DO NOT generate variations of the same incident with only cosmetic changes (e.g. changing names, objects, or locations while keeping the same core story).
+- Each concept must stand on its own as a completely separate creative proposition.
+${historyContext}
+${anglesContext}
+
 FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
 {
@@ -166,7 +200,7 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
     {
       "title": "string",
       "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
-      "premise": "string",
+      "premise": "string (premis unik yang berbeda dari ide lainnya)",
       "synopsis": "string",
       "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
       "conflict": "string",
@@ -178,9 +212,10 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
   ]
 }`;
 
-      const userPrompt = `Generate EXACTLY ${count} video ideas for:
+      const userPrompt = `Generate EXACTLY ${count} uniquely distinct video ideas for:
 Category: ${categoryName} (${subcatName || ''})
 Description: ${categoryDescription || ''}
+${effectiveTopic ? `Specific Topic / Focus Angle: ${effectiveTopic}` : 'Specific Topic: General Category Exploration (Explore fresh, varied sub-angles)'}
 Platform: ${platform}
 Target Duration: ${duration}
 Visual Style: ${visualStyle}
@@ -189,7 +224,7 @@ Target Market: ${targetMarket}
 Target Audience: ${targetAudience}
 Dialog Language: ${dialogLanguage}
 Trend Approach: ${trendApproach}
-${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
+Entropy Seed: ${creativeEntropy || Date.now()}`;
 
       const { content, modelUsed } = await callOpenAI(
         [
@@ -225,7 +260,47 @@ ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
         }
       }
 
-      return res.status(200).json({ success: true, ideas: list, modelUsed });
+      // Backend similarity filter: ensure within-batch distinctness
+      const filteredList = [];
+      const seenTokens = [];
+
+      function getSimpleTokens(str) {
+        return (str || '')
+          .toLowerCase()
+          .replace(/[^\w\s]/g, '')
+          .split(/\s+/)
+          .filter((w) => w.length > 3);
+      }
+
+      for (const item of list) {
+        const itemTokens = new Set([
+          ...getSimpleTokens(item.title),
+          ...getSimpleTokens(item.hook),
+          ...getSimpleTokens(item.premise),
+        ]);
+
+        let isTooSimilar = false;
+        for (const prev of seenTokens) {
+          let overlap = 0;
+          for (const t of itemTokens) {
+            if (prev.has(t)) overlap++;
+          }
+          const jaccard = overlap / (itemTokens.size + prev.size - overlap || 1);
+          if (jaccard > 0.65) {
+            isTooSimilar = true;
+            break;
+          }
+        }
+
+        if (!isTooSimilar || filteredList.length === 0) {
+          filteredList.push(item);
+          seenTokens.push(itemTokens);
+        }
+      }
+
+      const finalList = filteredList.length > 0 ? filteredList : list;
+
+      return res.status(200).json({ success: true, ideas: finalList, modelUsed });
     }
 
     if (action === 'develop_story') {

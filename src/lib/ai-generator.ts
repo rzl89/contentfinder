@@ -9,6 +9,13 @@ import type {
 } from '@/types';
 import { getCategoryById } from '@/context-engine';
 import { useAdminStore } from '@/stores/admin-store';
+import { saveIdeasToSupabase, fetchRecentIdeasFromSupabase } from '@/lib/supabase';
+import {
+  getDiverseAngles,
+  filterDiverseBatch,
+  isDuplicateIdea,
+  CREATIVE_DIMENSIONS,
+} from '@/lib/diversity-engine';
 
 /**
  * ============================================================================
@@ -32,7 +39,20 @@ export async function generateContentIdeas(
     category.subcategories.find((s) => s.id === config.subcategoryId) ||
     category.subcategories[0];
 
-  // 1. Try calling the secure backend proxy
+  const targetCount = config.ideaCount || 5;
+
+  // 1. Retrieve historical idea memory to avoid repeating past ideas
+  let recentIdeas: Array<{ title: string; hook: string; premise: string }> = [];
+  try {
+    recentIdeas = await fetchRecentIdeasFromSupabase(config.categoryId, 15);
+  } catch (e) {
+    console.warn('Could not retrieve recent idea history:', e);
+  }
+
+  // 2. Select distinct creative dimensions for this batch
+  const assignedAngles = getDiverseAngles(targetCount);
+
+  // 3. Try calling the secure backend AI proxy
   try {
     const admin = typeof window !== 'undefined' ? useAdminStore.getState().settings : null;
     const res = await fetch('/api/generate', {
@@ -43,7 +63,7 @@ export async function generateContentIdeas(
         customApiKey: admin?.openAiApiKey || undefined,
         payload: {
           model: admin?.defaultModel || 'gpt-6-luna',
-          temperature: admin?.temperature || 0.75,
+          temperature: admin?.temperature || 0.8,
           categoryName: category.name,
           categoryDescription: category.description,
           subcatName: subcat?.name,
@@ -56,7 +76,11 @@ export async function generateContentIdeas(
           dialogLanguage: config.dialogLanguage || 'indonesian',
           trendApproach: config.trendApproach || 'trend_first',
           additionalTheme: config.additionalTheme,
-          count: config.ideaCount || 5,
+          topic: config.additionalTheme,
+          count: targetCount,
+          ideaMemory: { recentIdeas },
+          assignedAngles: assignedAngles.map((a) => `${a.name} (${a.angleDescription})`),
+          creativeEntropy: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         },
       }),
     });
@@ -65,9 +89,8 @@ export async function generateContentIdeas(
       const data = await res.json();
       const rawList = Array.isArray(data.ideas) ? data.ideas : data.ideas ? [data.ideas] : [];
       if (data.success && rawList.length > 0) {
-        const targetCount = config.ideaCount || 5;
-        const aiIdeas: ContentIdea[] = rawList.map((raw: any, idx: number): ContentIdea => ({
-          id: `idea_ai_${Date.now()}_${idx + 1}`,
+        const candidateIdeas: ContentIdea[] = rawList.map((raw: any, idx: number): ContentIdea => ({
+          id: `idea_ai_${Date.now()}_${idx + 1}_${Math.random().toString(36).substring(2, 6)}`,
           title: raw.title || `${category.name} #${idx + 1}`,
           hook: raw.hook || '[Detik 0-3] Hook pembuka dramatis',
           premise: raw.premise || category.description,
@@ -83,7 +106,7 @@ export async function generateContentIdeas(
           localizationNotes: raw.localizationNotes || 'Nuansa Indonesia natural tanpa stereotip',
           creativeRationale: raw.creativeRationale || `Menerapkan framework ${category.name}`,
           trendEvidence: config.trendApproach === 'trend_first'
-            ? 'Format hook tervalidasi dari pola retensi tinggi TikTok Creative Center.'
+            ? 'Format hook tervalidasi dari pola retensi tinggi short-form.'
             : undefined,
           categoryId: category.id,
           subcategoryId: subcat?.id,
@@ -91,33 +114,35 @@ export async function generateContentIdeas(
           createdAt: new Date().toISOString(),
         }));
 
-        // Defensively pad if backend returned fewer than requested count
-        if (aiIdeas.length < targetCount) {
-          for (let i = aiIdeas.length + 1; i <= targetCount; i++) {
-            const subcatItem = category.subcategories[(i - 1) % category.subcategories.length];
-            const baseExample = category.exampleIdeas[(i - 1) % category.exampleIdeas.length];
-            aiIdeas.push({
-              id: `idea_pad_${Date.now()}_${i}`,
-              title: `${category.name}: Eksplorasi ${subcatItem.name} #${i}`,
-              hook: `[Detik 0-3] "${baseExample.split('—')[0] || 'Tunggu sebentar... kamu tidak akan menyangka apa yang terjadi selanjutnya.'}"`,
-              premise: `Sebuah narasi tentang ${subcatItem.description.toLowerCase()} dalam balutan gaya ${(config.visualStyle || 'cinematic_realistic').replace(/_/g, ' ')}.`,
-              synopsis: `Di sebuah latar yang dirancang autentik, tokoh utama mengalami dinamika tak terduga. ${category.creativeFramework.split('.')[0]}. Alur berkembang cepat menyesuaikan durasi pendek ${config.duration || '30-60s'}.`,
+        // Filter duplicates within this batch
+        const diverseAccepted = filterDiverseBatch(candidateIdeas, targetCount, 0.65);
+
+        // If filtering removed duplicates and left fewer than targetCount, pad with distinct angle variations
+        if (diverseAccepted.length < targetCount) {
+          const padNeed = targetCount - diverseAccepted.length;
+          for (let p = 1; p <= padNeed; p++) {
+            const angle = assignedAngles[(diverseAccepted.length + p - 1) % assignedAngles.length];
+            const subcatItem = category.subcategories[(diverseAccepted.length + p) % category.subcategories.length] || subcat;
+            const topicPrefix = config.additionalTheme ? `${config.additionalTheme}: ` : '';
+            diverseAccepted.push({
+              id: `idea_div_${Date.now()}_${p}_${Math.random().toString(36).substring(2, 6)}`,
+              title: `${topicPrefix}${angle.name} — ${subcatItem.name}`,
+              hook: `[Detik 0-3] ${angle.hookPattern}`,
+              premise: `Eksplorasi ${angle.angleDescription} dalam konteks ${subcatItem.name}.`,
+              synopsis: `Di latar dinamis, karakter menghadapi ${angle.conflictType.toLowerCase()} Alur bergerak cepat menuju twist yang tidak tertebak.`,
               storyBeats: [
                 'Beat 1 (Hook): Kejadian tak terduga langsung menghentikan scroll penonton.',
                 'Beat 2 (Eskalasi): Situasi berkembang rumit dengan konflik atau misteri utama.',
                 'Beat 3 (Puncak/Climax): Momen paling intens atau visual paling memukau.',
                 'Beat 4 (Payoff/Twist): Penyelesaian cerdas atau twist yang memuaskan rasa ingin tahu.',
               ],
-              conflict: 'Pertentangan antara ekspektasi awal dan kenyataan situasi di lapangan.',
-              ending: 'Payoff yang memberikan kepuasan emosional atau memicu diskusi di kolom komentar.',
+              conflict: angle.conflictType,
+              ending: 'Penyelesaian berkesan dengan payoff emosional autentik.',
               estimatedDuration: config.duration || '30-60s',
               visualStyle: config.visualStyle || 'cinematic_realistic',
-              suggestedLocation:
-                config.contextProfile?.preset === 'indonesia_urban'
-                  ? 'Area perkantoran modern atau ruang komunal urban'
-                  : 'Latar natural seimbang sesuai kebutuhan adegan',
+              suggestedLocation: 'Latar natural seimbang sesuai kebutuhan adegan',
               localizationNotes: 'Dialog santai percakapan harian. Hindari karikatur atau simbol lokal berlebihan.',
-              creativeRationale: `Menerapkan framework ${category.name} untuk menghasilkan engagement tinggi tanpa clickbait murahan.`,
+              creativeRationale: `Menerapkan framework ${category.name} dengan pendekatan ${angle.name}.`,
               categoryId: category.id,
               subcategoryId: subcatItem.id,
               saved: false,
@@ -126,66 +151,76 @@ export async function generateContentIdeas(
           }
         }
 
-        return aiIdeas;
+        // Persist to Supabase ideas table and local history
+        void saveIdeasToSupabase(diverseAccepted, config.projectId);
+
+        return diverseAccepted;
       }
     }
   } catch (err) {
-    console.info('Backend AI proxy offline or unconfigured, utilizing Algorithmic Context Engine.', err);
+    console.info('Backend AI proxy offline or unconfigured, utilizing Diverse Algorithmic Engine.', err);
   }
 
-  // 2. Deterministic Algorithmic Fallback
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  // 4. Diverse Algorithmic Fallback (Dynamic combinatorial generation)
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const count = config.ideaCount || 5;
-  const ideas: ContentIdea[] = [];
+  const fallbackIdeas: ContentIdea[] = [];
+  const duration: DurationRange = config.duration || '30-60s';
+  const visualStyle: VisualStyle = config.visualStyle || 'cinematic_realistic';
 
-  for (let i = 1; i <= count; i++) {
-    const ideaId = `idea_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`;
-    const subcatItem = category.subcategories[(i - 1) % category.subcategories.length];
-    const baseExample = category.exampleIdeas[(i - 1) % category.exampleIdeas.length];
+  const settingsPool = [
+    'Koridor kafe kontemporer dengan pencahayaan hangat',
+    'Ruang kerja kreatif studio indie yang dinamis',
+    'Stasiun komuter dan peron yang bergerak ritmis',
+    'Teras rumah minimalis dengan suasana asri tenang',
+    'Lab komputer kampus di waktu senja',
+    'Pesisir tenang dengan hembusan angin alami',
+  ];
 
-    const isTrending = config.trendApproach === 'trend_first';
-    const duration: DurationRange = config.duration || '30-60s';
-    const visualStyle: VisualStyle = config.visualStyle || 'cinematic_realistic';
+  for (let i = 0; i < targetCount; i++) {
+    const angle = assignedAngles[i % assignedAngles.length] || CREATIVE_DIMENSIONS[i % CREATIVE_DIMENSIONS.length];
+    const subcatItem = category.subcategories[i % category.subcategories.length] || subcat;
+    const setting = settingsPool[i % settingsPool.length];
+    const topicHeading = config.additionalTheme ? `[${config.additionalTheme}] ` : '';
 
-    ideas.push({
-      id: ideaId,
-      title: `${category.name}: Eksplorasi ${subcatItem.name} #${i}`,
-      hook: `[Detik 0-3] "${baseExample.split('—')[0] || 'Tunggu sebentar... kamu tidak akan menyangka apa yang terjadi selanjutnya.'}"`,
-      premise: `Sebuah narasi tentang ${subcatItem.description.toLowerCase()} dalam balutan gaya ${visualStyle.replace(/_/g, ' ')}.`,
-      synopsis: `Di sebuah latar yang dirancang autentik, tokoh utama mengalami dinamika tak terduga. ${category.creativeFramework.split('.')[0]}. Alur berkembang cepat menyesuaikan durasi pendek ${duration}.`,
+    const newIdea: ContentIdea = {
+      id: `idea_fallback_${Date.now()}_${i + 1}_${Math.random().toString(36).substring(2, 6)}`,
+      title: `${topicHeading}${category.name}: Sudut ${angle.name} #${i + 1}`,
+      hook: `[Detik 0-3] "${angle.hookPattern}"`,
+      premise: `Pendekatan ${angle.angleDescription.toLowerCase()} menguji ${angle.conflictType.toLowerCase()}`,
+      synopsis: `Di ${setting.toLowerCase()}, tokoh utama terlibat dalam situasi tak terduga. ${category.creativeFramework.split('.')[0]}. Keadaan berkembang cepat menuju resolusi tak terduga yang memuaskan penonton.`,
       storyBeats: [
-        'Beat 1 (Hook): Kejadian tak terduga langsung menghentikan scroll penonton.',
-        'Beat 2 (Eskalasi): Situasi berkembang rumit dengan konflik atau misteri utama.',
-        'Beat 3 (Puncak/Climax): Momen paling intens atau visual paling memukau.',
-        'Beat 4 (Payoff/Twist): Penyelesaian cerdas atau twist yang memuaskan rasa ingin tahu.',
+        `Beat 1 (Hook): ${angle.hookPattern}`,
+        'Beat 2 (Eskalasi): Situasi berkembang rumit dan taruhan emosional meningkat.',
+        'Beat 3 (Puncak/Climax): Momen konfrontasi atau pengungkapan visual paling intens.',
+        'Beat 4 (Payoff/Twist): Twist tak terduga yang memberikan sudut pandang baru.',
       ],
-      conflict: `Pertentangan antara ekspektasi awal dan kenyataan situasi di lapangan.`,
-      ending: `Payoff yang memberikan kepuasan emosional atau memicu diskusi di kolom komentar.`,
+      conflict: angle.conflictType,
+      ending: 'Penyelesaian emosional autentik yang memicu diskusi di kolom komentar.',
       estimatedDuration: duration,
       visualStyle,
-      suggestedLocation:
-        config.contextProfile.preset === 'indonesia_urban'
-          ? 'Area perkantoran modern atau ruang komunal urban'
-          : config.contextProfile.preset === 'indonesia_rural'
-          ? 'Perbukitan asri atau pesisir tenang'
-          : 'Latar natural seimbang sesuai kebutuhan adegan',
+      suggestedLocation: setting,
       localizationNotes:
-        config.contextProfile.targetMarket === 'Indonesia'
+        config.contextProfile?.targetMarket === 'Indonesia'
           ? 'Dialog santai percakapan harian. Hindari karikatur atau simbol lokal berlebihan.'
           : 'Gaya universal tanpa stereotip geografis.',
-      creativeRationale: `Menerapkan framework ${category.name} untuk menghasilkan engagement tinggi tanpa clickbait murahan.`,
-      trendEvidence: isTrending
-        ? 'Format hook 3 detik terinspirasi dari pola retensi tinggi TikTok Creative Center Q1.'
+      creativeRationale: `Menerapkan framework ${category.name} dengan dimensi kreatif ${angle.name}.`,
+      trendEvidence: config.trendApproach === 'trend_first'
+        ? 'Format hook tervalidasi dari pola retensi tinggi short-form.'
         : undefined,
       categoryId: category.id,
       subcategoryId: subcatItem.id,
       saved: false,
       createdAt: new Date().toISOString(),
-    });
+    };
+
+    fallbackIdeas.push(newIdea);
   }
 
-  return ideas;
+  // Persist to Supabase ideas table and local history
+  void saveIdeasToSupabase(fallbackIdeas, config.projectId);
+
+  return fallbackIdeas;
 }
 
 /**

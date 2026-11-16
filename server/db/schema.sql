@@ -72,6 +72,10 @@ CREATE TABLE IF NOT EXISTS public.ideas (
   trend_evidence text,
   category_id text NOT NULL,
   subcategory_id text,
+  topic text,
+  creative_direction text,
+  model_identifier text DEFAULT 'gpt-6-luna'::text,
+  normalized_text text,
   is_favorite boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT ideas_pkey PRIMARY KEY (id),
@@ -228,6 +232,9 @@ CREATE TABLE IF NOT EXISTS public.subscription_orders (
 
 -- Existing non-constraint indexes captured from production.
 CREATE INDEX IF NOT EXISTS idx_ideas_user_id ON public.ideas USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_ideas_user_category ON public.ideas USING btree (user_id, category_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ideas_user_created ON public.ideas USING btree (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ideas_project_created ON public.ideas USING btree (project_id, created_at DESC) WHERE project_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects USING btree (user_id);
 CREATE INDEX IF NOT EXISTS idx_provider_creds_user ON public.provider_credentials USING btree (user_id);
 CREATE INDEX IF NOT EXISTS idx_scenes_project_id ON public.scenes USING btree (project_id);

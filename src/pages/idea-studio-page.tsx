@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   CONTENT_CATEGORIES,
   getCategoryById,
@@ -40,13 +40,15 @@ import {
   Info,
   Tv,
   Lock,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
-  const { currentProject, createProject, setSelectedIdea, setScenes, updateWorldBible, addCharacter } =
-    useProjectStore();
+  const { currentProject, createProject } = useProjectStore();
   const {
     subscription,
     isCategoryAccessible,
@@ -55,12 +57,23 @@ export const IdeaStudioPage: React.FC = () => {
     storyboardGenerationsCount,
   } = useSubscriptionStore();
 
+  const routeState = (location.state || {}) as { categoryId?: string; topic?: string };
+
   // Search & filter for categories
   const [categorySearch, setCategorySearch] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState<string>('all');
 
-  // Generator form state
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('time-travel');
+  // Generator form state — initialized from route state or current project if available
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(() => {
+    if (routeState.categoryId && isCategoryAccessible(routeState.categoryId)) {
+      return routeState.categoryId;
+    }
+    if (currentProject?.categoryId && isCategoryAccessible(currentProject.categoryId)) {
+      return currentProject.categoryId;
+    }
+    return 'time-travel';
+  });
+
   const [selectedSubcatId, setSelectedSubcatId] = useState<string>('');
   const [platform, setPlatform] = useState<Platform>('tiktok');
   const [duration, setDuration] = useState<DurationRange>('30-60s');
@@ -68,7 +81,7 @@ export const IdeaStudioPage: React.FC = () => {
   const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>('indonesian');
   const [trendApproach, setTrendApproach] = useState<TrendApproach>('trend_first');
-  const [additionalTheme, setAdditionalTheme] = useState('');
+  const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
   const [targetAudience, setTargetAudience] = useState('Audiens muda & kreator konten digital');
   const [ideaCount, setIdeaCount] = useState<5 | 10>(5);
 
@@ -76,8 +89,12 @@ export const IdeaStudioPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [developingIdeaId, setDevelopingIdeaId] = useState<string | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const activeCategory = getCategoryById(selectedCategoryId) || CONTENT_CATEGORIES[0];
+  const validSubcatId = activeCategory.subcategories.some((s) => s.id === selectedSubcatId)
+    ? selectedSubcatId
+    : activeCategory.subcategories[0]?.id || '';
 
   const categoryGroups = [
     'all',
@@ -96,20 +113,87 @@ export const IdeaStudioPage: React.FC = () => {
     return matchGroup && matchSearch;
   });
 
+  const handleCopyHook = async (idea: ContentIdea) => {
+    try {
+      await navigator.clipboard.writeText(idea.hook);
+      setCopiedKey(`hook_${idea.id}`);
+      showToast({
+        type: 'info',
+        title: 'Hook Tersalin',
+        message: 'Hook 1-3 detik berhasil disalin ke clipboard.',
+      });
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      // fallback
+    }
+  };
+
+  const handleCopyFullIdea = async (idea: ContentIdea) => {
+    try {
+      const formatted = `=== ${idea.title.toUpperCase()} ===
+Format: ${idea.visualStyle} | Durasi: ${idea.estimatedDuration}
+Kategori: ${activeCategory.name}
+
+🎣 HOOK:
+${idea.hook}
+
+📖 PREMIS:
+${idea.premise}
+
+📝 SINOPSIS:
+${idea.synopsis}
+
+🎬 STORY BEATS:
+${idea.storyBeats.map((b) => `• ${b}`).join('\n')}
+
+⚡ ENDING / PAYOFF:
+${idea.ending}
+
+📍 LOKASI & SETTING:
+${idea.suggestedLocation}
+
+🇮🇩 CATATAN LOKALISASI:
+${idea.localizationNotes}`;
+
+      await navigator.clipboard.writeText(formatted);
+      setCopiedKey(`full_${idea.id}`);
+      showToast({
+        type: 'info',
+        title: 'Ide Lengkap Tersalin',
+        message: 'Seluruh struktur ide dan story beats berhasil disalin.',
+      });
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
+      // fallback
+    }
+  };
+
   const handleGenerateIdeas = async () => {
+    // Check Free Trial category access
+    if (!isCategoryAccessible(selectedCategoryId)) {
+      showToast({
+        type: 'warning',
+        title: 'Fitur Eksklusif Creator Pro',
+        message: `Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Kategori "${activeCategory.name}" terbuka penuh di paket Creator Pro.`,
+      });
+      navigate('/pricing');
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const generated = await generateContentIdeas({
+        projectId: currentProject?.id,
         categoryId: selectedCategoryId,
-        subcategoryId: selectedSubcatId || activeCategory.subcategories[0]?.id,
+        subcategoryId: validSubcatId,
         platform,
         duration,
         visualStyle,
         contextProfile: CONTEXT_PRESETS[contextPreset],
         dialogLanguage,
         trendApproach,
-        additionalTheme,
-        targetAudience,
+        additionalTheme: additionalTheme.trim(),
+        targetAudience: targetAudience.trim(),
         ideaCount,
       });
 
@@ -137,7 +221,7 @@ export const IdeaStudioPage: React.FC = () => {
         type: 'warning',
         title: 'Batas Trial Tercapai (3/3)',
         message:
-          'Anda telah mencapai batas 3x generate storyboard di paket Free Trial. Upgrade ke Creator Pro untuk akses tanpa batas!',
+          'Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Anda telah mencapai batas 3x generate storyboard di paket Free Trial.',
       });
       navigate('/pricing');
       return;
@@ -145,22 +229,25 @@ export const IdeaStudioPage: React.FC = () => {
 
     setDevelopingIdeaId(idea.id);
     try {
-      // 1. Ensure a project exists or create one
+      // 1. Ensure project exists or create one
       let proj = currentProject;
       if (!proj) {
         proj = createProject(idea.title, idea.categoryId, contextPreset);
       }
 
-      setSelectedIdea(idea);
-
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
       const targetModel = proj?.targetModel || 'universal-neutral';
       const developed = await developStoryFromIdea(idea, 4, targetModel, dialogLanguage);
 
-      // 3. Save to store
-      developed.characters.forEach((c) => addCharacter(c));
-      updateWorldBible(developed.worldBible);
-      setScenes(developed.scenes);
+      // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
+      useProjectStore.getState().updateCurrentProject({
+        name: idea.title,
+        categoryId: idea.categoryId,
+        selectedIdea: idea,
+        characters: developed.characters,
+        worldBible: developed.worldBible,
+        scenes: developed.scenes,
+      });
 
       // 4. Increment trial usage counter
       incrementStoryboardCount();
@@ -268,6 +355,26 @@ export const IdeaStudioPage: React.FC = () => {
           ))}
         </div>
 
+        {/* Pro Banner for Free Trial Users */}
+        {subscription.tier !== 'pro' && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+            <div className="flex items-center gap-2 text-zinc-300">
+              <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>
+                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 19 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
+              </span>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate('/pricing')}
+              className="shrink-0"
+            >
+              Upgrade Creator Pro
+            </Button>
+          </div>
+        )}
+
         {/* 19 Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[360px] overflow-y-auto p-1 pr-2">
           {filteredCategories.map((cat) => {
@@ -280,8 +387,8 @@ export const IdeaStudioPage: React.FC = () => {
                   if (!isAccessible) {
                     showToast({
                       type: 'warning',
-                      title: 'Kategori Khusus Creator Pro',
-                      message: `Kategori "${cat.name}" dikunci di paket Free Trial. Upgrade ke Creator Pro untuk membuka seluruh 19 kategori!`,
+                      title: 'Fitur Eksklusif Creator Pro',
+                      message: `Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Kategori "${cat.name}" terbuka penuh di paket Creator Pro.`,
                     });
                     return;
                   }
@@ -527,6 +634,23 @@ export const IdeaStudioPage: React.FC = () => {
         </BentoTile>
       </section>
 
+      {/* Informative loading state while Fixprom AI produces diverse ideas */}
+      {isGenerating && (
+        <BentoTile className="p-8 border-amber-500/30 bg-[#111115] text-center space-y-3 animate-pulse">
+          <div className="w-10 h-10 mx-auto rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-amber-400 animate-spin" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-zinc-100">
+              Fixprom AI Sedang Merancang {ideaCount} Ide Kreatif
+            </h4>
+            <p className="text-xs text-zinc-400 max-w-md mx-auto">
+              Menerapkan creative angle berbeda (hook unik, eskalasi konflik, latar) serta menyaring duplikasi untuk memastikan setiap ide segar.
+            </p>
+          </div>
+        </BentoTile>
+      )}
+
       {/* 4. Generated Ideas Results Section */}
       {ideas.length > 0 && (
         <section className="space-y-4">
@@ -563,7 +687,23 @@ export const IdeaStudioPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={copiedKey === `hook_${idea.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      onClick={() => handleCopyHook(idea)}
+                    >
+                      {copiedKey === `hook_${idea.id}` ? 'Hook Tersalin' : 'Salin Hook'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={copiedKey === `full_${idea.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      onClick={() => handleCopyFullIdea(idea)}
+                    >
+                      {copiedKey === `full_${idea.id}` ? 'Ide Tersalin' : 'Salin Ide'}
+                    </Button>
                     <Button
                       variant="primary"
                       size="sm"

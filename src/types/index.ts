@@ -156,6 +156,7 @@ export interface ContentIdea {
 }
 
 export interface IdeaGenerationConfig {
+  projectId?: string;
   categoryId: string;
   subcategoryId?: string;
   platform: Platform;
