@@ -1,49 +1,79 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/toast';
 import { AppLayout } from '@/components/layout';
+import { ProtectedRoute } from '@/components/auth/protected-route';
+import { useAuthStore } from '@/stores/auth-store';
+
+// Public pages
 import { LandingPage } from '@/pages/landing-page';
+import { LoginPage } from '@/pages/login-page';
+import { SignupPage } from '@/pages/signup-page';
+import { EmailConfirmPage } from '@/pages/email-confirm-page';
+import { NotFoundPage } from '@/pages/not-found-page';
+import { PricingPage } from '@/pages/pricing-page';
+
+// Protected studio pages
 import { IdeaStudioPage } from '@/pages/idea-studio-page';
 import { PromptDeskPage } from '@/pages/prompt-desk-page';
 import { TrendRadarPage } from '@/pages/trend-radar-page';
 import { ByokPage } from '@/pages/byok-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { SettingsPage } from '@/pages/settings-page';
-import { PricingPage } from '@/pages/pricing-page';
+
+// Admin
 import { AdminPanelPage } from '@/pages/admin-panel-page';
-import { NotFoundPage } from '@/pages/not-found-page';
 
 // Secret admin path — not linked anywhere in the UI
 const ADMIN_SECRET_PATH = 'mstr-ype9-91ek';
 
 export function App() {
+  const { initialize } = useAuthStore();
+
+  // Initialize Supabase auth session on app mount
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
     <ToastProvider>
       <Router>
         <Routes>
-          {/* ── Landing Page (Public Hero, Showcase & Pricing) ──── */}
+          {/* ── Public Routes ──────────────────────────────────────────── */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/auth/confirm" element={<EmailConfirmPage />} />
 
-          {/* ── Secret Admin Route (outside AppLayout, no sidebar) ── */}
+          {/* Public pricing page (viewable without login) */}
+          <Route path="/pricing" element={<PricingPage />} />
+
+          {/* ── Secret Admin Route (outside AppLayout, no sidebar) ─────── */}
           <Route path={`/${ADMIN_SECRET_PATH}`} element={<AdminPanelPage />} />
 
-          {/* ── Old /admin path → 404 (stealth) ─────────────────── */}
+          {/* ── Old /admin path → 404 (stealth) ───────────────────────── */}
           <Route path="/admin" element={<NotFoundPage />} />
 
-          {/* ── Main App Studio with sidebar layout ──────────────── */}
-          <Route element={<AppLayout />}>
+          {/* ── Protected Studio Routes (login required) ───────────────── */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="studio" element={<IdeaStudioPage />} />
             <Route path="prompt-desk" element={<PromptDeskPage />} />
             <Route path="trends" element={<TrendRadarPage />} />
             <Route path="byok" element={<ByokPage />} />
             <Route path="projects" element={<ProjectsPage />} />
-            <Route path="pricing" element={<PricingPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            {/* Redirect old direct /index access to /studio */}
+            {/* Redirect legacy /index → /studio */}
             <Route path="index" element={<Navigate to="/studio" replace />} />
-            {/* Any unknown sub-path → 404 */}
-            <Route path="*" element={<NotFoundPage />} />
           </Route>
+
+          {/* ── Catch-all 404 ──────────────────────────────────────────── */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </ToastProvider>

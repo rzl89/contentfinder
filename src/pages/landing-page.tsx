@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -17,13 +17,17 @@ import {
   Check,
   ExternalLink,
   Eye,
+  UserCircle2,
+  LogIn,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useAuthStore } from '@/stores/auth-store';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { subscription, getRemainingTrialHours } = useSubscriptionStore();
+  const { user } = useAuthStore();
   const remainingHours = getRemainingTrialHours();
 
   // Interactive Demo state: comparison between standard AI slop and TemporaForge prompt
@@ -90,20 +94,42 @@ export const LandingPage: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-3">
-            <NavLink
-              to="/pricing"
-              className="hidden sm:inline-flex items-center text-xs text-zinc-400 hover:text-zinc-200 px-3 py-2 transition-colors"
-            >
-              Langganan
-            </NavLink>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate('/studio')}
-              icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
-            >
-              Buka Studio Gratis
-            </Button>
+            {user ? (
+              /* ── Logged in: show user badge + go to studio ── */
+              <>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/8 text-xs text-zinc-400">
+                  <UserCircle2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="max-w-[120px] truncate">{user.email}</span>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate('/studio')}
+                  icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
+                >
+                  Buka Studio
+                </Button>
+              </>
+            ) : (
+              /* ── Guest: show login + signup ── */
+              <>
+                <NavLink
+                  to="/login"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 px-3 py-2 transition-colors"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  Masuk
+                </NavLink>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate('/signup')}
+                  icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
+                >
+                  Daftar Gratis
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -135,11 +161,11 @@ export const LandingPage: React.FC = () => {
             <Button
               variant="primary"
               size="lg"
-              onClick={() => navigate('/studio')}
+              onClick={() => navigate(user ? '/studio' : '/signup')}
               icon={<ArrowRight className="w-4 h-4 text-black" />}
               className="w-full sm:w-auto"
             >
-              Mulai Susun Ide Sekarang
+              {user ? 'Buka Studio' : 'Mulai Gratis — Tanpa Kartu Kredit'}
             </Button>
 
             <a

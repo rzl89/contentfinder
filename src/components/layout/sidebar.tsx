@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
   Sparkles,
@@ -12,16 +12,26 @@ import {
   ShieldCheck,
   CreditCard,
   Zap,
+  LogOut,
+  UserCircle2,
 } from 'lucide-react';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useAuthStore } from '@/stores/auth-store';
 
 interface SidebarProps {
   collapsed?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
+  const navigate = useNavigate();
   const { subscription, getRemainingTrialHours } = useSubscriptionStore();
+  const { user, signOut } = useAuthStore();
   const remainingHours = getRemainingTrialHours();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/', { replace: true });
+  };
 
   const navItems = [
     {
@@ -153,6 +163,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
           </NavLink>
         ))}
       </div>
+
+      {/* User Info + Logout */}
+      {!collapsed && user && (
+        <div className="px-4 pb-3 border-t border-white/5 pt-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <UserCircle2 className="w-4 h-4 text-amber-400" />
+              </div>
+              <span className="text-[11px] text-zinc-400 truncate">{user.email}</span>
+            </div>
+            <button
+              onClick={handleSignOut}
+              title="Keluar"
+              className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer Info Box */}
       {!collapsed && (
