@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import {
   CONTENT_CATEGORIES,
   getCategoryById,
@@ -14,10 +14,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
-import {
-  useSubscriptionStore,
-  FREE_TRIAL_MAX_STORYBOARD_GENERATIONS,
-} from '@/stores/subscription-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
   ContentIdea,
@@ -42,6 +39,8 @@ import {
   Lock,
   Copy,
   Check,
+  Zap,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
@@ -182,11 +181,13 @@ ${idea.localizationNotes}`;
       return;
     }
 
-    // Check Credits (1 Credit for 5 Ideas)
-    if (!hasSufficientCredits(1)) {
+    const ideaCreditsCost = ideaCount === 10 ? 2 : 1;
+
+    // Check Credits
+    if (!hasSufficientCredits(ideaCreditsCost)) {
       showToast({
         type: 'warning',
-        title: 'Kredit AI Tidak Mencukupi (Butuh 1 Kredit)',
+        title: `Kredit AI Tidak Mencukupi (Butuh ${ideaCreditsCost} Kredit)`,
         message: 'Kredit AI Anda telah habis. Silakan lakukan Top-Up Kredit atau perpanjang paket Creator Pro.',
       });
       navigate('/pricing');
@@ -212,13 +213,13 @@ ${idea.localizationNotes}`;
 
       setIdeas(generated);
 
-      // Deduct 1 credit atomically
-      await deductCredits(1, 'generate_ideas');
+      // Deduct credits atomically
+      await deductCredits(ideaCreditsCost, 'generate_ideas');
 
       showToast({
         type: 'success',
         title: `${generated.length} Ide Berhasil Dihasilkan!`,
-        message: `Kategori: ${activeCategory.name} dengan profil ${CONTEXT_PRESETS[contextPreset].name}. (-1 Kredit AI)`,
+        message: `Kategori: ${activeCategory.name} dengan profil ${CONTEXT_PRESETS[contextPreset].name}. (-${ideaCreditsCost} Kredit AI)`,
       });
     } catch (err: any) {
       showToast({
@@ -232,24 +233,12 @@ ${idea.localizationNotes}`;
   };
 
   const handleDevelopIdea = async (idea: ContentIdea) => {
-    // Check Free Trial Storyboard quota limit (max 3x)
-    if (!canGenerateStoryboard()) {
-      showToast({
-        type: 'warning',
-        title: 'Batas Trial Tercapai (3/3)',
-        message:
-          'Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Anda telah mencapai batas 3x generate storyboard di paket Free Trial.',
-      });
-      navigate('/pricing');
-      return;
-    }
-
     // Check Credits (3 Credits for Storyboard)
     if (!hasSufficientCredits(3)) {
       showToast({
         type: 'warning',
         title: 'Kredit AI Tidak Mencukupi (Butuh 3 Kredit)',
-        message: 'Menyusun 4 adegan storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit untuk melanjutkan.',
+        message: 'Menyusun 4 adegan storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit atau upgrade ke Creator Pro untuk melanjutkan.',
       });
       navigate('/pricing');
       return;
@@ -277,7 +266,7 @@ ${idea.localizationNotes}`;
         scenes: developed.scenes,
       });
 
-      // 4. Increment trial usage counter & deduct 3 credits
+      // 4. Increment usage counter & deduct 3 credits
       incrementStoryboardCount();
       await deductCredits(3, 'generate_storyboard');
 
@@ -317,7 +306,15 @@ ${idea.localizationNotes}`;
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <NavLink
+            to="/pricing"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-semibold text-amber-300 transition-colors shadow-sm"
+            title="Klik untuk melihat kuota kredit atau beli paket"
+          >
+            <Zap className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span>Saldo: {subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</span>
+          </NavLink>
           <Button
             variant="emerald"
             size="md"
@@ -341,10 +338,15 @@ ${idea.localizationNotes}`;
                 <Layers className="w-4 h-4 text-amber-400" />
                 <span>1. Pilih Kategori Konten ({CONTENT_CATEGORIES.length} Kategori)</span>
               </h3>
-              {subscription.tier !== 'pro' && (
+              {subscription.tier !== 'pro' ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300">
-                  <Lock className="w-3 h-3 text-amber-400" />
-                  Free Trial: 3 Kategori Aktif • Kuota Storyboard: {storyboardGenerationsCount}/{FREE_TRIAL_MAX_STORYBOARD_GENERATIONS}
+                  <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  Free Trial: 3 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 20} Kredit
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  Creator Pro: 19 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 350} Kredit
                 </span>
               )}
             </div>
@@ -645,8 +647,16 @@ ${idea.localizationNotes}`;
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
-            <div className="text-xs text-zinc-400">
-              Profil aktif: <span className="text-amber-400 font-medium">{CONTEXT_PRESETS[contextPreset].name}</span>. Prompt teknis otomatis berbahasa Inggris.
+            <div className="space-y-1.5 text-xs">
+              <div className="text-zinc-400">
+                Profil aktif: <span className="text-amber-400 font-medium">{CONTEXT_PRESETS[contextPreset].name}</span>. Prompt teknis otomatis berbahasa Inggris.
+              </div>
+              <div className="inline-flex items-center gap-2 text-[11px] text-amber-300 font-mono bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
+                <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
+                <span>
+                  Biaya aksi: <strong>{ideaCount === 10 ? '2 Kredit AI' : '1 Kredit AI'}</strong> • Saldo Anda: <strong>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</strong>
+                </span>
+              </div>
             </div>
 
             <Button
@@ -657,7 +667,7 @@ ${idea.localizationNotes}`;
               onClick={handleGenerateIdeas}
               className="w-full sm:w-auto"
             >
-              Hasilkan {ideaCount} Ide Sekarang
+              Hasilkan {ideaCount} Ide Sekarang ({ideaCount === 10 ? '2' : '1'} Kredit)
             </Button>
           </div>
         </BentoTile>
@@ -739,8 +749,9 @@ ${idea.localizationNotes}`;
                       loading={developingIdeaId === idea.id}
                       icon={<ArrowRight className="w-4 h-4 text-black" />}
                       onClick={() => handleDevelopIdea(idea)}
+                      title="Susun 4 adegan storyboard, character bible, dan world bible (-3 Kredit AI)"
                     >
-                      Kembangkan ke Storyboard
+                      Kembangkan ke Storyboard (3 Kredit)
                     </Button>
                   </div>
                 </div>

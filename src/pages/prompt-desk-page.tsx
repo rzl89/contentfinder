@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
+import { developStoryFromIdea } from '@/lib/ai-generator';
 import {
   BentoTile,
   Button,
@@ -16,7 +19,7 @@ import {
   exportProductionSheetMarkdown,
   exportProjectJSON,
 } from '@/lib/prompt-compiler';
-import type { Scene } from '@/types';
+import type { ContentIdea, Scene } from '@/types';
 import {
   Copy,
   Download,
@@ -30,12 +33,22 @@ import {
   Camera,
   ExternalLink,
   Sliders,
+  RotateCw,
+  Sparkles,
+  Zap,
 } from 'lucide-react';
 
 export const PromptDeskPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const { currentProject, updateScene, setScenes, setQCResult, setTargetModel } =
     useProjectStore();
+  const {
+    subscription,
+    hasSufficientCredits,
+    deductCredits,
+    incrementStoryboardCount,
+  } = useSubscriptionStore();
 
   const [activeModelId, setActiveModelId] = useState<string>(
     currentProject?.targetModel || 'universal-neutral'
@@ -44,6 +57,8 @@ export const PromptDeskPage: React.FC = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'markdown' | 'json'>('markdown');
   const [exportContent, setExportContent] = useState('');
+  const [isRegeneratingStoryboard, setIsRegeneratingStoryboard] = useState(false);
+  const [isRegeneratingScene, setIsRegeneratingScene] = useState(false);
 
   const scenes = currentProject?.scenes || [];
   const currentScene = scenes[selectedSceneIndex] || null;
@@ -191,6 +206,165 @@ export const PromptDeskPage: React.FC = () => {
     });
   };
 
+  const getIdeaContext = (): ContentIdea => {
+    if (currentProject?.selectedIdea) {
+      return currentProject.selectedIdea;
+    }
+    return {
+      id: `idea_${currentProject?.id || 'proj'}_${Date.now()}`,
+      categoryId: currentProject?.categoryId || 'time-travel',
+      title: currentProject?.name || 'Proyek Video Pendek',
+      hook: currentProject?.scenes[0]?.summary || 'Hook pembuka visual dramatis 1-3 detik...',
+      premise: currentProject?.name || 'Premis cerita video pendek',
+      synopsis: currentProject?.scenes.map((s) => s.summary).join(' ') || 'Sinopsis alur video.',
+      storyBeats: currentProject?.scenes.map((s) => s.beatTitle) || ['Beat 1', 'Beat 2', 'Beat 3', 'Beat 4'],
+      conflict: 'Eskalasi ketegangan dan dilema utama dalam cerita.',
+      ending: currentProject?.scenes[currentProject.scenes.length - 1]?.summary || 'Payoff akhir cerita.',
+      estimatedDuration: '30-60s',
+      visualStyle: 'cinematic_realistic',
+      suggestedLocation: currentProject?.scenes[0]?.location?.description || 'Indonesia',
+      localizationNotes: 'Adaptasi kontekstual natural Indonesia.',
+      creativeRationale: 'Format visual dirancang untuk retensi audiens tinggi.',
+      saved: true,
+      createdAt: new Date().toISOString(),
+    };
+  };
+
+  const handleRegenerateStoryboard = async () => {
+    if (!currentProject) {
+      showToast({
+        type: 'warning',
+        title: 'Belum Ada Proyek Aktif',
+        message: 'Silakan buka atau buat proyek terlebih dahulu di Idea Studio.',
+      });
+      return;
+    }
+
+    if (!hasSufficientCredits(3)) {
+      showToast({
+        type: 'warning',
+        title: 'Kredit AI Tidak Mencukupi (Butuh 3 Kredit)',
+        message: 'Regenerasi storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit atau perpanjang paket Creator Pro.',
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    setIsRegeneratingStoryboard(true);
+    try {
+      const idea = getIdeaContext();
+      const developed = await developStoryFromIdea(
+        idea,
+        Math.max(4, scenes.length),
+        activeModelId,
+        'indonesian'
+      );
+
+      // If user locked certain scenes, preserve them!
+      const mergedScenes = developed.scenes.map((newScene, idx) => {
+        const existing = scenes[idx];
+        if (existing && existing.locked) {
+          return existing;
+        }
+        return newScene;
+      });
+
+      useProjectStore.getState().updateCurrentProject({
+        characters: developed.characters,
+        worldBible: developed.worldBible,
+        scenes: mergedScenes,
+      });
+
+      incrementStoryboardCount();
+      await deductCredits(3, 'regenerate_storyboard');
+
+      const lockedCount = scenes.filter((s) => s.locked).length;
+      showToast({
+        type: 'success',
+        title: 'Storyboard Berhasil Digenerate Ulang!',
+        message:
+          lockedCount > 0
+            ? `Variasi alur baru diterapkan (${lockedCount} adegan terkunci tetap dipertahankan). (-3 Kredit AI)`
+            : 'Variasi 4 adegan baru dan character bible telah dirancang ulang. (-3 Kredit AI)',
+      });
+      setSelectedSceneIndex(0);
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Regenerasi Storyboard',
+        message: err.message || 'Terjadi gangguan saat memproses AI regenerasi.',
+      });
+    } finally {
+      setIsRegeneratingStoryboard(false);
+    }
+  };
+
+  const handleRegenerateCurrentScene = async () => {
+    if (!currentScene || !currentProject) return;
+
+    if (currentScene.locked) {
+      showToast({
+        type: 'warning',
+        title: 'Adegan Sedang Terkunci',
+        message: 'Klik tombol "Locked" untuk membuka kunci adegan ini sebelum melakukan regenerasi.',
+      });
+      return;
+    }
+
+    if (!hasSufficientCredits(1)) {
+      showToast({
+        type: 'warning',
+        title: 'Kredit AI Tidak Mencukupi (Butuh 1 Kredit)',
+        message: 'Regenerasi 1 adegan membutuhkan 1 Kredit AI. Silakan Top-Up kredit Anda.',
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    setIsRegeneratingScene(true);
+    try {
+      const idea = getIdeaContext();
+      const developed = await developStoryFromIdea(
+        idea,
+        scenes.length,
+        activeModelId,
+        'indonesian'
+      );
+
+      const candidate = developed.scenes[selectedSceneIndex] || developed.scenes[0];
+
+      updateScene(currentScene.sceneNumber, {
+        beatTitle: candidate.beatTitle,
+        purpose: candidate.purpose,
+        summary: candidate.summary,
+        location: candidate.location,
+        characterActions: candidate.characterActions,
+        camera: candidate.camera,
+        lighting: candidate.lighting,
+        dialogue: candidate.dialogue,
+        narration: candidate.narration,
+        imagePrompt: candidate.imagePrompt,
+        videoPrompt: candidate.videoPrompt,
+      });
+
+      await deductCredits(1, 'regenerate_single_scene');
+
+      showToast({
+        type: 'success',
+        title: `Scene #${currentScene.sceneNumber} Berhasil Diregenerasi!`,
+        message: 'Prompt visual, sinematografi, dan alur adegan diperbarui. (-1 Kredit AI)',
+      });
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Regenerasi Adegan',
+        message: err.message || 'Terjadi gangguan saat memproses AI.',
+      });
+    } finally {
+      setIsRegeneratingScene(false);
+    }
+  };
+
   const qc = currentProject?.qcResult;
 
   return (
@@ -225,6 +399,29 @@ export const PromptDeskPage: React.FC = () => {
 
         {/* Global Toolbar Actions */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Credit Balance Indicator */}
+          <NavLink
+            to="/pricing"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-semibold text-amber-300 transition-colors shadow-sm mr-1"
+            title="Klik untuk melihat kuota kredit atau Top-Up"
+          >
+            <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span>Saldo: {subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</span>
+          </NavLink>
+
+          {/* Regenerate Storyboard Button */}
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={isRegeneratingStoryboard}
+            icon={<RotateCw className="w-3.5 h-3.5 text-amber-400" />}
+            onClick={handleRegenerateStoryboard}
+            title="Generate ulang seluruh 4 adegan dengan ide saat ini (-3 Kredit AI)"
+            className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+          >
+            Regenerate Storyboard (3 Kredit)
+          </Button>
+
           <Button
             variant="secondary"
             size="sm"
@@ -431,6 +628,17 @@ export const PromptDeskPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={isRegeneratingScene}
+                    icon={<RotateCw className="w-3.5 h-3.5 text-amber-400" />}
+                    onClick={handleRegenerateCurrentScene}
+                    title="Generate variasi baru untuk adegan ini saja (-1 Kredit AI)"
+                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs"
+                  >
+                    Regenerate Scene (1 Kredit)
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
