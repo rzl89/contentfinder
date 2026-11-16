@@ -13,13 +13,13 @@ import {
 import { useToast } from '@/components/ui/toast';
 import {
   Settings,
-  ShieldCheck,
   Globe,
   Sliders,
   BookOpen,
   CheckCircle2,
   CreditCard,
   Cloud,
+  ShieldCheck,
 } from 'lucide-react';
 import type { ContextProfilePreset, EnvironmentType, VisualStyle, DialogLanguage } from '@/types';
 
@@ -249,15 +249,7 @@ export const SettingsPage: React.FC = () => {
               Seluruh proyek, ide konten, karakter, dan prompt Anda tersimpan otomatis di cloud database yang terisolasi per akun secara privat.
             </p>
 
-            <div className="pt-1 flex items-center justify-between">
-              <NavLink
-                to="/admin"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors border border-white/5"
-              >
-                <Sliders className="w-3.5 h-3.5 text-amber-400" />
-                Panel Admin (Master)
-              </NavLink>
-
+            <div className="pt-1 flex items-center justify-end">
               <NavLink
                 to="/pricing"
                 className="inline-flex items-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition-colors shadow"

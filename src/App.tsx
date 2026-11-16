@@ -9,13 +9,24 @@ import { ByokPage } from '@/pages/byok-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { SettingsPage } from '@/pages/settings-page';
 import { PricingPage } from '@/pages/pricing-page';
-import { AdminPage } from '@/pages/admin-page';
+import { AdminPanelPage } from '@/pages/admin-panel-page';
+import { NotFoundPage } from '@/pages/not-found-page';
+
+// Secret admin path — not linked anywhere in the UI
+const ADMIN_SECRET_PATH = 'mstr-ype9-91ek';
 
 export function App() {
   return (
     <ToastProvider>
       <Router>
         <Routes>
+          {/* ── Secret Admin Route (outside AppLayout, no sidebar) ── */}
+          <Route path={`/${ADMIN_SECRET_PATH}`} element={<AdminPanelPage />} />
+
+          {/* ── Old /admin path → 404 (stealth) ─────────────────── */}
+          <Route path="/admin" element={<NotFoundPage />} />
+
+          {/* ── Main App with sidebar layout ─────────────────────── */}
           <Route path="/" element={<AppLayout />}>
             <Route index element={<IdeaStudioPage />} />
             <Route path="prompt-desk" element={<PromptDeskPage />} />
@@ -24,8 +35,8 @@ export function App() {
             <Route path="projects" element={<ProjectsPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="settings" element={<SettingsPage />} />
-            <Route path="admin" element={<AdminPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Any unknown sub-path → 404 */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </Router>

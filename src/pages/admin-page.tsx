@@ -173,7 +173,7 @@ export const AdminPage: React.FC = () => {
       showToast({ type: 'warning', title: 'PIN Terlalu Pendek', message: 'Minimal 4 digit angka/karakter.' });
       return;
     }
-    updateAdminPin(newPin.trim());
+    updateAdminPin('', newPin.trim());
     setIsChangingPin(false);
     setNewPin('');
     showToast({
