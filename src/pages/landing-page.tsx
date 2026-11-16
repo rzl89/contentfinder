@@ -121,7 +121,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('kategori')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              19 Kategori
+              21 Kategori
             </button>
             <button
               type="button"
@@ -204,7 +204,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('kategori')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              19 Kategori
+              21 Kategori
             </button>
             <button
               type="button"
@@ -272,7 +272,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
           {/* Social proof metric chips -  truthful and concrete */}
           <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
-              <div className="text-xl font-bold font-mono text-amber-400">19</div>
+              <div className="text-xl font-bold font-mono text-amber-400">21</div>
               <div className="text-[11px] text-zinc-400 mt-0.5">Kategori Konten Pendek</div>
             </div>
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
@@ -476,7 +476,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                19 Format Konten Berdaya Retensi Tinggi
+                21 Format Konten Berdaya Retensi Tinggi
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400 mt-1">
                 Kategori terkurasi dari format video pendek dengan performa tervalidasi di TikTok dan Reels.

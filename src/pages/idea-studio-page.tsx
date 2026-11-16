@@ -296,13 +296,13 @@ ${idea.localizationNotes}`;
         <div className="space-y-1.5 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>AI Content Idea Studio — 19 Creative Frameworks</span>
+            <span>AI Content Idea Studio — 21 Creative Frameworks</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
             Eksplorasi Ide Konten & Narasi Video Pendek
           </h2>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            Pilih dari 19 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.
+            Pilih dari 21 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.
           </p>
         </div>
 
@@ -346,14 +346,14 @@ ${idea.localizationNotes}`;
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
                   <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  Creator Pro: 19 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 350} Kredit
+                  Creator Pro: 21 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 350} Kredit
                 </span>
               )}
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
               {subscription.tier === 'pro'
-                ? 'Seluruh 19 kategori terbuka dengan creative framework dan hook style spesifik.'
-                : 'Free Trial membuka 3 kategori unggulan. Upgrade ke Creator Pro untuk membuka seluruh 19 kategori.'}
+                ? 'Seluruh 21 kategori terbuka dengan creative framework dan hook style spesifik.'
+                : 'Free Trial membuka 3 kategori unggulan. Upgrade ke Creator Pro untuk membuka seluruh 21 kategori.'}
             </p>
           </div>
 
@@ -392,7 +392,7 @@ ${idea.localizationNotes}`;
             <div className="flex items-center gap-2 text-zinc-300">
               <Lock className="w-4 h-4 text-amber-400 shrink-0" />
               <span>
-                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 19 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
+                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 21 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
               </span>
             </div>
             <Button

@@ -13,12 +13,12 @@ import {
 import type { Scene } from '@/types';
 
 describe('Context Engine & Categories Catalog', () => {
-  it('should have exactly 19 unique content categories', () => {
-    expect(CONTENT_CATEGORIES.length).toBe(19);
+  it('should have exactly 21 unique content categories', () => {
+    expect(CONTENT_CATEGORIES.length).toBe(21);
 
     const ids = CONTENT_CATEGORIES.map((c) => c.id);
     const uniqueIds = new Set(ids);
-    expect(uniqueIds.size).toBe(19);
+    expect(uniqueIds.size).toBe(21);
   });
 
   it('every category should have unique creative frameworks and hooks', () => {
@@ -35,7 +35,7 @@ describe('Context Engine & Categories Catalog', () => {
 
     // Ensure they don't share identical creative framework templates
     const frameworks = new Set(CONTENT_CATEGORIES.map((c) => c.creativeFramework));
-    expect(frameworks.size).toBe(19);
+    expect(frameworks.size).toBe(21);
   });
 
   it('should retrieve category by id and search correctly', () => {

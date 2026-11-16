@@ -1,7 +1,7 @@
 import type { ContentCategory } from '@/types';
 
 /**
- * Fixprom — Full 19-Category Content Catalog
+ * Fixprom — Full 21-Category Content Catalog
  *
  * Every category carries its own creative framework, hook style,
  * visual guidance, and (where relevant) Indonesia-specific context.
@@ -504,6 +504,53 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     icon: 'Mountain',
   },
 
+  {
+    id: 'kids-animation',
+    name: 'Animasi Edukasi & Cerita Anak',
+    description:
+      'Video animasi 3D/2D ceria untuk anak dan balita, menampilkan karakter fabel imut, petualangan eksplorasi, dongeng budi pekerti, dan edukasi kebiasaan baik.',
+    group: 'Visual & AI Creativity',
+    subcategories: [
+      {
+        id: 'kids-fables-moral',
+        name: 'Fabel Hewan & Budi Pekerti',
+        description: 'Cerita dongeng hewan yang mengajarkan nilai kejujuran, tolong-menolong, dan empati',
+      },
+      {
+        id: 'kids-early-learning',
+        name: 'Edukasi Dini & Sains Ringan',
+        description: 'Mengenal warna, angka, hewan, dan fenomena alam lewat nyanyian dan animasi ceria',
+      },
+      {
+        id: 'kids-daily-habits',
+        name: 'Kebiasaan Baik Sehari-hari',
+        description: 'Menyikat gigi, merapikan mainan, cuci tangan, dan adab sopan santun kepada orang tua',
+      },
+      {
+        id: 'kids-folklore-cheerful',
+        name: 'Cerita Rakyat Versi Ceria',
+        description: 'Dongeng nusantara diadaptasi ramah anak tanpa unsur kekerasan atau ketakutan',
+      },
+    ],
+    creativeFramework:
+      'CHEERFUL MORAL ARC — Buka dengan visual karakter imut berenergi positif dalam dunia penuh warna. ' +
+      'Gunakan struktur: "Momen Ceria (Detik 0-3) → Masalah Kecil/Tantangan (3-8s) → Kolaborasi/Penyelesaian Menyenangkan (8-20s) → Lagu/Pesan Moral Gembira (20-30s)". ' +
+      'Gunakan kalimat pendek, ritme pengucapan jelas, dan repetisi kata kunci yang mudah ditirukan anak-anak.',
+    hookStyle:
+      'Karakter imut melambaikan tangan ke arah kamera sambil menyapa ceria atau bertanya hal seru: "Halo teman-teman! Siapa yang tahu kenapa gajah punya belalai panjang?". Efek suara pop/chime cerah dalam 1 detik pertama.',
+    visualGuidance:
+      'Warna primer cerah (bright yellow, sky blue, candy pink) dan pastel lembut. Karakter 3D stylized rounded chibi (gaya Pixar/Disney kartun anak). Pencahayaan terang merata (high-key soft lighting), ekspresi mata besar ekspresif, tanpa elemen tajam atau menakutkan.',
+    indonesiaGuidance:
+      'Sentuhan ramah Indonesia: latar rumah asri pekarangan buah tropis, taman bermain nusantara, hewan khas nusantara (kancil, badak bercula satu, burung jalak bali). Dialog berbahasa Indonesia yang santun dan edukatif.',
+    suggestedDuration: ['15-30s', '30-60s', '1-3min'],
+    exampleIdeas: [
+      'Si Kancil & Pohon Buah Bersama: Kancil mengajak Monyet membagikan buah rambutan kepada kura-kura yang lapar',
+      'Petualangan Dino Kecil Mencari Pelangi: Belajar mengenali 7 warna pelangi lewat gelembung sabun ajaib di taman',
+      'Ayo Sikat Gigi Sebelum Tidur!: Lagu dan animasi seru kuman gigi yang kabur saat sikat gigi berbusa stroberi',
+    ],
+    icon: 'Sparkles',
+  },
+
   // ─────────────────────────────────────────────────────────────
   //  GROUP 3 — Education, Facts & Mystery
   // ─────────────────────────────────────────────────────────────
@@ -869,6 +916,53 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
       'Cerita: Nenek di Yogyakarta masih membuat batik tulis selama 50 tahun — produk batiknya kini dikirim ke seluruh dunia',
       'AI commercial: Kopi dari petani di Toraja — dari kebun di pegunungan sampai secangkir latte di Jakarta',
       'Perbandingan kreatif: 5 sunscreen lokal Indonesia diuji di bawah terik matahari Bali — siapa yang menang?',
+    ],
+    icon: 'ShoppingBag',
+  },
+
+  {
+    id: 'affiliate-marketing',
+    name: 'Affiliate & Review Produk TikTok/Shopee',
+    description:
+      'Format video komersial berkonversi tinggi untuk kreator affiliate: unboxing dramatis, problem-solution instan, demonstrasi uji ketahanan (stress-test), dan trigger keranjang kuning.',
+    group: 'Social & Short-form Formats',
+    subcategories: [
+      {
+        id: 'affiliate-problem-solution',
+        name: 'Problem-Solution Instan (Pain Point)',
+        description: 'Menyorot masalah menjengkelkan sehari-hari dan menghadirkan produk sebagai penyelamat',
+      },
+      {
+        id: 'affiliate-unboxing-firstlook',
+        name: 'Dramatis Unboxing & First Look',
+        description: 'Sensasi unboxing visual memuaskan (ASMR/estetik) dengan ekspektasi vs realita',
+      },
+      {
+        id: 'affiliate-before-after',
+        name: 'Before vs After & Uji Ketahanan',
+        description: 'Eksperimen ekstrem menguji klaim produk secara visual dan transparan',
+      },
+      {
+        id: 'affiliate-honest-worthit',
+        name: 'Review Jujur "Worth It Gak Sih?"',
+        description: 'Bedah kelebihan, kekurangan, dan alasan kenapa barang ini wajib di-checkout sekarang',
+      },
+    ],
+    creativeFramework:
+      'CONVERSION RETENTION ARC — Struktur psikologis konversi belanja kilat: ' +
+      '"Pain Point Agitation (Detik 0-3) → Product Reveal & WOW Factor (3-8s) → Visual Proof / Demo Nyata (8-18s) → Objections Handled / Harga Relatable (18-24s) → Urgent Call-to-Action (24-30s)". ' +
+      'Tekankan utilitas nyata produk bagi hidup penonton, bukan sekadar spesifikasi teknis membosankan.',
+    hookStyle:
+      'Buka dengan kalimat pencegah penyesalan atau tantangan berani: "Jangan checkout barang ini sebelum lihat video ini!", "Nyesel banget baru tahu ada alat semurah ini!", atau visual masalah berantakan yang diselesaikan seketika.',
+    visualGuidance:
+      'Pencahayaan produk tajam studio (high-contrast punchy lighting). Macro close-up detail bahan dan tekstur. Split screen Before-After dinamis. Sudut pandang tangan interaktif memegang barang. Ruang komposisi bawah bersih untuk tombol keranjang kuning/keranjang oranye.',
+    indonesiaGuidance:
+      'Fokus pada ceruk produk laris pasar Indonesia: perabot rumah tangga pintar (home living), skincare/beauty lokal BPOM, fashion harian terjangkau, serta gadget fungsional murah. Gaya tutur santai, ramah, dan jujur khas kreator lokal.',
+    suggestedDuration: ['10-15s', '15-30s', '30-60s'],
+    exampleIdeas: [
+      'Alat Pel Putar Otomatis: Tes membersihkan tumpahan kopi kental di lantai keramik hanya dalam 5 detik — tanpa tangan kotor!',
+      'Tripod Tracking AI Murah: Bikin kreator solo bisa bikin video jalan-jalan dengan angle sinematik tanpa bantuan kameramen',
+      'Termos Stainless 24 Jam: Eksperimen memasukkan es batu di cuaca terik 35°C Jakarta — apakah masih beku sampai malam?',
     ],
     icon: 'ShoppingBag',
   },

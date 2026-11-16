@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       to: '/studio',
       label: 'Content Idea Studio',
       icon: <Lightbulb className="w-4 h-4" />,
-      badge: '19 Kategori',
+      badge: '21 Kategori',
     },
     {
       to: '/projects',
@@ -197,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Akses seluruh 19 studio kategori & prompt compiler.
+                Akses seluruh 21 studio kategori & prompt compiler.
               </p>
               <NavLink
                 to="/pricing"
