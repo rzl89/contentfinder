@@ -47,7 +47,6 @@ export const PricingPage: React.FC = () => {
   const isPaidActive = subscription.status === 'active' && subscription.tier === 'pro';
 
   const handleSelectPlan = (tier: PlanTier) => {
-    if (tier === 'trial') return;
     const order = createOrder(tier, billingCycle, selectedPayment);
     setCurrentOrder(order);
     setIsCheckoutOpen(true);

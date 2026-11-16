@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { useSubscriptionStore, PRICING_PLANS } from '@/stores/subscription-store';
 
-describe('Fixprom — Subscription & Monetization System', () => {
+describe('Fixprom â€” Subscription & Monetization System', () => {
   beforeEach(() => {
     // Reset store state
     useSubscriptionStore.setState({
       subscription: {
-        tier: 'trial',
+        tier: 'free',
         status: 'trial',
         trialStartedAt: new Date().toISOString(),
         trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -21,7 +21,7 @@ describe('Fixprom — Subscription & Monetization System', () => {
     const remaining = store.getRemainingTrialHours();
     expect(remaining).toBeGreaterThanOrEqual(23);
     expect(remaining).toBeLessThanOrEqual(24);
-    expect(store.subscription.tier).toBe('trial');
+    expect(store.subscription.tier).toBe('free');
   });
 
   it('creates order with valid invoice number, unique verification code, and exact total amount', () => {
@@ -81,7 +81,7 @@ describe('Fixprom — Subscription & Monetization System', () => {
     // Expired trial without active subscription restricts access
     useSubscriptionStore.setState({
       subscription: {
-        tier: 'trial',
+        tier: 'free',
         status: 'expired',
         trialStartedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
         trialEndsAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
@@ -90,3 +90,4 @@ describe('Fixprom — Subscription & Monetization System', () => {
     expect(store.isFeatureAccessible('pro')).toBe(false);
   });
 });
+

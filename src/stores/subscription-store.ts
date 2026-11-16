@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription } from '@/types';
 import { useAdminStore } from './admin-store';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -29,7 +29,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'BCA (Bank Central Asia)',
     accountNumber: (import.meta.env.VITE_PAYMENT_BCA_NO as string) || '8290-8812-9901',
     accountHolder: (import.meta.env.VITE_PAYMENT_BCA_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
-    icon: '🏦',
+    icon: 'ðŸ¦',
     instructions: [
       'Buka BCA mobile atau myBCA.',
       'Pilih m-Transfer > Antar Rekening.',
@@ -42,7 +42,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'Bank Mandiri',
     accountNumber: (import.meta.env.VITE_PAYMENT_MANDIRI_NO as string) || '1370-0199-8821-2',
     accountHolder: (import.meta.env.VITE_PAYMENT_MANDIRI_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
-    icon: '🏦',
+    icon: 'ðŸ¦',
     instructions: [
       'Buka Livin\' by Mandiri.',
       'Pilih Transfer Rupiah > Rekening Mandiri.',
@@ -55,7 +55,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
     accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
     accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
-    icon: '📱',
+    icon: 'ðŸ“±',
     instructions: [
       'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
       'Pindai (Scan) QRIS yang tertera pada layar.',
@@ -68,7 +68,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'DANA / GoPay E-Wallet',
     accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
     accountHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
-    icon: '💳',
+    icon: 'ðŸ’³',
     instructions: [
       'Buka aplikasi DANA atau GoPay.',
       'Kirim uang ke nomor HP di atas.',
@@ -87,7 +87,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'BCA (Bank Central Asia)',
         accountNumber: admin.bcaNumber || '8290-8812-9901',
         accountHolder: admin.bcaHolder || 'TEMPORAFORGE AI / RIZAL',
-        icon: '🏦',
+        icon: 'ðŸ¦',
         instructions: [
           'Buka BCA mobile atau myBCA.',
           'Pilih m-Transfer > Antar Rekening.',
@@ -100,7 +100,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'Bank Mandiri',
         accountNumber: admin.mandiriNumber || '1370-0199-8821-2',
         accountHolder: admin.mandiriHolder || 'TEMPORAFORGE AI / RIZAL',
-        icon: '🏦',
+        icon: 'ðŸ¦',
         instructions: [
           'Buka Livin\' by Mandiri.',
           'Pilih Transfer Rupiah > Rekening Mandiri.',
@@ -113,7 +113,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
         accountNumber: admin.qrisNmid || 'NMID: ID1020268899120',
         accountHolder: admin.qrisHolder || 'TEMPORAFORGE CREATIVE STUDIO',
-        icon: '📱',
+        icon: 'ðŸ“±',
         instructions: [
           'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
           'Pindai (Scan) QRIS yang tertera pada layar.',
@@ -126,7 +126,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'DANA / GoPay E-Wallet',
         accountNumber: admin.danaNumber || '0812-3456-7890',
         accountHolder: admin.danaHolder || 'RIZAL - TEMPORAFORGE',
-        icon: '💳',
+        icon: 'ðŸ’³',
         instructions: [
           'Buka aplikasi DANA atau GoPay.',
           'Kirim uang ke nomor HP di atas.',
@@ -232,7 +232,7 @@ function loadInitialState(): {
   manualActivations: ManualActivationRecord[];
 } {
   const defaultSub: UserSubscription = {
-    tier: 'trial',
+    tier: 'free',
     status: 'trial',
     trialStartedAt: new Date().toISOString(),
     trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -287,7 +287,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     if (!current.trialStartedAt) {
       const now = Date.now();
       const newSub: UserSubscription = {
-        tier: 'trial',
+        tier: 'free',
         status: 'trial',
         trialStartedAt: new Date(now).toISOString(),
         trialEndsAt: new Date(now + 24 * 60 * 60 * 1000).toISOString(),
@@ -368,13 +368,13 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
     const rawMessage = `Halo Admin Fixprom, saya ingin konfirmasi pembayaran langganan:
 
-🧾 *Nomor Invoice:* ${order.invoiceNumber}
-📦 *Paket:* ${planName} (${cycle})
-💳 *Metode:* ${bank}
-💰 *Total Transfer:* Rp ${order.totalAmount.toLocaleString('id-ID')} (Termasuk kode unik: ${order.uniqueCode})
-⏰ *Waktu:* ${new Date(order.createdAt).toLocaleString('id-ID')}
+ðŸ§¾ *Nomor Invoice:* ${order.invoiceNumber}
+ðŸ“¦ *Paket:* ${planName} (${cycle})
+ðŸ’³ *Metode:* ${bank}
+ðŸ’° *Total Transfer:* Rp ${order.totalAmount.toLocaleString('id-ID')} (Termasuk kode unik: ${order.uniqueCode})
+â° *Waktu:* ${new Date(order.createdAt).toLocaleString('id-ID')}
 
-Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Terima kasih! 🙏`;
+Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Terima kasih! ðŸ™`;
 
     return `https://wa.me/${adminWA}?text=${encodeURIComponent(rawMessage)}`;
   },
@@ -578,7 +578,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
     if (affectsCurrent || get().subscription.tier === 'pro') {
       const reverted: UserSubscription = {
-        tier: 'trial',
+        tier: 'free',
         status: 'expired',
         trialStartedAt: get().subscription.trialStartedAt,
         trialEndsAt: get().subscription.trialEndsAt,
@@ -675,7 +675,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
         new Date(profile.subscription_expires_at).getTime() <= Date.now()
       ) {
         const expiredSub: UserSubscription = {
-          tier: 'trial',
+          tier: 'free',
           status: 'expired',
           expiresAt: profile.subscription_expires_at,
           trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
@@ -703,3 +703,4 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
     }
   },
 }));
+

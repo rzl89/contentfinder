@@ -39,6 +39,7 @@ export function getSupabaseConfig() {
 
 /**
  * Saves or updates a project in Supabase database.
+ * Requires an authenticated user — skips silently for guests.
  */
 export async function syncProjectToSupabase(project: Project): Promise<{ success: boolean; error?: string }> {
   if (!isSupabaseConfigured()) {
@@ -46,10 +47,21 @@ export async function syncProjectToSupabase(project: Project): Promise<{ success
   }
 
   try {
+    // Require a real authenticated user — FK to profiles.id must be a valid UUID
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
+    if (!userId) {
+      // Guest user: project lives in localStorage only, no DB write needed
+      return { success: false, error: 'NOT_AUTHENTICATED' };
+    }
+
+    // Ensure project id is a valid UUID (Postgres uuid column rejects string slugs)
+    const dbId = UUID_REGEX.test(project.id) ? project.id : crypto.randomUUID();
+
     const { error } = await supabase.from('projects').upsert(
       {
-        id: project.id,
-        user_id: project.userId || 'user_local_owner',
+        id: dbId,
+        user_id: userId,
         name: project.name,
         description: project.description || '',
         category_id: project.categoryId,
