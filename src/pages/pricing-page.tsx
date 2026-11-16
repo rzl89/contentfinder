@@ -86,12 +86,12 @@ export const PricingPage: React.FC = () => {
           {isPaidActive ? (
             <div className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Paket Anda: <strong>{subscription.tier.toUpperCase()}</strong> (Aktif)</span>
+              <span>Paket Anda: <strong>{subscription.tier.toUpperCase()}</strong> (Aktif) • Saldo: <strong>{subscription.creditsBalance ?? 350} Kredit AI</strong></span>
             </div>
           ) : isTrialActive ? (
             <div className="inline-flex items-center gap-2 bg-amber-950/40 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
               <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span>Masa Free Trial Aktif: Sisa <strong>~{remainingHours} Jam</strong></span>
+              <span>Masa Free Trial: Sisa <strong>~{remainingHours} Jam</strong> • Saldo: <strong>{subscription.creditsBalance ?? 20} Kredit AI</strong></span>
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 bg-red-950/40 border border-red-500/30 text-red-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">

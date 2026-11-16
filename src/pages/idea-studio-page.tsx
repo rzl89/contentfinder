@@ -51,9 +51,7 @@ export const IdeaStudioPage: React.FC = () => {
   const {
     subscription,
     isCategoryAccessible,
-    canGenerateStoryboard,
     incrementStoryboardCount,
-    storyboardGenerationsCount,
     hasSufficientCredits,
     deductCredits,
   } = useSubscriptionStore();

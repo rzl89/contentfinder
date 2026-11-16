@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
+import { CONTENT_CATEGORIES } from '@/context-engine';
 
 interface LandingPageProps {
   scrollToSection?: string;
@@ -492,30 +493,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
-            {[
-              { title: 'Time Travel & Masa Lalu', desc: 'Kontras era historis vs modern' },
-              { title: 'POV Kamera Tersembunyi', desc: 'Sudut pandang mikro benda mati' },
-              { title: 'Transformasi Ruang 360°', desc: 'Evolusi lokasi dalam satu adegan' },
-              { title: 'Micro-Documentary Misteri', desc: 'Fakta aneh dan arsip sejarah' },
-              { title: 'Dua Pilihan Hidup Ekstrem', desc: 'Dilema moral interaktif penonton' },
-              { title: 'Evolusi Objek & Desain', desc: 'Metamorfosis bentuk per dekade' },
-              { title: 'Sketsa Satir Kantor Modern', desc: 'Relatable humor tempat kerja' },
-              { title: "Eksperimen 'Bagaimana Jika'", desc: 'Simulasi skenario alternatif' },
-              { title: 'Misteri Arsip Nusantara', desc: 'Cerita rakyat berbasis arkeologi' },
-              { title: 'Sinematik Stickman Dramatik', desc: 'Aksi koreografi minimalis' },
-              { title: 'Loop Video Sempurna', desc: 'Ending yang menyatu ke detik 0' },
-              { title: 'Eksplorasi Skala Mikro/Makro', desc: 'Zoom tak berujung sel ke galaksi' },
-            ].map((cat, idx) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 text-xs">
+            {CONTENT_CATEGORIES.map((cat) => (
               <div
-                key={idx}
-                className="p-3.5 rounded-xl bg-[#111115] border border-white/5 hover:border-amber-500/30 transition-all cursor-pointer group"
-                onClick={() => navigate('/studio')}
+                key={cat.id}
+                className="p-3.5 rounded-xl bg-[#111115] border border-white/5 hover:border-amber-500/30 hover:bg-[#14141c] transition-all cursor-pointer group flex flex-col justify-between"
+                onClick={() => navigate('/studio', { state: { categoryId: cat.id } })}
               >
-                <div className="font-semibold text-zinc-200 group-hover:text-amber-300 transition-colors">
-                  {cat.title}
+                <div>
+                  <div className="font-semibold text-zinc-200 group-hover:text-amber-300 transition-colors line-clamp-1">
+                    {cat.name}
+                  </div>
+                  <div className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                    {cat.description}
+                  </div>
                 </div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">{cat.desc}</div>
+                <div className="mt-2.5 pt-2 border-t border-white/5 text-[10px] text-zinc-500 font-mono flex items-center justify-between">
+                  <span>{cat.subcategories.length} subkategori</span>
+                  <span className="text-amber-400/80">{cat.group.split(' ')[0]}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -552,9 +548,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  '3 kategori konten unggulan aktif',
-                  'Maksimal 3x generate storyboard adegan',
-                  'Akses Prompt Production Desk',
+                  'Alokasi 20 Kredit AI untuk eksplorasi awal',
+                  '3 Kategori Konten Unggulan (Time Travel, Stickman, POV)',
+                  'Generator ide hook 1-3 detik & story beats',
+                  'Akses Prompt Production Desk & Story Studio',
                   'Ekspor storyboard Markdown & JSON',
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -597,12 +594,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  'Semua fitur pada paket Free Trial',
-                  'Proyek tidak terbatas',
-                  'Radar Tren Real-Time tanpa batas',
-                  'Konektor BYOK Video Vault aman',
+                  '350 Kredit AI / bulan (~70 storyboard video lengkap)',
+                  'Semua 21 Kategori Konten Terbuka Penuh',
+                  'Regenerasi adegan & storyboard kapan saja',
+                  'Opsi Top-Up Booster mulai Rp 20.000 (tidak hangus)',
+                  'Konektor BYOK Video Vault aman (Kling, Veo 2, Runway)',
                   'Format ekspor semua vendor model AI',
-                  'Penyimpanan cloud database privat',
+                  'Penyimpanan cloud database privat Supabase',
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -645,10 +643,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  'Semua fitur Creator Pro selama 1 tahun',
+                  'Semua fitur Creator Pro selama 1 tahun penuh',
+                  'Hemat 30% (Setara ~Rp 41.500 / bulan)',
                   'Prioritas update prompt model video baru',
-                  'Konsultasi alur kerja studio via WhatsApp',
-                  'Garansi aktivasi langsung via QRIS/BCA',
+                  'Garansi aktivasi instan via QRIS, BCA, Mandiri',
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
