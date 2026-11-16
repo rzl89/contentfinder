@@ -234,3 +234,37 @@ CREATE INDEX IF NOT EXISTS idx_scenes_project_id ON public.scenes USING btree (p
 CREATE INDEX IF NOT EXISTS idx_subscription_orders_inv ON public.subscription_orders USING btree (invoice_number);
 CREATE INDEX IF NOT EXISTS idx_subscription_orders_user ON public.subscription_orders USING btree (user_id);
 CREATE INDEX IF NOT EXISTS idx_video_jobs_user ON public.video_generation_jobs USING btree (user_id);
+
+
+-- Automatic RLS helper used by the production DDL event trigger.
+-- The event trigger itself is managed with elevated platform privileges.
+CREATE OR REPLACE FUNCTION public.rls_auto_enable()
+RETURNS event_trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog'
+AS $function$
+DECLARE
+  cmd record;
+  tbl name;
+BEGIN
+  FOR cmd IN
+    SELECT *
+    FROM pg_event_trigger_ddl_commands()
+    WHERE command_tag IN ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')
+      AND object_type IN ('table','partitioned table')
+  LOOP
+    IF cmd.schema_name IS NOT NULL AND cmd.schema_name = 'public' THEN
+      BEGIN
+        SELECT c.relname INTO tbl
+        FROM pg_catalog.pg_class c
+        WHERE c.oid = cmd.objid;
+        EXECUTE format('ALTER TABLE IF EXISTS %I.%I ENABLE ROW LEVEL SECURITY', cmd.schema_name, tbl);
+      EXCEPTION
+        WHEN OTHERS THEN
+          RAISE LOG 'rls_auto_enable: failed to enable RLS on %', cmd.object_identity;
+      END;
+    END IF;
+  END LOOP;
+END;
+$function$;
