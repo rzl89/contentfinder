@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -19,17 +19,34 @@ import {
   Eye,
   UserCircle2,
   LogIn,
+  Menu,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
 
-export const LandingPage: React.FC = () => {
+interface LandingPageProps {
+  scrollToSection?: string;
+}
+
+export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollTo = (id: string) => {
+    setMobileMenuOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  useEffect(() => {
+    if (scrollToSection) {
+      const timer = setTimeout(() => {
+        scrollTo(scrollToSection);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [scrollToSection]);
 
   // Interactive Demo state: comparison between standard AI slop and Fixprom prompt
   const [activeTab, setActiveTab] = useState<'fixprom' | 'generic'>('fixprom');
@@ -152,8 +169,60 @@ export const LandingPage: React.FC = () => {
                 </Button>
               </>
             )}
+
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-3 pt-3 border-t border-white/10 space-y-2 animate-fade-in">
+            <button
+              type="button"
+              onClick={() => scrollTo('demo')}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
+            >
+              Contoh Prompt
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('fitur')}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
+            >
+              Fitur Studio
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('kategori')}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
+            >
+              19 Kategori
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('harga')}
+              className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
+            >
+              Harga
+            </button>
+            {!user && (
+              <NavLink
+                to="/login"
+                className="block px-3 py-2 rounded-lg text-xs text-amber-400 hover:bg-white/5 transition-colors"
+              >
+                Masuk ke Akun
+              </NavLink>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}

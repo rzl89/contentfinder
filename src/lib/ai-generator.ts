@@ -65,15 +65,16 @@ export async function generateContentIdeas(
       const data = await res.json();
       const rawList = Array.isArray(data.ideas) ? data.ideas : data.ideas ? [data.ideas] : [];
       if (data.success && rawList.length > 0) {
-        return rawList.map((raw: any, idx: number): ContentIdea => ({
+        const targetCount = config.ideaCount || 5;
+        const aiIdeas: ContentIdea[] = rawList.map((raw: any, idx: number): ContentIdea => ({
           id: `idea_ai_${Date.now()}_${idx + 1}`,
           title: raw.title || `${category.name} #${idx + 1}`,
           hook: raw.hook || '[Detik 0-3] Hook pembuka dramatis',
           premise: raw.premise || category.description,
           synopsis: raw.synopsis || raw.premise || '',
-          storyBeats: Array.isArray(raw.storyBeats) ? raw.storyBeats : [
-            'Beat 1 (Hook)', 'Beat 2 (Eskalasi)', 'Beat 3 (Puncak)', 'Beat 4 (Twist)'
-          ],
+          storyBeats: Array.isArray(raw.storyBeats) && raw.storyBeats.length > 0
+            ? raw.storyBeats
+            : ['Beat 1 (Hook)', 'Beat 2 (Eskalasi)', 'Beat 3 (Puncak)', 'Beat 4 (Twist)'],
           conflict: raw.conflict || 'Konflik utama dalam narasi.',
           ending: raw.ending || 'Penyelesaian berkesan.',
           estimatedDuration: config.duration || '30-60s',
@@ -89,6 +90,43 @@ export async function generateContentIdeas(
           saved: false,
           createdAt: new Date().toISOString(),
         }));
+
+        // Defensively pad if backend returned fewer than requested count
+        if (aiIdeas.length < targetCount) {
+          for (let i = aiIdeas.length + 1; i <= targetCount; i++) {
+            const subcatItem = category.subcategories[(i - 1) % category.subcategories.length];
+            const baseExample = category.exampleIdeas[(i - 1) % category.exampleIdeas.length];
+            aiIdeas.push({
+              id: `idea_pad_${Date.now()}_${i}`,
+              title: `${category.name}: Eksplorasi ${subcatItem.name} #${i}`,
+              hook: `[Detik 0-3] "${baseExample.split('—')[0] || 'Tunggu sebentar... kamu tidak akan menyangka apa yang terjadi selanjutnya.'}"`,
+              premise: `Sebuah narasi tentang ${subcatItem.description.toLowerCase()} dalam balutan gaya ${(config.visualStyle || 'cinematic_realistic').replace(/_/g, ' ')}.`,
+              synopsis: `Di sebuah latar yang dirancang autentik, tokoh utama mengalami dinamika tak terduga. ${category.creativeFramework.split('.')[0]}. Alur berkembang cepat menyesuaikan durasi pendek ${config.duration || '30-60s'}.`,
+              storyBeats: [
+                'Beat 1 (Hook): Kejadian tak terduga langsung menghentikan scroll penonton.',
+                'Beat 2 (Eskalasi): Situasi berkembang rumit dengan konflik atau misteri utama.',
+                'Beat 3 (Puncak/Climax): Momen paling intens atau visual paling memukau.',
+                'Beat 4 (Payoff/Twist): Penyelesaian cerdas atau twist yang memuaskan rasa ingin tahu.',
+              ],
+              conflict: 'Pertentangan antara ekspektasi awal dan kenyataan situasi di lapangan.',
+              ending: 'Payoff yang memberikan kepuasan emosional atau memicu diskusi di kolom komentar.',
+              estimatedDuration: config.duration || '30-60s',
+              visualStyle: config.visualStyle || 'cinematic_realistic',
+              suggestedLocation:
+                config.contextProfile?.preset === 'indonesia_urban'
+                  ? 'Area perkantoran modern atau ruang komunal urban'
+                  : 'Latar natural seimbang sesuai kebutuhan adegan',
+              localizationNotes: 'Dialog santai percakapan harian. Hindari karikatur atau simbol lokal berlebihan.',
+              creativeRationale: `Menerapkan framework ${category.name} untuk menghasilkan engagement tinggi tanpa clickbait murahan.`,
+              categoryId: category.id,
+              subcategoryId: subcatItem.id,
+              saved: false,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        }
+
+        return aiIdeas;
       }
     }
   } catch (err) {

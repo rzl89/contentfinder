@@ -149,8 +149,8 @@ export default async function handler(req, res) {
           ? 'STRATEGI VIRAL & RETENSI TINGGI: Hook 0-3 detik agresif tervalidasi dari pola retensi short-form (visual shock, pertanyaan tak terduga, atau adegan tengah konflik).'
           : 'STRATEGI NARRATIVE-FIRST: Alur dramatik berbobot, karakter mendalam, dan payoff emosional yang berkesan.';
 
-      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
-Your task is to generate ${count} high-retention, creative video ideas.
+      const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
+Your task is to generate EXACTLY ${count} high-retention, creative video ideas.
 
 RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
 1. NO AI-CLICHÉ HOOKS: Do NOT use tired AI openings like "Pernahkah kamu membayangkan...", "Tahukah kamu bahwa...", "Bayangkan jika...", or "Unlock the secret". Start with an immediate concrete situation, dialogue snippet, or unexpected visual conflict.
@@ -159,23 +159,26 @@ RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
 4. STRATEGY ALIGNMENT: ${trendInstruction}
 5. VISUAL INTEGRITY: Ground visual style cleanly in "${visualStyle}".
 
-Respond ONLY with a valid JSON array of ${count} objects with this EXACT structure:
-[
-  {
-    "title": "string",
-    "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
-    "premise": "string",
-    "synopsis": "string",
-    "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
-    "conflict": "string",
-    "ending": "string (payoff / twist)",
-    "suggestedLocation": "string",
-    "localizationNotes": "string",
-    "creativeRationale": "string"
-  }
-]`;
+FORMAT REQUIREMENT:
+Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
+{
+  "ideas": [
+    {
+      "title": "string",
+      "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
+      "premise": "string",
+      "synopsis": "string",
+      "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
+      "conflict": "string",
+      "ending": "string (payoff / twist)",
+      "suggestedLocation": "string",
+      "localizationNotes": "string",
+      "creativeRationale": "string"
+    }
+  ]
+}`;
 
-      const userPrompt = `Generate ${count} video ideas for:
+      const userPrompt = `Generate EXACTLY ${count} video ideas for:
 Category: ${categoryName} (${subcatName || ''})
 Description: ${categoryDescription || ''}
 Platform: ${platform}
@@ -197,24 +200,32 @@ ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
       );
 
       let parsed = JSON.parse(content);
+      let list = [];
+
       if (Array.isArray(parsed)) {
-        // already array
-      } else if (parsed.ideas && Array.isArray(parsed.ideas)) {
-        parsed = parsed.ideas;
-      } else if (parsed.ideas && typeof parsed.ideas === 'object' && parsed.ideas.title) {
-        parsed = [parsed.ideas];
-      } else if (typeof parsed === 'object') {
-        const values = Object.values(parsed);
-        if (values.length > 0 && Array.isArray(values[0])) {
-          parsed = values[0];
-        } else if (values.length > 0 && typeof values[0] === 'object' && values[0].title) {
-          parsed = values;
-        } else if (parsed.title) {
-          parsed = [parsed];
+        list = parsed;
+      } else if (parsed && Array.isArray(parsed.ideas)) {
+        list = parsed.ideas;
+      } else if (parsed && typeof parsed === 'object') {
+        for (const val of Object.values(parsed)) {
+          if (Array.isArray(val) && val.length > 0) {
+            list = val;
+            break;
+          }
+        }
+        if (list.length === 0) {
+          const objVals = Object.values(parsed).filter(
+            (v) => v && typeof v === 'object' && (v.title || v.hook)
+          );
+          if (objVals.length > 0) {
+            list = objVals;
+          } else if (parsed.title) {
+            list = [parsed];
+          }
         }
       }
 
-      return res.status(200).json({ success: true, ideas: parsed, modelUsed });
+      return res.status(200).json({ success: true, ideas: list, modelUsed });
     }
 
     if (action === 'develop_story') {
@@ -237,7 +248,7 @@ ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
           ? 'None (ambient SFX only)'
           : 'Bahasa Indonesia santai kontemporer';
 
-      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer specializing in video AI models (${targetModel}).
+      const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer specializing in video AI models (${targetModel}).
 Transform this video idea into a fully articulated production package with 1 character bible, 1 world bible, and ${targetSceneCount} storyboard scenes.
 
 CRITICAL ANTI-SLOP & PRODUCTION STANDARDS:

@@ -41,6 +41,10 @@ export function App() {
         <Routes>
           {/* ── Public Routes ──────────────────────────────────────────── */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/demo" element={<LandingPage scrollToSection="demo" />} />
+          <Route path="/fitur" element={<LandingPage scrollToSection="fitur" />} />
+          <Route path="/kategori" element={<LandingPage scrollToSection="kategori" />} />
+          <Route path="/harga" element={<LandingPage scrollToSection="harga" />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/auth/confirm" element={<EmailConfirmPage />} />
