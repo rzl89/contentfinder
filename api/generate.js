@@ -118,35 +118,55 @@ export default async function handler(req, res) {
         categoryName,
         categoryDescription,
         subcatName,
-        platform,
-        duration,
-        visualStyle,
-        contextName,
-        targetMarket,
-        targetAudience,
+        platform = 'TikTok',
+        duration = '30-60s',
+        visualStyle = 'cinematic_realistic',
+        contextName = 'Indonesia Natural',
+        targetMarket = 'Indonesia',
+        targetAudience = 'Digital youth & creator audience',
+        dialogLanguage = 'indonesian',
+        trendApproach = 'trend_first',
         additionalTheme,
         count = 5,
         temperature = 0.75,
       } = payload || {};
 
-      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, an elite content strategist and creative director for Indonesian short-form video creators (TikTok, Instagram Reels, YouTube Shorts).
+      const languageInstruction =
+        dialogLanguage === 'javanese'
+          ? 'Bahasa Jawa (ngoko/krama natural sehari-hari).'
+          : dialogLanguage === 'sundanese'
+          ? 'Bahasa Sunda (akrab natural).'
+          : dialogLanguage === 'english'
+          ? 'English (clear, conversational modern English).'
+          : dialogLanguage === 'mixed'
+          ? 'Campuran / Code-switching (Bahasa Indonesia santai campur istilah umum).'
+          : dialogLanguage === 'none'
+          ? 'Tanpa dialog (visual-only storytelling dengan sound effects/musik atmosferik).'
+          : 'Bahasa Indonesia santai, kontemporer, dan akrab (tanpa kata kaku baku).';
+
+      const trendInstruction =
+        trendApproach === 'trend_first'
+          ? 'STRATEGI VIRAL & RETENSI TINGGI: Hook 0-3 detik agresif tervalidasi dari pola retensi short-form (visual shock, pertanyaan tak terduga, atau adegan tengah konflik).'
+          : 'STRATEGI NARRATIVE-FIRST: Alur dramatik berbobot, karakter mendalam, dan payoff emosional yang berkesan.';
+
+      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
 Your task is to generate ${count} high-retention, creative video ideas.
 
-RULES OF AUTHENTICITY (9 GOLDEN RULES):
-1. Do NOT assume all Indonesian stories take place in Jakarta or typical urban slums.
-2. Do NOT insert random warungs, motorbikes, or stereotypical props unless narrative-justified.
-3. Keep dialogue natural, contemporary Indonesian conversational slang (santai, akrab) unless historical/formal.
-4. Ground the visual style cleanly in "${visualStyle}".
-5. Ensure hooks grab attention in seconds 0-3 with suspense, intrigue, or relatable tension.
+RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
+1. NO AI-CLICHÉ HOOKS: Do NOT use tired AI openings like "Pernahkah kamu membayangkan...", "Tahukah kamu bahwa...", "Bayangkan jika...", or "Unlock the secret". Start with an immediate concrete situation, dialogue snippet, or unexpected visual conflict.
+2. NO STEREOTYPICAL LAZINESS: Do NOT assume all Indonesian stories take place in Jakarta slums, warungs, or motorbikes unless the specific narrative demands it. Represent modern, diverse Indonesian life authentically.
+3. LANGUAGE ACCURACY: Language for dialogue/hook quotes must follow: ${languageInstruction}
+4. STRATEGY ALIGNMENT: ${trendInstruction}
+5. VISUAL INTEGRITY: Ground visual style cleanly in "${visualStyle}".
 
 Respond ONLY with a valid JSON array of ${count} objects with this EXACT structure:
 [
   {
     "title": "string",
-    "hook": "string (Detik 0-3 hook text)",
+    "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
     "premise": "string",
     "synopsis": "string",
-    "storyBeats": ["Beat 1...", "Beat 2...", "Beat 3...", "Beat 4..."],
+    "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
     "conflict": "string",
     "ending": "string (payoff / twist)",
     "suggestedLocation": "string",
@@ -158,12 +178,14 @@ Respond ONLY with a valid JSON array of ${count} objects with this EXACT structu
       const userPrompt = `Generate ${count} video ideas for:
 Category: ${categoryName} (${subcatName || ''})
 Description: ${categoryDescription || ''}
-Platform: ${platform || 'TikTok'}
-Target Duration: ${duration || '30-60s'}
-Visual Style: ${visualStyle || 'cinematic_realistic'}
-Context Profile: ${contextName || 'Indonesia Natural'}
-Target Market: ${targetMarket || 'Indonesia'}
-Target Audience: ${targetAudience || 'Digital youth & creator audience'}
+Platform: ${platform}
+Target Duration: ${duration}
+Visual Style: ${visualStyle}
+Context Profile: ${contextName}
+Target Market: ${targetMarket}
+Target Audience: ${targetAudience}
+Dialog Language: ${dialogLanguage}
+Trend Approach: ${trendApproach}
 ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
 
       const { content, modelUsed } = await callOpenAI(
@@ -196,15 +218,44 @@ ${additionalTheme ? `Additional Theme / Angle: ${additionalTheme}` : ''}`;
     }
 
     if (action === 'develop_story') {
-      const { idea, targetSceneCount = 4, temperature = 0.7 } = payload || {};
+      const {
+        idea,
+        targetSceneCount = 4,
+        targetModel = 'universal-neutral',
+        dialogLanguage = 'indonesian',
+        temperature = 0.7,
+      } = payload || {};
 
-      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer for video AI models (Google Veo, Kling 1.5, Runway Gen-3, Luma Dream Machine).
-Transform this short video idea into a fully articulated production package with 1 character, 1 world bible, and ${targetSceneCount} storyboard scenes.
+      const languageInstruction =
+        dialogLanguage === 'javanese'
+          ? 'Bahasa Jawa natural sehari-hari'
+          : dialogLanguage === 'sundanese'
+          ? 'Bahasa Sunda natural'
+          : dialogLanguage === 'english'
+          ? 'English dialogue'
+          : dialogLanguage === 'none'
+          ? 'None (ambient SFX only)'
+          : 'Bahasa Indonesia santai kontemporer';
 
-CRITICAL REQUIREMENTS:
-- Image & Video Prompts MUST be in descriptive, photorealistic English with camera movements, lighting, and textures.
-- Negative prompts must list model artifact preventions.
-- Dialogue can be in natural Indonesian.
+      const systemPrompt = `You are TemporaForge AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer specializing in video AI models (${targetModel}).
+Transform this video idea into a fully articulated production package with 1 character bible, 1 world bible, and ${targetSceneCount} storyboard scenes.
+
+CRITICAL ANTI-SLOP & PRODUCTION STANDARDS:
+1. IMAGE PROMPTS (English):
+   - Photorealistic cinema optics: specify lens focal length (e.g. 35mm anamorphic, 50mm f/1.8), lighting setup (e.g. volumetric golden hour, soft key with gentle rim), and color grading.
+   - NO AI SLOP: Ban plastic Barbie skin, excessive CGI bloom, distorted fingers, and floating artifacts.
+2. VIDEO PROMPTS (English):
+   - Explicit camera motion verbs: pan, tilt, push in, orbit, slow tracking shot.
+   - Subject kinematics: natural physical momentum, inertia, hair/clothing movement.
+   - Vendor model alignment (${targetModel}):
+     * If Kling: Prefix prompt with "[Camera: <movement>]".
+     * If Google Veo: Emphasize optical hyper-realism and 4K textures.
+     * If Runway Gen-3: Emphasize fluid momentum and continuous motion vectors.
+     * If Luma: Emphasize smooth tracking and realistic weight.
+3. CONTINUITY ANCHORS:
+   - Detail at least 3 immutable physical anchors for the character (exact clothing color/material, accessory, hairstyle) so they do NOT mutate across scenes.
+4. DIALOGUE & NARRATION:
+   - Follow ${languageInstruction}.
 
 Respond ONLY with a valid JSON object matching:
 {
@@ -214,7 +265,7 @@ Respond ONLY with a valid JSON object matching:
     "appearance": "string",
     "clothing": "string",
     "personality": "string",
-    "consistencyAnchors": ["anchor1", "anchor2"]
+    "consistencyAnchors": ["anchor1 (e.g. navy corduroy jacket)", "anchor2", "anchor3"]
   },
   "worldBible": {
     "name": "string",
@@ -241,18 +292,18 @@ Respond ONLY with a valid JSON object matching:
       },
       "characterActions": "string",
       "camera": {
-        "shot": "Close-up / Medium Shot",
-        "angle": "Eye level",
-        "movement": "Slow push in",
-        "framing": "Rule of thirds"
+        "shot": "Close-up / Medium Shot / Wide Shot",
+        "angle": "Eye-level / Low angle / High angle",
+        "movement": "Slow push in / Tracking right / Static / Crane down",
+        "framing": "Rule of thirds / Center framed"
       },
-      "lighting": "string",
+      "lighting": "string (e.g. Warm afternoon sunlight with soft shadow falloff)",
       "dialogue": "string",
       "narration": "string",
       "continuityAnchors": ["string"],
-      "imagePrompt": "string (in English)",
-      "videoPrompt": "string (in English with motion description)",
-      "negativePrompt": "blurry, low quality, distorted anatomy, text overlay, watermark, glitch"
+      "imagePrompt": "string (in descriptive English with camera, lens, lighting)",
+      "videoPrompt": "string (in descriptive English with kinematics and camera movement)",
+      "negativePrompt": "blurry, oversaturated, plastic skin, deformed hands, extra fingers, mutated limbs, text artifacts, watermark, low quality, glitch"
     }
   ]
 }`;

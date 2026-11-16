@@ -72,16 +72,19 @@ export function compileScenePrompt(
     }
   }
 
-  // Model-specific syntax formatting (Only if documented/verified)
+  // Model-specific syntax formatting (Strict vendor syntax adherence)
   if (targetModelId === 'kling-1-5') {
-    // Kling format: prefers explicit camera direction verbs
+    // Kling format: prefers explicit camera direction prefix
     compiledVideoPrompt = `[Camera: ${scene.camera.movement}] ${compiledVideoPrompt}`;
   } else if (targetModelId === 'luma-dream-machine') {
     // Luma format: movement speed & cinematic clarity
-    compiledVideoPrompt = `${compiledVideoPrompt} Smooth tracking shot, photorealistic rendering.`;
+    compiledVideoPrompt = `${compiledVideoPrompt} Smooth tracking shot, photorealistic rendering, accurate momentum.`;
   } else if (targetModelId === 'google-veo-2') {
     // Veo 2 format: high-fidelity prompt
     compiledVideoPrompt = `High-definition cinematic capture: ${compiledVideoPrompt}`;
+  } else if (targetModelId === 'runway-gen3') {
+    // Runway Gen-3 format: continuous motion vectors and cinematic physical momentum
+    compiledVideoPrompt = `${compiledVideoPrompt} Photorealistic motion, continuous dynamic vector, 4k master.`;
   }
 
   return {
@@ -89,7 +92,9 @@ export function compileScenePrompt(
     beatTitle: scene.beatTitle,
     imagePrompt: scene.imagePrompt || compiledImagePrompt,
     videoPrompt: scene.videoPrompt || compiledVideoPrompt,
-    negativePrompt: scene.negativePrompt || 'blurry, disfigured, distorted anatomy, text artifacts, watermark, low quality',
+    negativePrompt:
+      scene.negativePrompt ||
+      'blurry, plastic skin, oversaturated, deformed hands, extra fingers, mutated limbs, text artifacts, watermark, low quality, glitch',
     dialogueQuote: scene.dialogue,
     audioInstruction,
     technicalMetadata: {

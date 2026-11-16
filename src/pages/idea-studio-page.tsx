@@ -129,8 +129,9 @@ export const IdeaStudioPage: React.FC = () => {
 
       setSelectedIdea(idea);
 
-      // 2. Generate Storyboard scenes, Character Bible & World Bible
-      const developed = await developStoryFromIdea(idea, 4);
+      // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
+      const targetModel = proj?.targetModel || 'universal-neutral';
+      const developed = await developStoryFromIdea(idea, 4, targetModel, dialogLanguage);
 
       // 3. Save to store
       developed.characters.forEach((c) => addCharacter(c));

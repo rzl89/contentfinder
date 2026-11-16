@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
 
   const navItems = [
     {
-      to: '/',
+      to: '/studio',
       label: 'Content Idea Studio',
       icon: <Lightbulb className="w-4 h-4" />,
       badge: '19 Kategori',
@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     >
       {/* Brand Header */}
       <div className="p-5 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
+        <NavLink to="/" className="flex items-center gap-3 min-w-0 group hover:opacity-90 transition-opacity">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center text-black font-extrabold shadow-lg shadow-amber-500/20 shrink-0">
             <Sparkles className="w-5 h-5 text-black" />
           </div>
@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
               <p className="text-[11px] text-zinc-400 truncate">Idea & Prompt Studio</p>
             </div>
           )}
-        </div>
+        </NavLink>
       </div>
 
       {/* Nav Menu */}

@@ -53,6 +53,8 @@ export async function generateContentIdeas(
           contextName: config.contextProfile.name,
           targetMarket: config.contextProfile.targetMarket,
           targetAudience: config.targetAudience,
+          dialogLanguage: config.dialogLanguage || 'indonesian',
+          trendApproach: config.trendApproach || 'trend_first',
           additionalTheme: config.additionalTheme,
           count: config.ideaCount || 5,
         },
@@ -153,7 +155,9 @@ export async function generateContentIdeas(
  */
 export async function developStoryFromIdea(
   idea: ContentIdea,
-  targetSceneCount: number = 4
+  targetSceneCount: number = 4,
+  targetModel: string = 'universal-neutral',
+  dialogLanguage: string = 'indonesian'
 ): Promise<{
   characters: CharacterBible[];
   worldBible: WorldBible;
@@ -175,6 +179,8 @@ export async function developStoryFromIdea(
           temperature: admin?.temperature || 0.7,
           idea,
           targetSceneCount,
+          targetModel,
+          dialogLanguage,
         },
       }),
     });
