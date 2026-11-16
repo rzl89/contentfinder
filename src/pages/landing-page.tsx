@@ -27,6 +27,10 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   // Interactive Demo state: comparison between standard AI slop and Fixprom prompt
   const [activeTab, setActiveTab] = useState<'fixprom' | 'generic'>('fixprom');
   const [copied, setCopied] = useState(false);
@@ -81,10 +85,34 @@ export const LandingPage: React.FC = () => {
           </NavLink>
 
           <nav className="hidden md:flex items-center gap-6 text-xs text-zinc-400">
-            <a href="#demo" className="hover:text-zinc-200 transition-colors">Contoh Prompt</a>
-            <a href="#fitur" className="hover:text-zinc-200 transition-colors">Fitur Studio</a>
-            <a href="#kategori" className="hover:text-zinc-200 transition-colors">19 Kategori</a>
-            <a href="#harga" className="hover:text-zinc-200 transition-colors">Harga</a>
+            <button
+              type="button"
+              onClick={() => scrollTo('demo')}
+              className="hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              Contoh Prompt
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('fitur')}
+              className="hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              Fitur Studio
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('kategori')}
+              className="hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              19 Kategori
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollTo('harga')}
+              className="hover:text-zinc-200 transition-colors cursor-pointer"
+            >
+              Harga
+            </button>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -162,13 +190,14 @@ export const LandingPage: React.FC = () => {
               {user ? 'Buka Studio' : 'Mulai Gratis - Tanpa Kartu Kredit'}
             </Button>
 
-            <a
-              href="#demo"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-white/10 transition-colors"
+            <button
+              type="button"
+              onClick={() => scrollTo('demo')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-amber-400" />
               Lihat Perbandingan Prompt
-            </a>
+            </button>
           </div>
 
           {/* Social proof metric chips -  truthful and concrete */}

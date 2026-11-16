@@ -17,9 +17,7 @@ import {
   Lock,
   Trash2,
   Clock,
-  Sparkles,
   ArrowRight,
-  CheckCircle2,
 } from 'lucide-react';
 
 export const ByokPage: React.FC = () => {
@@ -42,16 +40,71 @@ export const ByokPage: React.FC = () => {
   const [inputApiKey, setInputApiKey] = useState<string>('');
   const [isTesting, setIsTesting] = useState(false);
 
+  // Option B: Full Lock Screen for Free Trial / non-Pro users
+  if (!isPro) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center animate-fade-in p-4">
+        <div className="max-w-md w-full text-center space-y-6 p-8 rounded-3xl bg-[#0e0e13] border border-amber-500/20 shadow-2xl">
+          {/* Lock icon */}
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/5">
+            <Lock className="w-8 h-8 text-amber-400" />
+          </div>
+
+          {/* Text */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono font-medium">
+              <span>KHUSUS CREATOR PRO</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              BYOK Video Connectors
+            </h2>
+            <p className="text-sm font-semibold text-amber-400">
+              Fitur ini eksklusif Creator Pro — Rp 59rb/bln
+            </p>
+            <p className="text-xs text-zinc-400 leading-relaxed pt-1">
+              Hubungkan API Key Anda sendiri ke Google Veo 2, Kling 1.5, Runway Gen-3, dan Luma Dream Machine.
+              Terenkripsi langsung di browser dengan standar AES-256-GCM.
+            </p>
+          </div>
+
+          {/* Provider chips / locked items */}
+          <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-left space-y-2.5">
+            {[
+              'Google Veo 2 (Gemini API)',
+              'Kling 1.5 Pro',
+              'Runway Gen-3 Alpha',
+              'Luma Dream Machine Ray 2',
+            ].map((provider) => (
+              <div key={provider} className="flex items-center justify-between text-xs">
+                <span className="text-zinc-400">{provider}</span>
+                <span className="text-[10px] font-mono text-zinc-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                  Terkunci
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="space-y-3 pt-2">
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/pricing')}
+              icon={<ArrowRight className="w-4 h-4 text-black" />}
+              className="w-full"
+            >
+              Upgrade ke Creator Pro
+            </Button>
+            <p className="text-[11px] text-zinc-500">
+              Aktivasi instan via QRIS / Bank Transfer
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleOpenConnect = (providerName: string) => {
-    if (!isPro) {
-      showToast({
-        type: 'warning',
-        title: 'Fitur Khusus Creator Pro',
-        message: 'Konektor BYOK hanya aktif untuk member Creator Pro. Upgrade untuk menghubungkan API Key Anda.',
-      });
-      navigate('/pricing');
-      return;
-    }
     setSelectedProvider(providerName);
     setInputApiKey('');
     setConnectModalOpen(true);
@@ -100,43 +153,6 @@ export const ByokPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in pb-16">
-      {/* Free Trial Locked Notice */}
-      {!isPro && (
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#151310] to-[#121118] border-2 border-amber-500/40 shadow-xl space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-              <Lock className="w-6 h-6" />
-            </div>
-            <div className="space-y-1.5 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">
-                  Konektor BYOK Terkunci (Khusus Creator Pro)
-                </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500 text-black font-bold uppercase">
-                  Pro Feature
-                </span>
-              </div>
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                Di paket Free Trial, fitur BYOK dikunci. Aktifkan paket <strong>Creator Pro</strong> (Rp 59.000/bln) untuk menghubungkan API Key Anda sendiri ke Google Veo 2, Kling 1.5, Runway Gen-3, dan Luma Dream Machine dengan enkripsi aman AES-256-GCM langsung di browser Anda.
-              </p>
-              <div className="pt-2 flex items-center gap-3">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => navigate('/pricing')}
-                  icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
-                >
-                  Upgrade ke Creator Pro
-                </Button>
-                <span className="text-[11px] text-zinc-500">
-                  Aktivasi instan via QRIS / Bank Transfer
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Top Banner */}
       <div className="p-6 rounded-2xl bg-gradient-to-r from-[#14141c] via-[#101015] to-[#14141c] border border-white/10 shadow-xl space-y-2">
         <div className="flex items-center gap-2">

@@ -50,7 +50,7 @@ export const TrendRadarPage: React.FC = () => {
       message: `Mengarahkan ke Idea Studio untuk mengeksplorasi format ${trend.title}`,
     });
 
-    navigate('/');
+    navigate('/studio');
   };
 
   return (
