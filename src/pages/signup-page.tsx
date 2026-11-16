@@ -58,7 +58,7 @@ export const SignupPage: React.FC = () => {
     setError(null);
     if (!validate()) return;
 
-    const { error: authError } = await signUp(email.trim().toLowerCase(), password);
+    const { error: authError, session } = await signUp(email.trim().toLowerCase(), password);
 
     if (authError) {
       if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
@@ -66,6 +66,9 @@ export const SignupPage: React.FC = () => {
       } else {
         setError(authError.message);
       }
+    } else if (session) {
+      // Auto-confirmed or active session
+      navigate('/studio', { replace: true });
     } else {
       setSubmitted(true);
     }

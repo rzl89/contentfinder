@@ -10,7 +10,7 @@ interface AuthState {
 
   // Actions
   initialize: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: AuthError | null; session?: Session | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   resendConfirmation: (email: string) => Promise<{ error: AuthError | null }>;
@@ -24,6 +24,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialized: false,
 
   initialize: async () => {
+    // Automatically capture auth tokens from Supabase email confirmation hash links
+    try {
+      const fullUrl = window.location.href;
+      if (fullUrl.includes('access_token=') && fullUrl.includes('refresh_token=')) {
+        const tokenMatch = fullUrl.match(/access_token=([^&]+)/);
+        const refreshMatch = fullUrl.match(/refresh_token=([^&]+)/);
+        if (tokenMatch && refreshMatch) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: tokenMatch[1],
+            refresh_token: refreshMatch[1],
+          });
+          if (!error && data.session) {
+            set({
+              session: data.session,
+              user: data.session.user,
+              initialized: true,
+            });
+            if (window.location.hash.includes('access_token')) {
+              window.location.hash = '#/studio';
+            }
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Token recovery error', e);
+    }
+
     // Get initial session from Supabase (persisted in localStorage)
     const { data } = await supabase.auth.getSession();
     set({
@@ -43,7 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signUp: async (email: string, password: string) => {
     set({ loading: true });
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -51,8 +79,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         emailRedirectTo: `${window.location.origin}/#/login`,
       },
     });
+    if (!error && data?.session) {
+      set({ session: data.session, user: data.session.user });
+    }
     set({ loading: false });
-    return { error };
+    return { error, session: data?.session ?? null };
   },
 
   signIn: async (email: string, password: string) => {

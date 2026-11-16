@@ -22,34 +22,28 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    try {
+      const fullHash = typeof window !== 'undefined' ? window.location.hash : '';
+      if (fullHash.includes('error=')) {
+        const match = fullHash.match(/error_description=([^&]+)/);
+        if (match && match[1]) {
+          return `Tautan tidak valid atau telah kedaluwarsa: ${decodeURIComponent(match[1].replace(/\+/g, ' '))}`;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    () => (location.state as any)?.message || null
+  );
   const [isEmailUnconfirmed, setIsEmailUnconfirmed] = useState(false);
   const [resending, setResending] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   const destination = (location.state as any)?.from?.pathname || '/studio';
-
-  // Check URL hash for error parameters from Supabase email link redirects
-  useEffect(() => {
-    try {
-      const fullHash = window.location.hash;
-      if (fullHash.includes('error=')) {
-        const errorMatch = fullHash.match(/error_description=([^&]+)/);
-        if (errorMatch && errorMatch[1]) {
-          const decoded = decodeURIComponent(errorMatch[1].replace(/\+/g, ' '));
-          setError(`Tautan tidak valid atau telah kedaluwarsa: ${decoded}`);
-        }
-      }
-
-      // Check for incoming flash message
-      if ((location.state as any)?.message) {
-        setSuccessMessage((location.state as any).message);
-      }
-    } catch {
-      // ignore hash parsing error
-    }
-  }, [location]);
 
   // Redirect if already logged in
   useEffect(() => {

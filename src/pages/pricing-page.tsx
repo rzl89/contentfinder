@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Check,
   Zap,
@@ -25,6 +26,7 @@ import {
 import type { BillingCycle, PlanTier, PaymentMethodType, SubscriptionOrder } from '@/types';
 
 export const PricingPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const {
     subscription,
@@ -159,11 +161,16 @@ export const PricingPage: React.FC = () => {
           </div>
 
           <Button
-            variant="secondary"
-            disabled={true}
-            className="w-full text-xs text-gray-400 border-white/10"
+            variant={isTrialActive ? 'primary' : 'secondary'}
+            disabled={isPaidActive || !isTrialActive}
+            onClick={() => navigate('/studio')}
+            className="w-full text-xs border-white/10"
           >
-            {isPaidActive ? 'Sudah Dilewati' : isTrialActive ? 'Sedang Aktif (Trial)' : 'Trial Kadaluwarsa'}
+            {isPaidActive
+              ? 'Paket Pro Aktif'
+              : isTrialActive
+              ? 'Buka Studio Sekarang (Trial Aktif)'
+              : 'Trial Kadaluwarsa'}
           </Button>
         </BentoTile>
 
@@ -218,7 +225,9 @@ export const PricingPage: React.FC = () => {
             onClick={() => handleSelectPlan('pro')}
             className="w-full py-3 text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-500/20"
           >
-            Pilih Paket Creator Pro (Rp 59rb/bln)
+            {billingCycle === 'yearly'
+              ? 'Pilih Paket Creator Pro (Rp 499rb/thn)'
+              : 'Pilih Paket Creator Pro (Rp 59rb/bln)'}
             <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </BentoTile>
@@ -230,7 +239,7 @@ export const PricingPage: React.FC = () => {
           <ShieldCheck className="w-8 h-8 text-amber-400 shrink-0" />
           <div>
             <h4 className="text-xs font-bold text-white">Keamanan Kredensial</h4>
-            <p className="text-[11px] text-gray-400">Semua data dan kunci terlindungi enkripsi KMS server-side.</p>
+            <p className="text-[11px] text-gray-400">Semua data dan kunci terlindungi enkripsi AES-256 client-side.</p>
           </div>
         </div>
         <div className="bg-field/60 border border-white/5 rounded-xl p-4 flex items-center gap-3">
