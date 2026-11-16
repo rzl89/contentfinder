@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useAdminStore } from '@/stores/admin-store';
+import { useAdminStore, DEFAULT_ADMIN_SETTINGS } from '@/stores/admin-store';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useByokStore } from '@/stores/byok-store';
@@ -34,16 +34,30 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
+const PIN_SALT = 'temporaforge_salt_v1';
+const PIN_HASH_KEY = 'temporaforge_admin_pin_hash_v2';
+const DEFAULT_PIN_HASH = '7af3c32180c6309402473ca09c997b9327646b5e8c20b13e312ca04b6a943f7b';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+async function computeHash(pin: string): Promise<string> {
+  const data = new TextEncoder().encode(pin + PIN_SALT);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getStoredHash(): string {
+  try { return localStorage.getItem(PIN_HASH_KEY) || DEFAULT_PIN_HASH; }
+  catch { return DEFAULT_PIN_HASH; }
+}
+
 // ─── Admin Panel — Completely separate from main AppLayout ────────────────────
 export const AdminPanelPage: React.FC = () => {
   const { showToast } = useToast();
   const {
     isAuthenticated,
-    login,
     logout,
     checkSession,
     refreshSession,
-    updateAdminPin,
     updateSettings,
     resetToDefaults,
     settings,
@@ -72,7 +86,7 @@ export const AdminPanelPage: React.FC = () => {
 
   // ── Session timer ───────────────────────────────────────────────────────────
   const [sessionLeft, setSessionLeft] = useState<number>(0);
-  const activityRef = useRef<number>(Date.now());
+  const activityRef = useRef<number>(0);
 
   // Track activity to refresh session
   const handleActivity = useCallback(() => {
@@ -112,22 +126,21 @@ export const AdminPanelPage: React.FC = () => {
     };
   }, [isAuthenticated, handleActivity]);
 
-  // Sync local settings when store changes
-  useEffect(() => {
-    setLocalSettings(settings);
-  }, [settings]);
-
-  // ── Lockout timer state ──────────────────────────────────────────────────────
+  // ── Lockout timer ──
   const [lockLeft, setLockLeft] = useState<number>(0);
   useEffect(() => {
     if (!lockedUntil) return;
-    const interval = setInterval(() => {
+    const update = () => {
       const left = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
       setLockLeft(left);
-      if (left === 0) clearInterval(interval);
-    }, 1000);
-    setLockLeft(Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000)));
-    return () => clearInterval(interval);
+      if (left <= 0) clearInterval(interval);
+    };
+    const interval = setInterval(update, 1000);
+    const timeout = setTimeout(update, 0);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, [lockedUntil]);
 
   // ── Login handler ─────────────────────────────────────────────────────────
@@ -137,33 +150,24 @@ export const AdminPanelPage: React.FC = () => {
       return;
     }
     if (lockedUntil && Date.now() < lockedUntil) {
-      setLoginError(`Akun dikunci. Coba lagi dalam ${lockLeft} detik.`);
+      const currentLeft = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+      setLoginError(`Akun dikunci. Coba lagi dalam ${currentLeft} detik.`);
       return;
     }
 
     setLoginLoading(true);
     setLoginError('');
 
-    // Hash and compare asynchronously
-    const data = new TextEncoder().encode(pinInput + 'temporaforge_salt_v1');
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    const inputHash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-    // Load stored hash
-    let storedHash: string;
-    try {
-      storedHash = localStorage.getItem('temporaforge_admin_pin_hash_v2') || '7af3c32180c6309402473ca09c997b9327646b5e8c20b13e312ca04b6a943f7b';
-    } catch {
-      storedHash = '7af3c32180c6309402473ca09c997b9327646b5e8c20b13e312ca04b6a943f7b';
-    }
+    const inputHash = await computeHash(pinInput);
+    const storedHash = getStoredHash();
 
     if (inputHash === storedHash) {
       // Update store state directly
-      const expiresAt = Date.now() + 30 * 60 * 1000;
+      const expiresAt = Date.now() + SESSION_TIMEOUT_MS;
       try { sessionStorage.setItem('temporaforge_admin_session_v1', JSON.stringify({ expiresAt })); } catch { /* noop */ }
       try { localStorage.setItem('temporaforge_admin_attempts_v1', JSON.stringify({ failedAttempts: 0, lockedUntil: null })); } catch { /* noop */ }
       useAdminStore.setState({ isAuthenticated: true, sessionExpiresAt: expiresAt, failedAttempts: 0, lockedUntil: null });
-      setSessionLeft(30 * 60);
+      setSessionLeft(Math.floor(SESSION_TIMEOUT_MS / 1000));
       setPinInput('');
     } else {
       const newAttempts = failedAttempts + 1;
@@ -171,6 +175,7 @@ export const AdminPanelPage: React.FC = () => {
       try { localStorage.setItem('temporaforge_admin_attempts_v1', JSON.stringify({ failedAttempts: newAttempts, lockedUntil: newLocked })); } catch { /* noop */ }
       useAdminStore.setState({ failedAttempts: newAttempts, lockedUntil: newLocked });
       if (newLocked) {
+        setLockLeft(10 * 60);
         setLoginError(`PIN salah ${newAttempts}x. Akun dikunci 10 menit.`);
       } else {
         setLoginError(`PIN salah. Sisa percobaan: ${5 - newAttempts}x`);
@@ -207,15 +212,8 @@ export const AdminPanelPage: React.FC = () => {
     }
 
     // Verify current PIN
-    const data = new TextEncoder().encode(currentPinForChange + 'temporaforge_salt_v1');
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    const inputHash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    let storedHash: string;
-    try {
-      storedHash = localStorage.getItem('temporaforge_admin_pin_hash_v2') || '7af3c32180c6309402473ca09c997b9327646b5e8c20b13e312ca04b6a943f7b';
-    } catch {
-      storedHash = '7af3c32180c6309402473ca09c997b9327646b5e8c20b13e312ca04b6a943f7b';
-    }
+    const inputHash = await computeHash(currentPinForChange);
+    const storedHash = getStoredHash();
 
     if (inputHash !== storedHash) {
       showToast({ type: 'error', title: 'PIN Lama Salah', message: 'PIN saat ini tidak cocok.' });
@@ -223,10 +221,8 @@ export const AdminPanelPage: React.FC = () => {
     }
 
     // Hash new PIN and save
-    const newData = new TextEncoder().encode(newPin + 'temporaforge_salt_v1');
-    const newBuf = await crypto.subtle.digest('SHA-256', newData);
-    const newHash = Array.from(new Uint8Array(newBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    try { localStorage.setItem('temporaforge_admin_pin_hash_v2', newHash); } catch { /* noop */ }
+    const newHash = await computeHash(newPin);
+    try { localStorage.setItem(PIN_HASH_KEY, newHash); } catch { /* noop */ }
 
     setCurrentPinForChange('');
     setNewPin('');
@@ -241,11 +237,13 @@ export const AdminPanelPage: React.FC = () => {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  // isLocked derived from lockLeft state (already updated via interval) — no Date.now() at render
+  const isLocked = lockLeft > 0;
+
   // ═══════════════════════════════════════════════════════════════════════════
   // LOGIN SCREEN
   // ═══════════════════════════════════════════════════════════════════════════
   if (!isAuthenticated) {
-    const isLocked = lockedUntil ? Date.now() < lockedUntil : false;
     return (
       <div className="min-h-screen bg-[#06060a] flex items-center justify-center p-4">
         <div className="w-full max-w-sm space-y-6">
@@ -765,7 +763,7 @@ export const AdminPanelPage: React.FC = () => {
                     onClick={() => {
                       if (window.confirm('Reset semua pengaturan admin ke default? Tindakan ini tidak bisa dibatalkan.')) {
                         resetToDefaults();
-                        setLocalSettings(settings);
+                        setLocalSettings(DEFAULT_ADMIN_SETTINGS);
                         showToast({ type: 'info', title: 'Reset Berhasil', message: 'Pengaturan dikembalikan ke default.' });
                       }
                     }}

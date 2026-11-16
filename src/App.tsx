@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastProvider } from '@/components/ui/toast';
 import { AppLayout } from '@/components/layout';
 import { IdeaStudioPage } from '@/pages/idea-studio-page';
