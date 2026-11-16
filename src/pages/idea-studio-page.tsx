@@ -55,6 +55,8 @@ export const IdeaStudioPage: React.FC = () => {
     canGenerateStoryboard,
     incrementStoryboardCount,
     storyboardGenerationsCount,
+    hasSufficientCredits,
+    deductCredits,
   } = useSubscriptionStore();
 
   const routeState = (location.state || {}) as { categoryId?: string; topic?: string };
@@ -180,6 +182,17 @@ ${idea.localizationNotes}`;
       return;
     }
 
+    // Check Credits (1 Credit for 5 Ideas)
+    if (!hasSufficientCredits(1)) {
+      showToast({
+        type: 'warning',
+        title: 'Kredit AI Tidak Mencukupi (Butuh 1 Kredit)',
+        message: 'Kredit AI Anda telah habis. Silakan lakukan Top-Up Kredit atau perpanjang paket Creator Pro.',
+      });
+      navigate('/pricing');
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const generated = await generateContentIdeas({
@@ -198,10 +211,14 @@ ${idea.localizationNotes}`;
       });
 
       setIdeas(generated);
+
+      // Deduct 1 credit atomically
+      await deductCredits(1, 'generate_ideas');
+
       showToast({
         type: 'success',
         title: `${generated.length} Ide Berhasil Dihasilkan!`,
-        message: `Kategori: ${activeCategory.name} dengan profil ${CONTEXT_PRESETS[contextPreset].name}.`,
+        message: `Kategori: ${activeCategory.name} dengan profil ${CONTEXT_PRESETS[contextPreset].name}. (-1 Kredit AI)`,
       });
     } catch (err: any) {
       showToast({
@@ -222,6 +239,17 @@ ${idea.localizationNotes}`;
         title: 'Batas Trial Tercapai (3/3)',
         message:
           'Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Anda telah mencapai batas 3x generate storyboard di paket Free Trial.',
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    // Check Credits (3 Credits for Storyboard)
+    if (!hasSufficientCredits(3)) {
+      showToast({
+        type: 'warning',
+        title: 'Kredit AI Tidak Mencukupi (Butuh 3 Kredit)',
+        message: 'Menyusun 4 adegan storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit untuk melanjutkan.',
       });
       navigate('/pricing');
       return;
@@ -249,13 +277,14 @@ ${idea.localizationNotes}`;
         scenes: developed.scenes,
       });
 
-      // 4. Increment trial usage counter
+      // 4. Increment trial usage counter & deduct 3 credits
       incrementStoryboardCount();
+      await deductCredits(3, 'generate_storyboard');
 
       showToast({
         type: 'success',
         title: 'Storyboard Siap di Production Desk!',
-        message: 'Karakter, World Bible, dan 4 adegan telah disusun lengkap.',
+        message: 'Karakter, World Bible, dan 4 adegan telah disusun lengkap. (-3 Kredit AI)',
       });
 
       // 5. Navigate to Prompt Desk

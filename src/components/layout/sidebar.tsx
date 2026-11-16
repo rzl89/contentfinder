@@ -186,28 +186,39 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       {!collapsed && (
         <div className="p-4 border-t border-white/5 space-y-2">
           {subscription.tier === 'pro' ? (
-            <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Paket CREATOR PRO Aktif</span>
+            <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-emerald-400">
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>CREATOR PRO</span>
+                </span>
+                <span className="text-[10px] font-mono bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300 font-bold">
+                  ⚡ {subscription.creditsBalance ?? 350} Kredit
+                </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Akses tanpa batas ke seluruh studio & fitur prompt compiler.
+                Akses seluruh 19 studio kategori & prompt compiler.
               </p>
+              <NavLink
+                to="/pricing"
+                className="block text-center text-[11px] font-medium py-1 px-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors border border-emerald-500/20"
+              >
+                + Top-Up Kredit
+              </NavLink>
             </div>
           ) : remainingHours > 0 ? (
             <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20 space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-amber-400">
                 <span className="flex items-center gap-1">
                   <Zap className="w-3.5 h-3.5 fill-amber-400" />
-                  Free Trial 1 Hari
+                  Free Trial
                 </span>
-                <span className="text-[10px] font-mono bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300">
-                  {remainingHours}j lagi
+                <span className="text-[10px] font-mono bg-amber-500/20 px-2 py-0.5 rounded-full text-amber-300 font-bold">
+                  ⚡ {subscription.creditsBalance ?? 20} Kredit
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Upgrade ke Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> untuk akses selamanya.
+                Upgrade ke Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> (350 Kredit + Semua Fitur).
               </p>
               <NavLink
                 to="/pricing"

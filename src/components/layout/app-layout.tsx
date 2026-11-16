@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom';
 import { Sidebar } from './sidebar';
-import { Menu, X, Sparkles, Globe } from 'lucide-react';
+import { Menu, X, Sparkles, Globe, Zap } from 'lucide-react';
 import { useProjectStore } from '@/stores/project-store';
+import { useSubscriptionStore } from '@/stores/subscription-store';
 
 export const AppLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ export const AppLayout: React.FC = () => {
     return (localStorage.getItem('fixprom_lang') as 'id' | 'en') || 'id';
   });
   const currentProject = useProjectStore((s) => s.currentProject);
+  const subscription = useSubscriptionStore((s) => s.subscription);
 
   const handleToggleLang = (lang: 'id' | 'en') => {
     setCurrentLang(lang);
@@ -67,6 +69,16 @@ export const AppLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Credit Balance Badge */}
+            <NavLink
+              to="/pricing"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-xs font-semibold text-amber-300 transition-colors shadow-sm"
+              title="Sisa Kredit AI Anda — Klik untuk Isi Ulang"
+            >
+              <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</span>
+            </NavLink>
+
             {/* Language Switcher (ID / EN) */}
             <div className="flex items-center p-0.5 rounded-xl bg-zinc-900 border border-white/10 text-xs">
               <button

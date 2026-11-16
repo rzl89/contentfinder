@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore, type ManualActivationRecord } from '@/stores/subscription-store';
 import { useByokStore } from '@/stores/byok-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { supabase } from '@/lib/supabase';
 import type { PlanTier } from '@/types';
 import {
   BentoTile,
@@ -81,6 +82,7 @@ export const AdminPanelPage: React.FC = () => {
     manualActivations,
     activateUserSubscription,
     deactivateUserSubscription,
+    listUserProfilesFromSupabase,
   } = useSubscriptionStore();
   const { credentials, purgeAllCredentials } = useByokStore();
   const remainingHours = getRemainingTrialHours();
@@ -103,6 +105,19 @@ export const AdminPanelPage: React.FC = () => {
   const [activationNotes, setActivationNotes] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [activationSearch, setActivationSearch] = useState('');
+
+  // ── Cloud Users & Credits state ─────────────────────────────────────────────
+  const [cloudUsers, setCloudUsers] = useState<Array<{
+    id: string;
+    email: string;
+    plan_tier: string;
+    subscription_status: string;
+    credits_balance: number;
+    subscription_expires_at: string | null;
+    created_at: string;
+  }>>([]);
+  const [isLoadingCloudUsers, setIsLoadingCloudUsers] = useState(false);
+  const [cloudSearchQuery, setCloudSearchQuery] = useState('');
 
   // ── Settings form state ──────────────────────────────────────────────────────
   const [localSettings, setLocalSettings] = useState(settings);
@@ -342,6 +357,45 @@ export const AdminPanelPage: React.FC = () => {
     if (window.confirm(`Yakin nonaktifkan langganan untuk ${record.emailOrUserId}?`)) {
       const res = await deactivateUserSubscription(record.id);
       showToast({ type: 'info', title: 'Langganan Dinonaktifkan', message: res.message });
+      loadCloudUsers(cloudSearchQuery);
+    }
+  };
+
+  const loadCloudUsers = useCallback(async (query = '') => {
+    setIsLoadingCloudUsers(true);
+    try {
+      const data = await listUserProfilesFromSupabase(query);
+      setCloudUsers(data);
+    } finally {
+      setIsLoadingCloudUsers(false);
+    }
+  }, [listUserProfilesFromSupabase]);
+
+  useEffect(() => {
+    if (isAuthenticated && activeTab === 'subscriptions') {
+      loadCloudUsers(cloudSearchQuery);
+    }
+  }, [isAuthenticated, activeTab, loadCloudUsers, cloudSearchQuery]);
+
+  const handleGrantCredits = async (userId: string, amount: number, userEmail: string) => {
+    try {
+      const { data, error } = await supabase.rpc('grant_user_credits', {
+        target_user_id: userId,
+        grant_amount: amount,
+        reason: `Top-up admin manual (+${amount} kredit)`,
+      });
+      if (error || !data?.success) {
+        showToast({ type: 'error', title: 'Gagal Tambah Kredit', message: error?.message || data?.error });
+      } else {
+        showToast({
+          type: 'success',
+          title: 'Kredit Berhasil Ditambahkan',
+          message: `+${amount} Kredit berhasil ditambahkan ke ${userEmail}. Saldo baru: ${data.balance} kredit.`,
+        });
+        loadCloudUsers(cloudSearchQuery);
+      }
+    } catch (e: any) {
+      showToast({ type: 'error', title: 'Error', message: e.message });
     }
   };
 
@@ -800,6 +854,130 @@ export const AdminPanelPage: React.FC = () => {
                         </div>
                       );
                     })}
+                </div>
+              )}
+            </BentoTile>
+
+            {/* Panel 3: Cloud Supabase Users & Credit Management */}
+            <BentoTile className="p-6 space-y-4 bg-[#111115] border-white/10">
+              <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-sm font-semibold text-zinc-200">
+                    Pengguna Cloud Supabase & Manajemen Kredit
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => loadCloudUsers(cloudSearchQuery)}
+                    loading={isLoadingCloudUsers}
+                    className="text-xs"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                    Muat Ulang
+                  </Button>
+                </div>
+              </div>
+
+              {/* Search User Input */}
+              <div className="flex gap-2">
+                <Input
+                  label=""
+                  placeholder="Cari user di database berdasarkan email..."
+                  value={cloudSearchQuery}
+                  onChange={(e) => setCloudSearchQuery(e.target.value)}
+                />
+              </div>
+
+              {isLoadingCloudUsers ? (
+                <div className="text-center py-8 text-xs text-zinc-500 animate-pulse">
+                  Memuat data pengguna dari Supabase Cloud...
+                </div>
+              ) : cloudUsers.length === 0 ? (
+                <p className="text-xs text-zinc-600 text-center py-6">
+                  Tidak ada pengguna yang cocok dengan pencarian di database Supabase.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {cloudUsers.map((u) => {
+                    const isPro = u.plan_tier === 'pro';
+                    return (
+                      <div
+                        key={u.id}
+                        className="p-4 rounded-xl border border-white/5 bg-black/40 space-y-3 text-xs"
+                      >
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-zinc-200 font-mono">{u.email}</p>
+                              <Badge variant={isPro ? 'emerald' : 'zinc'}>
+                                {isPro ? 'CREATOR PRO' : 'FREE / TRIAL'}
+                              </Badge>
+                            </div>
+                            <p className="text-[11px] text-zinc-500 font-mono">ID: {u.id}</p>
+                            {u.subscription_expires_at && (
+                              <p className="text-[11px] text-zinc-400">
+                                Berakhir:{' '}
+                                <span className="font-mono text-zinc-300">
+                                  {new Date(u.subscription_expires_at).toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Credits Pill & Quick Actions */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-1.5">
+                              <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                              {u.credits_balance} Kredit
+                            </span>
+
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleGrantCredits(u.id, 100, u.email)}
+                              title="Tambah 100 Kredit AI"
+                              className="text-xs"
+                            >
+                              +100 Kredit
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleGrantCredits(u.id, 350, u.email)}
+                              title="Tambah 350 Kredit AI"
+                              className="text-xs"
+                            >
+                              +350 Kredit
+                            </Button>
+
+                            {!isPro && (
+                              <Button
+                                size="sm"
+                                variant="primary"
+                                onClick={() => {
+                                  setTargetUser(u.email);
+                                  setTargetTier('pro');
+                                  setDurationPreset('1m');
+                                  window.scrollTo({ top: 300, behavior: 'smooth' });
+                                }}
+                                className="text-xs text-black"
+                              >
+                                Jadikan Pro
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </BentoTile>

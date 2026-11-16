@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription } from '@/types';
+import type { PlanTier, BillingCycle, PaymentMethodType, SubscriptionOrder, UserSubscription, TopUpPackage } from '@/types';
 import { useAdminStore } from './admin-store';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -155,6 +155,7 @@ export const PRICING_PLANS = {
     yearlyPrice: 0,
     description: 'Akses uji coba untuk 3 kategori pilihan dan hingga 3x generate storyboard.',
     features: [
+      'Alokasi 20 Kredit AI untuk eksplorasi awal',
       '3 Kategori Konten Aktif (Time Travel, Stickman, POV)',
       'Batas 3x Generate Storyboard Adegan',
       'Generator ide hook 1-3 detik & story beats',
@@ -171,9 +172,10 @@ export const PRICING_PLANS = {
     popular: true,
     description: 'Langganan terjangkau untuk kreator video pendek tanpa batasan kuota.',
     features: [
+      '350 Kredit AI / bulan (~70 naskah & storyboard video lengkap)',
       'Semua 19 Kategori Konten Terbuka Penuh',
-      'Unlimited Generate Storyboard & Variasi Scene',
-      'Akses BYOK (Bring Your Own Key) Direct Video Generation',
+      'Opsi Top-Up Kredit tambahan kapan saja mulai Rp 20.000',
+      'Akses BYOK (Bring Your Own Key) Direct Video Generation Tanpa Kuota',
       'Story Studio lengkap dengan Continuity Anchors',
       'Ekspor Prompt JSON & TXT tanpa watermark',
       'Compiler Video Prompt Veo 2, Kling 1.5, Runway Gen-3, Luma',
@@ -183,6 +185,24 @@ export const PRICING_PLANS = {
     ],
   },
 };
+
+export const TOPUP_PACKAGES: TopUpPackage[] = [
+  {
+    id: 'topup_100',
+    name: 'Booster Mini (100 Kredit)',
+    credits: 100,
+    price: 20000,
+    description: 'Cukup untuk ~20 produksi video lengkap atau 100 ide naskah.',
+  },
+  {
+    id: 'topup_300',
+    name: 'Booster Pro (300 Kredit)',
+    credits: 300,
+    price: 50000,
+    popular: true,
+    description: 'Paket hemat untuk kreator aktif. Cukup untuk ~60 video lengkap.',
+  },
+];
 
 interface SubscriptionState {
   subscription: UserSubscription;
@@ -204,6 +224,8 @@ interface SubscriptionState {
   canGenerateStoryboard: () => boolean;
   isCategoryAccessible: (categoryId: string) => boolean;
   isByokAccessible: () => boolean;
+  deductCredits: (amount: number, actionName: string) => Promise<{ success: boolean; balance: number; error?: string }>;
+  hasSufficientCredits: (required: number) => boolean;
   activateUserSubscription: (
     emailOrUserId: string,
     planTier: PlanTier,
@@ -218,6 +240,7 @@ interface SubscriptionState {
     email: string;
     plan_tier: string;
     subscription_status: string;
+    credits_balance: number;
     subscription_expires_at: string | null;
     created_at: string;
   }>>;
@@ -236,6 +259,7 @@ function loadInitialState(): {
     status: 'trial',
     trialStartedAt: new Date().toISOString(),
     trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    creditsBalance: 20,
   };
 
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
@@ -291,6 +315,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
         status: 'trial',
         trialStartedAt: new Date(now).toISOString(),
         trialEndsAt: new Date(now + 24 * 60 * 60 * 1000).toISOString(),
+        creditsBalance: 20,
       };
       set({ subscription: newSub });
       saveState({
@@ -446,6 +471,56 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
     return get().subscription.tier === 'pro';
   },
 
+  deductCredits: async (amount: number, actionName: string) => {
+    const currentBal = get().subscription.creditsBalance ?? (get().subscription.tier === 'pro' ? 350 : 20);
+    if (currentBal < amount) {
+      return { success: false, balance: currentBal, error: 'INSUFFICIENT_CREDITS' };
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.rpc('deduct_user_credits', {
+          deduct_amount: amount,
+          action_name: actionName,
+        });
+
+        if (!error && data && data.success) {
+          const newBal = data.balance;
+          set((state) => ({
+            subscription: { ...state.subscription, creditsBalance: newBal },
+          }));
+          saveState({
+            subscription: get().subscription,
+            orders: get().orders,
+            storyboardGenerationsCount: get().storyboardGenerationsCount,
+            manualActivations: get().manualActivations,
+          });
+          return { success: true, balance: newBal };
+        }
+      } catch (err) {
+        console.warn('Supabase credit deduction warning:', err);
+      }
+    }
+
+    // Local fallback for guest or offline mode
+    const newBal = Math.max(0, currentBal - amount);
+    set((state) => ({
+      subscription: { ...state.subscription, creditsBalance: newBal },
+    }));
+    saveState({
+      subscription: get().subscription,
+      orders: get().orders,
+      storyboardGenerationsCount: get().storyboardGenerationsCount,
+      manualActivations: get().manualActivations,
+    });
+    return { success: true, balance: newBal };
+  },
+
+  hasSufficientCredits: (required: number) => {
+    const bal = get().subscription.creditsBalance ?? (get().subscription.tier === 'pro' ? 350 : 20);
+    return bal >= required;
+  },
+
   activateUserSubscription: async (emailOrUserId, planTier, expiresAt, durationLabel, notes) => {
     const trimmedTarget = emailOrUserId.trim();
     if (!trimmedTarget) {
@@ -500,6 +575,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
         trialStartedAt: get().subscription.trialStartedAt,
         trialEndsAt: get().subscription.trialEndsAt,
         expiresAt,
+        creditsBalance: planTier === 'pro' ? 350 : 20,
       };
       set({ subscription: updatedSub, activeOrder: null });
       saveState({
@@ -625,7 +701,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
       // Check Supabase profile
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('plan_tier, subscription_status, subscription_expires_at')
+        .select('plan_tier, subscription_status, subscription_expires_at, credits_balance')
         .eq('id', uid)
         .single();
 
@@ -640,6 +716,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
             tier: 'pro',
             status: 'active',
             expiresAt: profile.subscription_expires_at,
+            creditsBalance: profile.credits_balance ?? 350,
             trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
             trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
           };
@@ -659,6 +736,7 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
             tier: 'free',
             status: 'expired',
             expiresAt: profile.subscription_expires_at,
+            creditsBalance: profile.credits_balance ?? 0,
             trialStartedAt: get().subscription.trialStartedAt || new Date().toISOString(),
             trialEndsAt: get().subscription.trialEndsAt || new Date().toISOString(),
           };
@@ -670,6 +748,14 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
             manualActivations: get().manualActivations,
           });
           return;
+        } else {
+          // Normal free/trial account with active credits
+          set((state) => ({
+            subscription: {
+              ...state.subscription,
+              creditsBalance: profile.credits_balance ?? 20,
+            },
+          }));
         }
       }
 

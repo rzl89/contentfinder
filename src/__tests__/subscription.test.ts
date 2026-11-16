@@ -89,5 +89,40 @@ describe('Fixprom â€” Subscription & Monetization System', () => {
     });
     expect(store.isFeatureAccessible('pro')).toBe(false);
   });
+
+  it('manages AI credits correctly (deduction, sufficiency check, and top-up)', async () => {
+    const store = useSubscriptionStore.getState();
+    // Default trial has 20 credits
+    useSubscriptionStore.setState({
+      subscription: {
+        tier: 'free',
+        status: 'trial',
+        trialStartedAt: new Date().toISOString(),
+        trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        creditsBalance: 20,
+      },
+    });
+
+    expect(store.hasSufficientCredits(1)).toBe(true);
+    expect(store.hasSufficientCredits(3)).toBe(true);
+    expect(store.hasSufficientCredits(25)).toBe(false);
+
+    // Deduct 1 credit for idea generation
+    const res1 = await store.deductCredits(1, 'generate_ideas');
+    expect(res1.success).toBe(true);
+    expect(res1.balance).toBe(19);
+    expect(useSubscriptionStore.getState().subscription.creditsBalance).toBe(19);
+
+    // Deduct 3 credits for storyboard generation
+    const res2 = await store.deductCredits(3, 'generate_storyboard');
+    expect(res2.success).toBe(true);
+    expect(res2.balance).toBe(16);
+
+    // Try to deduct more than remaining balance
+    const resFail = await store.deductCredits(50, 'test_overflow');
+    expect(resFail.success).toBe(false);
+    expect(resFail.error).toBe('INSUFFICIENT_CREDITS');
+    expect(useSubscriptionStore.getState().subscription.creditsBalance).toBe(16);
+  });
 });
 

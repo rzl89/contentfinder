@@ -21,6 +21,7 @@ import { useToast } from '@/components/ui/toast';
 import {
   useSubscriptionStore,
   PRICING_PLANS,
+  TOPUP_PACKAGES,
   getPaymentAccounts,
 } from '@/stores/subscription-store';
 import type { BillingCycle, PlanTier, PaymentMethodType, SubscriptionOrder } from '@/types';
@@ -230,6 +231,67 @@ export const PricingPage: React.FC = () => {
             <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </BentoTile>
+      </div>
+
+      {/* Top-Up Credit Boosters */}
+      <div className="max-w-4xl mx-auto space-y-4 pt-4">
+        <div className="text-center space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-300">
+            <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span>Kredit Tambahan (Add-on)</span>
+          </div>
+          <h3 className="text-lg font-bold text-white">Butuh Tambahan Kuota? Paket Top-Up Booster</h3>
+          <p className="text-xs text-gray-400">
+            Kredit tambahan tidak memiliki masa kedaluwarsa. Bisa digunakan kapan saja saat kuota bulanan Anda menipis.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {TOPUP_PACKAGES.map((pkg) => (
+            <div
+              key={pkg.id}
+              className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+                pkg.popular
+                  ? 'bg-gradient-to-br from-card to-amber-950/20 border-amber-500/40 shadow-lg shadow-amber-500/5'
+                  : 'bg-card/80 border-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-white">{pkg.name}</span>
+                  {pkg.popular && <Badge variant="amber">Populer</Badge>}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-amber-300">
+                    Rp {pkg.price.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-xs text-gray-400">/ sekali beli</span>
+                </div>
+                <p className="text-xs text-gray-400 leading-relaxed">{pkg.description}</p>
+                <div className="text-[11px] text-zinc-300 space-y-1 bg-black/30 p-2.5 rounded-lg border border-white/5 font-mono">
+                  <p>⚡ {pkg.credits} Kredit AI langsung masuk saldo</p>
+                  <p>✓ Berlaku selamanya tanpa hangus</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-2 border-t border-white/5">
+                <a
+                  href={`https://wa.me/${useSubscriptionStore.getState().adminWhatsApp}?text=${encodeURIComponent(
+                    `Halo Admin Fixprom, saya ingin membeli ${pkg.name} seharga Rp ${pkg.price.toLocaleString(
+                      'id-ID'
+                    )} untuk akun saya. Mohon petunjuk pembayarannya.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold bg-white/5 hover:bg-amber-500 hover:text-black border border-white/10 hover:border-amber-500 transition-all text-zinc-200"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  Beli {pkg.name} via WhatsApp
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Security & Payment Trust Guarantee */}

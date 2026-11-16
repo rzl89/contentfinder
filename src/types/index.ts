@@ -407,4 +407,24 @@ export interface UserSubscription {
   trialStartedAt: string;
   trialEndsAt: string;
   expiresAt?: string;
+  creditsBalance?: number;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  balanceAfter: number;
+  actionType: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface TopUpPackage {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  popular?: boolean;
+  description: string;
 }
