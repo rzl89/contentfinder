@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sparkles, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
