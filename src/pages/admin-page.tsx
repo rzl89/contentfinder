@@ -12,22 +12,18 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import {
-  ShieldAlert,
   ShieldCheck,
   Lock,
   Unlock,
   KeyRound,
-  Sparkles,
   Bot,
   CreditCard,
   Sliders,
   CheckCircle2,
   RefreshCw,
   LogOut,
-  FolderKanban,
   Zap,
   Radio,
-  Server,
   Layers,
 } from 'lucide-react';
 
