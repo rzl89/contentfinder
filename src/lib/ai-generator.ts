@@ -11,11 +11,12 @@ import { getCategoryById } from '@/context-engine';
 
 /**
  * ============================================================================
- * AI GENERATOR SERVICE
+ * AI GENERATOR SERVICE WITH SECURE BACKEND GATEWAY
  * ============================================================================
  *
- * Generates structured ideas, story treatments, bibles, and scenes.
- * Runs on backend or graceful client-side generator engine without exposing keys.
+ * Calls the secure Vercel backend proxy (/api/generate) which accesses OPENAI_API_KEY.
+ * Falls back gracefully to the deterministic Algorithmic Context Engine if the
+ * backend API is unreachable or offline.
  */
 
 export async function generateContentIdeas(
@@ -26,18 +27,75 @@ export async function generateContentIdeas(
     throw new Error(`Category not found: ${config.categoryId}`);
   }
 
-  // Simulate network processing delay for authentic UX
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  const subcat =
+    category.subcategories.find((s) => s.id === config.subcategoryId) ||
+    category.subcategories[0];
+
+  // 1. Try calling the secure backend proxy
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'generate_ideas',
+        payload: {
+          categoryName: category.name,
+          categoryDescription: category.description,
+          subcatName: subcat?.name,
+          platform: config.platform,
+          duration: config.duration,
+          visualStyle: config.visualStyle,
+          contextName: config.contextProfile.name,
+          targetMarket: config.contextProfile.targetMarket,
+          targetAudience: config.targetAudience,
+          additionalTheme: config.additionalTheme,
+          count: config.ideaCount || 5,
+        },
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.ideas) && data.ideas.length > 0) {
+        return data.ideas.map((raw: any, idx: number): ContentIdea => ({
+          id: `idea_ai_${Date.now()}_${idx + 1}`,
+          title: raw.title || `${category.name} #${idx + 1}`,
+          hook: raw.hook || '[Detik 0-3] Hook pembuka dramatis',
+          premise: raw.premise || category.description,
+          synopsis: raw.synopsis || raw.premise || '',
+          storyBeats: Array.isArray(raw.storyBeats) ? raw.storyBeats : [
+            'Beat 1 (Hook)', 'Beat 2 (Eskalasi)', 'Beat 3 (Puncak)', 'Beat 4 (Twist)'
+          ],
+          conflict: raw.conflict || 'Konflik utama dalam narasi.',
+          ending: raw.ending || 'Penyelesaian berkesan.',
+          estimatedDuration: config.duration || '30-60s',
+          visualStyle: config.visualStyle || 'cinematic_realistic',
+          suggestedLocation: raw.suggestedLocation || 'Latar natural seimbang',
+          localizationNotes: raw.localizationNotes || 'Nuansa Indonesia natural tanpa stereotip',
+          creativeRationale: raw.creativeRationale || `Menerapkan framework ${category.name}`,
+          trendEvidence: config.trendApproach === 'trend_first'
+            ? 'Format hook tervalidasi dari pola retensi tinggi TikTok Creative Center.'
+            : undefined,
+          categoryId: category.id,
+          subcategoryId: subcat?.id,
+          saved: false,
+          createdAt: new Date().toISOString(),
+        }));
+      }
+    }
+  } catch (err) {
+    console.info('Backend AI proxy offline or unconfigured, utilizing Algorithmic Context Engine.', err);
+  }
+
+  // 2. Deterministic Algorithmic Fallback
+  await new Promise((resolve) => setTimeout(resolve, 600));
 
   const count = config.ideaCount || 5;
   const ideas: ContentIdea[] = [];
 
-  // Generate category-specific, creative-logic-driven ideas
   for (let i = 1; i <= count; i++) {
     const ideaId = `idea_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`;
-
-    // Build specific variation based on category and subcategory
-    const subcat = category.subcategories[(i - 1) % category.subcategories.length];
+    const subcatItem = category.subcategories[(i - 1) % category.subcategories.length];
     const baseExample = category.exampleIdeas[(i - 1) % category.exampleIdeas.length];
 
     const isTrending = config.trendApproach === 'trend_first';
@@ -46,9 +104,9 @@ export async function generateContentIdeas(
 
     ideas.push({
       id: ideaId,
-      title: `${category.name}: Eksplorasi ${subcat.name} #${i}`,
+      title: `${category.name}: Eksplorasi ${subcatItem.name} #${i}`,
       hook: `[Detik 0-3] "${baseExample.split('—')[0] || 'Tunggu sebentar... kamu tidak akan menyangka apa yang terjadi selanjutnya.'}"`,
-      premise: `Sebuah narasi tentang ${subcat.description.toLowerCase()} dalam balutan gaya ${visualStyle.replace(/_/g, ' ')}.`,
+      premise: `Sebuah narasi tentang ${subcatItem.description.toLowerCase()} dalam balutan gaya ${visualStyle.replace(/_/g, ' ')}.`,
       synopsis: `Di sebuah latar yang dirancang autentik, tokoh utama mengalami dinamika tak terduga. ${category.creativeFramework.split('.')[0]}. Alur berkembang cepat menyesuaikan durasi pendek ${duration}.`,
       storyBeats: [
         'Beat 1 (Hook): Kejadian tak terduga langsung menghentikan scroll penonton.',
@@ -75,7 +133,7 @@ export async function generateContentIdeas(
         ? 'Format hook 3 detik terinspirasi dari pola retensi tinggi TikTok Creative Center Q1.'
         : undefined,
       categoryId: category.id,
-      subcategoryId: subcat.id,
+      subcategoryId: subcatItem.id,
       saved: false,
       createdAt: new Date().toISOString(),
     });
@@ -95,11 +153,116 @@ export async function developStoryFromIdea(
   worldBible: WorldBible;
   scenes: Scene[];
 }> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   const projectId = `proj_${Date.now()}`;
 
-  // 1. Generate Character Bible
+  // 1. Try calling the secure backend proxy
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'develop_story',
+        payload: {
+          idea,
+          targetSceneCount,
+        },
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.package) {
+        const pkg = data.package;
+        const char = pkg.character || {};
+        const wb = pkg.worldBible || {};
+        const rawScenes = Array.isArray(pkg.scenes) ? pkg.scenes : [];
+
+        const character: CharacterBible = {
+          id: `char_${Date.now()}_1`,
+          projectId,
+          name: char.name || 'Rian Pratama',
+          role: char.role || 'Protagonis Utama',
+          appearance: char.appearance || 'Pria muda berpenampilan rapi dengan pandangan tajam.',
+          clothing: char.clothing || 'Jaket katun gelap dengan kaos polos.',
+          personality: char.personality || 'Tenang, analitis, dan adaptif.',
+          consistencyAnchors: Array.isArray(char.consistencyAnchors)
+            ? char.consistencyAnchors
+            : ['Jaket katun gelap kanonis', 'Jam tangan kulit cokelat'],
+        };
+
+        const worldBible: WorldBible = {
+          id: `wb_${Date.now()}`,
+          projectId,
+          name: wb.name || `${idea.title} Universe`,
+          environmentType: wb.environmentType || 'mixed',
+          description: wb.description || idea.synopsis,
+          timeOfDay: wb.timeOfDay || 'Sore hari (Golden hour)',
+          weather: wb.weather || 'Cerah sejuk',
+          props: Array.isArray(wb.props) ? wb.props : ['Kamera ponsel', 'Buku saku'],
+          rules: Array.isArray(wb.rules)
+            ? wb.rules
+            : ['Pencahayaan natural sinematik', 'Kostum konsisten antar scene'],
+          moodAndTone: wb.moodAndTone || 'Cinematic, suspenseful, authentic',
+          colorPalette: Array.isArray(wb.colorPalette)
+            ? wb.colorPalette
+            : ['#0A0A0E', '#F59E0B', '#27272A'],
+        };
+
+        const scenes: Scene[] = rawScenes.map((s: any, idx: number): Scene => ({
+          id: `scene_${Date.now()}_${idx + 1}`,
+          projectId,
+          sceneNumber: idx + 1,
+          beatTitle: s.beatTitle || `Scene ${idx + 1}: Story Beat`,
+          purpose: s.purpose || 'Memajukan alur narasi dengan visual menarik',
+          summary: s.summary || s.characterActions || 'Adegan utama berlangsung.',
+          location: {
+            environmentType: s.location?.environmentType || 'urban',
+            description: s.location?.description || 'Interior kontemporer dengan pencahayaan alami',
+            timeOfDay: s.location?.timeOfDay || 'Golden hour',
+            weather: s.location?.weather || 'Cerah',
+          },
+          characterActions: s.characterActions || `${character.name} mengamati situasi di sekelilingnya.`,
+          props: Array.isArray(s.props) ? s.props : ['Perangkat digital'],
+          dialogue: s.dialogue,
+          narration: s.narration,
+          camera: {
+            shot: s.camera?.shot || 'Medium Close-Up',
+            angle: s.camera?.angle || 'Eye-level',
+            movement: s.camera?.movement || 'Slow push in',
+            framing: s.camera?.framing || 'Rule of thirds',
+          },
+          lighting: s.lighting || 'Warm key light, subtle rim light',
+          continuityAnchors: Array.isArray(s.continuityAnchors)
+            ? s.continuityAnchors
+            : character.consistencyAnchors,
+          imagePrompt:
+            s.imagePrompt ||
+            `Cinematic photorealistic still frame of ${character.name}, ${character.appearance}, wearing ${character.clothing}. High production quality 8k shot.`,
+          videoPrompt:
+            s.videoPrompt ||
+            `Cinematic tracking shot. Camera glides smoothly around subject. Photorealistic motion blur, high frame rate smoothness.`,
+          negativePrompt:
+            s.negativePrompt ||
+            'blurry, distorted facial features, low quality, watermark, extra limbs',
+          locked: false,
+        }));
+
+        if (scenes.length > 0) {
+          return {
+            characters: [character],
+            worldBible,
+            scenes,
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.info('Backend story develop proxy offline, utilizing Algorithmic Context Engine.', err);
+  }
+
+  // 2. Deterministic Algorithmic Fallback
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
   const characters: CharacterBible[] = [
     {
       id: `char_${Date.now()}_1`,
@@ -120,7 +283,6 @@ export async function developStoryFromIdea(
     },
   ];
 
-  // 2. Generate World Bible
   const worldBible: WorldBible = {
     id: `wb_${Date.now()}`,
     projectId,
@@ -139,9 +301,7 @@ export async function developStoryFromIdea(
     colorPalette: ['#0A0A0E', '#F59E0B', '#27272A', '#E4E4E7'],
   };
 
-  // 3. Generate Scenes matching EXACT scene count
   const scenes: Scene[] = [];
-
   const beats = [
     { title: 'The Sudden Hook', purpose: 'Menghentikan scroll penonton dalam 2 detik pertama' },
     { title: 'The Exploration', purpose: 'Menunjukkan detail dan kompleksitas situasi' },
