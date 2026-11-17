@@ -12,6 +12,30 @@ export interface DynamicPaymentMethod {
   instructions: string[];
 }
 
+export interface DuitkuConfig {
+  isEnabled: boolean;
+  environment: 'sandbox' | 'production';
+  merchantCode: string;
+  apiKey: string;
+  sandboxMerchantCode: string;
+  sandboxApiKey: string;
+  prodMerchantCode: string;
+  prodApiKey: string;
+  expiryPeriod: number;
+}
+
+export const DEFAULT_DUITKU_CONFIG: DuitkuConfig = {
+  isEnabled: true,
+  environment: 'sandbox',
+  merchantCode: '',
+  apiKey: '',
+  sandboxMerchantCode: '',
+  sandboxApiKey: '',
+  prodMerchantCode: '',
+  prodApiKey: '',
+  expiryPeriod: 1440,
+};
+
 export interface AdminSettings {
   // LLM Config
   defaultModel: string;
@@ -38,6 +62,7 @@ export interface AdminSettings {
   danaNumber: string;
   danaHolder: string;
   customPaymentMethods?: DynamicPaymentMethod[];
+  duitkuConfig?: DuitkuConfig;
 }
 
 interface AdminState {
@@ -64,6 +89,10 @@ interface AdminState {
   deletePaymentMethod: (id: string) => Promise<void>;
   togglePaymentMethod: (id: string) => Promise<void>;
   resetPaymentMethodsToDefault: () => Promise<void>;
+
+  // Duitku Gateway
+  fetchDuitkuConfig: () => Promise<DuitkuConfig>;
+  saveDuitkuConfig: (config: Partial<DuitkuConfig>) => Promise<void>;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -177,6 +206,7 @@ export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {
   danaNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
   danaHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
   customPaymentMethods: DEFAULT_PAYMENT_ACCOUNTS,
+  duitkuConfig: DEFAULT_DUITKU_CONFIG,
 };
 
 // ─── Storage helpers ─────────────────────────────────────────────────────────
@@ -192,6 +222,10 @@ function loadSettings(): AdminSettings {
         parsed.customPaymentMethods && Array.isArray(parsed.customPaymentMethods) && parsed.customPaymentMethods.length > 0
           ? parsed.customPaymentMethods
           : DEFAULT_ADMIN_SETTINGS.customPaymentMethods,
+      duitkuConfig: {
+        ...DEFAULT_DUITKU_CONFIG,
+        ...(parsed.duitkuConfig || {}),
+      },
     };
   } catch {
     return DEFAULT_ADMIN_SETTINGS;
@@ -451,6 +485,43 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
   resetPaymentMethodsToDefault: async () => {
     await get().savePaymentMethods([...DEFAULT_PAYMENT_ACCOUNTS]);
+  },
+
+  fetchDuitkuConfig: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'duitku_config')
+        .maybeSingle();
+
+      if (!error && data && data.value) {
+        const remote = data.value as DuitkuConfig;
+        const merged: DuitkuConfig = { ...DEFAULT_DUITKU_CONFIG, ...remote };
+        get().updateSettings({ duitkuConfig: merged });
+        return merged;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch duitku_config from Supabase', e);
+    }
+    return get().settings.duitkuConfig || DEFAULT_DUITKU_CONFIG;
+  },
+
+  saveDuitkuConfig: async (configUpdate) => {
+    const current = get().settings.duitkuConfig || DEFAULT_DUITKU_CONFIG;
+    const merged: DuitkuConfig = { ...current, ...configUpdate };
+
+    get().updateSettings({ duitkuConfig: merged });
+
+    try {
+      await supabase.from('system_settings').upsert({
+        key: 'duitku_config',
+        value: merged,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to persist duitku_config to Supabase', e);
+    }
   },
 }));
 

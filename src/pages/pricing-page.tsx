@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Check,
   Zap,
@@ -12,14 +12,21 @@ import {
   ShieldCheck,
   CreditCard,
   MessageCircle,
+  ExternalLink,
+  RefreshCw,
+  Loader2,
+  Lock,
 } from 'lucide-react';
 import { BentoTile } from '@/components/ui/bento-tile';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useLanguageStore } from '@/stores/language-store';
 import { useAdminStore } from '@/stores/admin-store';
+import { useAuthStore } from '@/stores/auth-store';
+import { supabase } from '@/lib/supabase';
 import {
   useSubscriptionStore,
   PRICING_PLANS,
@@ -30,9 +37,11 @@ import type { BillingCycle, PlanTier, PaymentMethodType, SubscriptionOrder } fro
 
 export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const { language, t } = useLanguageStore();
-  const { fetchPaymentMethods } = useAdminStore();
+  const { fetchPaymentMethods, fetchDuitkuConfig } = useAdminStore();
+  const { user, profile } = useAuthStore();
   const {
     subscription,
     activeOrder,
@@ -40,17 +49,97 @@ export const PricingPage: React.FC = () => {
     generateWhatsAppLink,
     cancelActiveOrder,
     getRemainingTrialHours,
+    syncSubscriptionWithProfile,
   } = useSubscriptionStore();
+
+  const duitkuConfig = useAdminStore((s) => s.settings.duitkuConfig);
+  const isDuitkuEnabled = duitkuConfig?.isEnabled !== false;
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('bca');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<SubscriptionOrder | null>(activeOrder);
 
-  // Sync dynamic payment methods from Supabase on mount
+  // Duitku Checkout State
+  const [checkoutMode, setCheckoutMode] = useState<'duitku' | 'manual'>(isDuitkuEnabled ? 'duitku' : 'manual');
+  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
+  const [customerName, setCustomerName] = useState(profile?.display_name || '');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [isProcessingDuitku, setIsProcessingDuitku] = useState(false);
+
+  // Return status from Duitku redirect
+  const [returnStatus, setReturnStatus] = useState<{
+    type: 'success' | 'pending' | 'failed' | null;
+    orderId: string | null;
+    message: string;
+  }>({ type: null, orderId: null, message: '' });
+  const [isCheckingReturnStatus, setIsCheckingReturnStatus] = useState(false);
+
+  // Sync dynamic payment methods and Duitku config on mount
   useEffect(() => {
     void fetchPaymentMethods();
-  }, [fetchPaymentMethods]);
+    void fetchDuitkuConfig();
+  }, [fetchPaymentMethods, fetchDuitkuConfig]);
+
+  // Keep customer form synced with user
+  useEffect(() => {
+    if (user?.email && !customerEmail) {
+      setCustomerEmail(user.email);
+    }
+    if (profile?.display_name && !customerName) {
+      setCustomerName(profile.display_name);
+    }
+  }, [user, profile, customerEmail, customerName]);
+
+  // Inspect return URL for Duitku
+  const checkDuitkuStatus = useCallback(
+    async (orderId: string) => {
+      setIsCheckingReturnStatus(true);
+      try {
+        const { data, error } = await supabase.rpc('check_duitku_order_status', {
+          p_invoice_number: orderId,
+        });
+
+        if (!error && data && data.found) {
+          if (data.status === 'paid') {
+            setReturnStatus({
+              type: 'success',
+              orderId,
+              message: 'Pembayaran Duitku telah berhasil diverifikasi! Akun Anda aktif sebagai Creator Pro.',
+            });
+            await syncSubscriptionWithProfile(user?.id);
+          } else {
+            setReturnStatus({
+              type: 'pending',
+              orderId,
+              message: 'Transaksi tercatat dan sedang menunggu pelunasan dari Duitku.',
+            });
+          }
+        } else {
+          setReturnStatus({
+            type: 'pending',
+            orderId,
+            message: 'Memeriksa pembayaran Duitku...',
+          });
+        }
+      } catch {
+        // non-fatal
+      } finally {
+        setIsCheckingReturnStatus(false);
+      }
+    },
+    [syncSubscriptionWithProfile, user?.id]
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const statusParam = params.get('status');
+    const orderIdParam = params.get('orderId');
+
+    if (statusParam === 'duitku_return' && orderIdParam) {
+      void checkDuitkuStatus(orderIdParam);
+    }
+  }, [location.search, checkDuitkuStatus]);
 
   const remainingHours = getRemainingTrialHours();
   const isTrialActive = subscription.status === 'trial' && remainingHours > 0;
@@ -71,6 +160,64 @@ export const PricingPage: React.FC = () => {
     });
   };
 
+  const handlePayWithDuitku = async () => {
+    if (!customerEmail || !customerEmail.includes('@')) {
+      showToast({
+        type: 'error',
+        title: 'Email Diperlukan',
+        message: 'Masukkan alamat email yang valid untuk konfirmasi invoice dan aktivasi akun.',
+      });
+      return;
+    }
+
+    const price = billingCycle === 'yearly' ? PRICING_PLANS.pro.yearlyPrice : PRICING_PLANS.pro.monthlyPrice;
+    setIsProcessingDuitku(true);
+
+    try {
+      const res = await fetch('/api/duitku-create-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planTier: 'pro',
+          billingCycle,
+          amount: price,
+          userEmail: customerEmail.trim().toLowerCase(),
+          userName: customerName.trim() || 'Pelanggan Fixprom',
+          userId: user?.id || null,
+          phoneNumber: customerPhone.trim() || '081234567890',
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success || !data.paymentUrl) {
+        showToast({
+          type: 'error',
+          title: 'Gagal Membuat Tagihan Duitku',
+          message: data.message || 'Terjadi kendala saat menghubungkan ke Duitku. Silakan coba metode manual.',
+        });
+        setIsProcessingDuitku(false);
+        return;
+      }
+
+      showToast({
+        type: 'success',
+        title: 'Mengarahkan ke Duitku...',
+        message: 'Membuka halaman pembayaran aman Duitku.',
+      });
+
+      // Redirect to Duitku POP / checkout page
+      window.location.href = data.paymentUrl;
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Koneksi Terputus',
+        message: err.message || 'Gagal memanggil endpoint Duitku. Silakan coba lagi atau gunakan opsi manual.',
+      });
+      setIsProcessingDuitku(false);
+    }
+  };
+
   const paymentAccounts = getPaymentAccounts();
   const activeAccounts = paymentAccounts.filter((a) => a.isActive !== false);
   const selectedAccountInfo =
@@ -78,6 +225,53 @@ export const PricingPage: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
+      {/* Duitku Return Status Banner */}
+      {returnStatus.type && (
+        <div
+          className={`max-w-3xl mx-auto p-4 rounded-2xl border transition-all ${
+            returnStatus.type === 'success'
+              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+              : 'bg-amber-950/40 border-amber-500/40 text-amber-200'
+          }`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              {returnStatus.type === 'success' ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              ) : (
+                <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+              )}
+              <div>
+                <h4 className="text-sm font-bold text-white">
+                  {returnStatus.type === 'success'
+                    ? t('Pembayaran Berhasil Diverifikasi!', 'Payment Successfully Verified!')
+                    : t('Menunggu Konfirmasi Duitku', 'Awaiting Duitku Confirmation')}
+                </h4>
+                <p className="text-xs text-zinc-300 mt-0.5">{returnStatus.message}</p>
+                {returnStatus.orderId && (
+                  <p className="text-[11px] font-mono text-zinc-400 mt-1">
+                    Invoice: <span className="text-amber-300">{returnStatus.orderId}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {returnStatus.type === 'pending' && returnStatus.orderId && (
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={isCheckingReturnStatus}
+                onClick={() => returnStatus.orderId && checkDuitkuStatus(returnStatus.orderId)}
+                className="text-xs shrink-0"
+              >
+                <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                {t('Cek Lagi', 'Refresh')}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="amber" className="px-3 py-1 bg-amber-500/10">
@@ -435,122 +629,264 @@ export const PricingPage: React.FC = () => {
             setIsCheckoutOpen(false);
             cancelActiveOrder();
           }}
-          title={t('Instruksi Pembayaran & Konfirmasi', 'Payment Instructions & Confirmation')}
+          title={t('Pilihan Metode Pembayaran & Checkout', 'Payment Method & Checkout')}
         >
           <div className="space-y-5 text-sm">
-            {/* Invoice Summary Box */}
-            <div className="bg-field border border-white/10 rounded-xl p-4 space-y-2">
-              <div className="flex justify-between items-center text-xs text-gray-400 pb-2 border-b border-white/5">
-                <span>{t('Nomor Invoice:', 'Invoice Number:')}</span>
-                <span className="font-mono text-white font-semibold">{currentOrder.invoiceNumber}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-300">{t('Paket Dipilih:', 'Selected Plan:')}</span>
-                <span className="text-white font-semibold">
-                  {PRICING_PLANS.pro.name} (
-                  {currentOrder.billingCycle === 'yearly' ? t('1 Tahun', '1 Year') : t('1 Bulan', '1 Month')})
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-300">{t('Harga Paket:', 'Plan Price:')}</span>
-                <span className="text-gray-300">Rp {currentOrder.amount.toLocaleString('id-ID')}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-amber-400 flex items-center gap-1">
-                  {t('Kode Unik Verifikasi:', 'Unique Verification Code:')}
-                  <span className="text-[10px] bg-amber-500/20 px-1 rounded text-amber-300">
-                    {t('Otomatis', 'Auto')}
-                  </span>
-                </span>
-                <span className="font-mono text-amber-400 font-bold">+{currentOrder.uniqueCode}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm pt-2 border-t border-white/10 font-bold">
-                <span className="text-white">{t('Total Transfer Tepat:', 'Exact Transfer Amount:')}</span>
-                <span className="text-emerald-400 text-base font-mono">
-                  Rp {currentOrder.totalAmount.toLocaleString('id-ID')}
-                </span>
-              </div>
-            </div>
-
-            {/* Payment Method Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-300">
-                {t('Pilih Rekening / Metode Pembayaran:', 'Select Payment Method / Account:')}
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {activeAccounts.map((account) => (
-                  <button
-                    key={account.id}
-                    onClick={() => {
-                      setSelectedPayment(account.id);
-                      if (currentOrder) {
-                        currentOrder.paymentMethod = account.id;
-                      }
-                    }}
-                    className={`p-2.5 rounded-lg border text-left text-xs transition-all flex items-center gap-2 ${
-                      selectedPayment === account.id
-                        ? 'border-amber-500 bg-amber-500/10 text-white font-semibold'
-                        : 'border-white/10 bg-field text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <span>{account.icon}</span>
-                    <span className="truncate">{account.name.split(' (')[0] || account.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Account Details Box */}
-            <div className="bg-field border border-amber-500/20 rounded-xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[11px] text-gray-400">{selectedAccountInfo.name}</p>
-                  <p className="font-mono text-base font-bold text-amber-400 tracking-wide mt-0.5">
-                    {selectedAccountInfo.accountNumber}
-                  </p>
-                  <p className="text-[11px] text-gray-300 mt-0.5">a.n. {selectedAccountInfo.accountHolder}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleCopyAccount(selectedAccountInfo.accountNumber, selectedAccountInfo.name)}
-                  className="text-xs border-white/10 hover:border-amber-500"
+            {/* Mode Selector Tabs (Duitku vs Manual) */}
+            {isDuitkuEnabled && (
+              <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setCheckoutMode('duitku')}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    checkoutMode === 'duitku'
+                      ? 'bg-amber-500 text-black shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
                 >
-                  <Copy className="w-3.5 h-3.5 mr-1" />
-                  {t('Salin', 'Copy')}
-                </Button>
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>{t('Otomatis (Duitku)', 'Automatic (Duitku)')}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCheckoutMode('manual')}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    checkoutMode === 'manual'
+                      ? 'bg-amber-500 text-black shadow-md'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>{t('Transfer Manual', 'Manual Transfer')}</span>
+                </button>
               </div>
+            )}
 
-              {/* Transfer Steps */}
-              <div className="space-y-1.5 pt-3 border-t border-white/5 text-[11px] text-gray-400">
-                <p className="font-semibold text-gray-300">{t('Petunjuk Transfer:', 'Transfer Steps:')}</p>
-                {selectedAccountInfo.instructions.map((step, idx) => (
-                  <p key={idx} className="flex items-start gap-1.5">
-                    <span className="text-amber-400 font-bold">{idx + 1}.</span>
-                    <span>{step}</span>
+            {/* ═══ TAB 1: DUITKU AUTOMATIC GATEWAY ═══ */}
+            {checkoutMode === 'duitku' && isDuitkuEnabled ? (
+              <div className="space-y-4">
+                {/* Plan Summary */}
+                <div className="bg-field border border-white/10 rounded-xl p-4 space-y-2.5">
+                  <div className="flex justify-between items-center text-xs text-gray-400 pb-2 border-b border-white/5">
+                    <span>{t('Paket Langganan:', 'Subscription Plan:')}</span>
+                    <span className="font-semibold text-white">
+                      {PRICING_PLANS.pro.name} (
+                      {billingCycle === 'yearly' ? t('1 Tahun', '1 Year') : t('1 Bulan', '1 Month')})
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm pt-1 font-bold">
+                    <span className="text-white">{t('Total Pembayaran:', 'Total Amount:')}</span>
+                    <span className="text-amber-400 text-lg font-mono">
+                      Rp{' '}
+                      {(billingCycle === 'yearly'
+                        ? PRICING_PLANS.pro.yearlyPrice
+                        : PRICING_PLANS.pro.monthlyPrice
+                      ).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/5 flex items-center gap-1.5 text-[11px] text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>{t('Aktivasi Otomatis Seketika (Tanpa perlu kirim bukti transfer)', 'Instant Auto-Activation (No manual receipts needed)')}</span>
+                  </div>
+                </div>
+
+                {/* Supported Payment Channels Badges */}
+                <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                  <span className="text-[10px] text-zinc-400 uppercase font-semibold tracking-wider">
+                    {t('Metode yang Didukung di Portal Duitku:', 'Channels Supported in Duitku Portal:')}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 text-[11px]">
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      BCA VA
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      Mandiri VA
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      BRI VA
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      BNI VA
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      Permata VA
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold">
+                      QRIS Semua Bank / E-Wallet
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/5 font-mono">
+                      OVO / ShopeePay / DANA
+                    </span>
+                  </div>
+                </div>
+
+                {/* Customer Details Form */}
+                <div className="space-y-3">
+                  <Input
+                    label={t('Email Akun (Konfirmasi & Aktivasi)*', 'Account Email (Confirmation & Activation)*')}
+                    type="email"
+                    placeholder="email@anda.com"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    helperText={t('Pastikan sesuai dengan email akun login Anda.', 'Make sure it matches your logged-in account email.')}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label={t('Nama Pemesan', 'Customer Name')}
+                      placeholder="Nama Lengkap"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                    />
+                    <Input
+                      label={t('Nomor HP / WhatsApp', 'Phone Number')}
+                      placeholder="081234567890"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="pt-2 space-y-2">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full text-black font-bold flex items-center justify-center gap-2"
+                    loading={isProcessingDuitku}
+                    onClick={handlePayWithDuitku}
+                  >
+                    <span>{t('Lanjut ke Pembayaran Duitku', 'Proceed to Duitku Payment')}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <p className="text-[11px] text-zinc-400 text-center">
+                    {t(
+                      'Anda akan diarahkan ke laman pembayaran resmi Duitku untuk memilih metode bayar.',
+                      'You will be redirected to the official Duitku portal to choose your payment method.'
+                    )}
                   </p>
-                ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* ═══ TAB 2: MANUAL TRANSFER (FALLBACK) ═══ */
+              <div className="space-y-5">
+                {/* Invoice Summary Box */}
+                <div className="bg-field border border-white/10 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between items-center text-xs text-gray-400 pb-2 border-b border-white/5">
+                    <span>{t('Nomor Invoice:', 'Invoice Number:')}</span>
+                    <span className="font-mono text-white font-semibold">{currentOrder.invoiceNumber}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-300">{t('Paket Dipilih:', 'Selected Plan:')}</span>
+                    <span className="text-white font-semibold">
+                      {PRICING_PLANS.pro.name} (
+                      {currentOrder.billingCycle === 'yearly' ? t('1 Tahun', '1 Year') : t('1 Bulan', '1 Month')})
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-300">{t('Harga Paket:', 'Plan Price:')}</span>
+                    <span className="text-gray-300">Rp {currentOrder.amount.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-amber-400 flex items-center gap-1">
+                      {t('Kode Unik Verifikasi:', 'Unique Verification Code:')}
+                      <span className="text-[10px] bg-amber-500/20 px-1 rounded text-amber-300">
+                        {t('Otomatis', 'Auto')}
+                      </span>
+                    </span>
+                    <span className="font-mono text-amber-400 font-bold">+{currentOrder.uniqueCode}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm pt-2 border-t border-white/10 font-bold">
+                    <span className="text-white">{t('Total Transfer Tepat:', 'Exact Transfer Amount:')}</span>
+                    <span className="text-emerald-400 text-base font-mono">
+                      Rp {currentOrder.totalAmount.toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
 
-            {/* CTA Button: Confirm to WhatsApp */}
-            <div className="space-y-2 pt-2">
-              <a
-                href={generateWhatsAppLink(currentOrder)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-600/30 text-sm"
-              >
-                <MessageCircle className="w-5 h-5 fill-white" />
-                {t('Konfirmasi Pembayaran via WhatsApp', 'Confirm Payment via WhatsApp')}
-              </a>
-              <p className="text-[11px] text-center text-gray-400">
-                {t(
-                  'Setelah transfer, klik tombol di atas untuk mengirim bukti transfer ke WhatsApp admin. Akun Anda akan diaktifkan dalam hitungan menit!',
-                  'After transferring, click the button above to send proof of payment to admin WhatsApp. Your account will be activated within minutes!'
-                )}
-              </p>
-            </div>
+                {/* Payment Method Selector */}
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-300">
+                    {t('Pilih Rekening / Metode Pembayaran:', 'Select Payment Method / Account:')}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {activeAccounts.map((account) => (
+                      <button
+                        key={account.id}
+                        onClick={() => {
+                          setSelectedPayment(account.id);
+                          if (currentOrder) {
+                            currentOrder.paymentMethod = account.id;
+                          }
+                        }}
+                        className={`p-2.5 rounded-lg border text-left text-xs transition-all flex items-center gap-2 ${
+                          selectedPayment === account.id
+                            ? 'border-amber-500 bg-amber-500/10 text-white font-semibold'
+                            : 'border-white/10 bg-field text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <span>{account.icon}</span>
+                        <span className="truncate">{account.name.split(' (')[0] || account.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Account Details Box */}
+                <div className="bg-field border border-amber-500/20 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] text-gray-400">{selectedAccountInfo.name}</p>
+                      <p className="font-mono text-base font-bold text-amber-400 tracking-wide mt-0.5">
+                        {selectedAccountInfo.accountNumber}
+                      </p>
+                      <p className="text-[11px] text-gray-300 mt-0.5">a.n. {selectedAccountInfo.accountHolder}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleCopyAccount(selectedAccountInfo.accountNumber, selectedAccountInfo.name)}
+                      className="text-xs border-white/10 hover:border-amber-500"
+                    >
+                      <Copy className="w-3.5 h-3.5 mr-1" />
+                      {t('Salin', 'Copy')}
+                    </Button>
+                  </div>
+
+                  {/* Transfer Steps */}
+                  <div className="space-y-1.5 pt-3 border-t border-white/5 text-[11px] text-gray-400">
+                    <p className="font-semibold text-gray-300">{t('Petunjuk Transfer:', 'Transfer Steps:')}</p>
+                    {selectedAccountInfo.instructions.map((step, idx) => (
+                      <p key={idx} className="flex items-start gap-1.5">
+                        <span className="text-amber-400 font-bold">{idx + 1}.</span>
+                        <span>{step}</span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Button: Confirm to WhatsApp */}
+                <div className="space-y-2 pt-2">
+                  <a
+                    href={generateWhatsAppLink(currentOrder)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-600/30 text-sm"
+                  >
+                    <MessageCircle className="w-5 h-5 fill-white" />
+                    {t('Konfirmasi Pembayaran via WhatsApp', 'Confirm Payment via WhatsApp')}
+                  </a>
+                  <p className="text-[11px] text-center text-gray-400">
+                    {t(
+                      'Setelah transfer, klik tombol di atas untuk mengirim bukti transfer ke WhatsApp admin. Akun Anda akan diaktifkan dalam hitungan menit!',
+                      'After transferring, click the button above to send proof of payment to admin WhatsApp. Your account will be activated within minutes!'
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </Modal>
       )}

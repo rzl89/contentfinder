@@ -3,7 +3,9 @@ import {
   useAdminStore,
   DEFAULT_ADMIN_SETTINGS,
   DEFAULT_PAYMENT_ACCOUNTS,
+  DEFAULT_DUITKU_CONFIG,
   type DynamicPaymentMethod,
+  type DuitkuConfig,
 } from '@/stores/admin-store';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore, type ManualActivationRecord } from '@/stores/subscription-store';
@@ -88,6 +90,8 @@ export const AdminPanelPage: React.FC = () => {
     deletePaymentMethod,
     togglePaymentMethod,
     resetPaymentMethodsToDefault,
+    fetchDuitkuConfig,
+    saveDuitkuConfig,
   } = useAdminStore();
 
   const { projects } = useProjectStore();
@@ -132,6 +136,10 @@ export const AdminPanelPage: React.FC = () => {
     isActive: true,
     instructionsText: '',
   });
+
+  // ── Duitku Gateway form state ───────────────────────────────────────────────
+  const [duitkuForm, setDuitkuForm] = useState<DuitkuConfig>(() => settings.duitkuConfig || DEFAULT_DUITKU_CONFIG);
+  const [isSavingDuitku, setIsSavingDuitku] = useState(false);
 
   // ── Manual Subscription Activation form state ───────────────────────────────
   const [targetUser, setTargetUser] = useState('');
@@ -277,17 +285,44 @@ export const AdminPanelPage: React.FC = () => {
     showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan telah disimpan.' });
   };
 
-  // Sync payment methods from Supabase on mount
+  // Sync payment methods & Duitku config from Supabase on mount
   useEffect(() => {
     if (isAuthenticated) {
       void fetchPaymentMethods();
+      void fetchDuitkuConfig().then((cfg) => {
+        if (cfg) setDuitkuForm(cfg);
+      });
     }
-  }, [isAuthenticated, fetchPaymentMethods]);
+  }, [isAuthenticated, fetchPaymentMethods, fetchDuitkuConfig]);
 
   // Keep localSettings in sync with store
   useEffect(() => {
     setLocalSettings(settings);
+    if (settings.duitkuConfig) {
+      setDuitkuForm(settings.duitkuConfig);
+    }
   }, [settings]);
+
+  // Save Duitku Config Handler
+  const handleSaveDuitku = async () => {
+    setIsSavingDuitku(true);
+    try {
+      await saveDuitkuConfig(duitkuForm);
+      showToast({
+        type: 'success',
+        title: 'Konfigurasi Duitku Disimpan',
+        message: `Gateway Duitku (${duitkuForm.environment.toUpperCase()}) berhasil disinkronkan ke cloud.`,
+      });
+    } catch {
+      showToast({
+        type: 'error',
+        title: 'Gagal Menyimpan Duitku',
+        message: 'Terjadi kendala saat menyimpan konfigurasi ke Supabase.',
+      });
+    } finally {
+      setIsSavingDuitku(false);
+    }
+  };
 
   // Dynamic Payment Handlers
   const handleOpenAddPayment = () => {
@@ -1323,7 +1358,226 @@ export const AdminPanelPage: React.FC = () => {
               </div>
             </BentoTile>
 
-            {/* 2. Dynamic Payment Methods Manager */}
+            {/* 2. Duitku Automatic Payment Gateway (POP / Hosted Checkout) */}
+            <BentoTile className="p-6 space-y-6 bg-[#111115] border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <CreditCard className="w-5 h-5 text-amber-400" />
+                    <h3 className="text-base font-bold text-white">Gateway Pembayaran Otomatis Duitku</h3>
+                    <Badge variant={duitkuForm.isEnabled ? 'emerald' : 'zinc'}>
+                      {duitkuForm.isEnabled ? 'Gateway Aktif' : 'Gateway Nonaktif'}
+                    </Badge>
+                    <Badge variant={duitkuForm.environment === 'production' ? 'blue' : 'amber'}>
+                      {duitkuForm.environment === 'production' ? 'Mode Production' : 'Mode Sandbox'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1">
+                    Duitku POP / Hosted Checkout: Pelanggan dapat membayar via Virtual Account (BCA, Mandiri, BRI, BNI), QRIS, dan E-Wallet dengan konfirmasi otomatis (instant webhook).
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDuitkuForm({ ...duitkuForm, isEnabled: !duitkuForm.isEnabled })}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                      duitkuForm.isEnabled
+                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                        : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700'
+                    }`}
+                  >
+                    <Power className="w-3.5 h-3.5" />
+                    <span>{duitkuForm.isEnabled ? 'Aktif di Checkout' : 'Nonaktif di Checkout'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Environment Switcher */}
+              <div className="p-4 rounded-xl bg-black/40 border border-white/5 space-y-3">
+                <label className="text-xs font-semibold text-zinc-300">Pilih Lingkungan (Environment)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDuitkuForm({ ...duitkuForm, environment: 'sandbox' })}
+                    className={`p-3.5 rounded-xl border text-left transition-all ${
+                      duitkuForm.environment === 'sandbox'
+                        ? 'bg-amber-500/10 border-amber-500/50 text-white shadow-sm shadow-amber-500/10'
+                        : 'bg-zinc-900/50 border-white/5 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold">Mode Sandbox (Uji Coba)</span>
+                      <Badge variant="amber" className="text-[10px]">Testing</Badge>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
+                      Simulasi pembayaran tanpa uang asli. Gunakan kredensial dari <strong>sandbox.duitku.com</strong>.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDuitkuForm({ ...duitkuForm, environment: 'production' })}
+                    className={`p-3.5 rounded-xl border text-left transition-all ${
+                      duitkuForm.environment === 'production'
+                        ? 'bg-blue-500/10 border-blue-500/50 text-white shadow-sm shadow-blue-500/10'
+                        : 'bg-zinc-900/50 border-white/5 text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold">Mode Production (Live)</span>
+                      <Badge variant="blue" className="text-[10px]">Live</Badge>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-1.5 leading-relaxed">
+                      Memproses pembayaran riil rupiah setelah akun Duitku Anda disetujui di <strong>passport.duitku.com</strong>.
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* API Keys Configuration according to mode */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                    Kredensial API {duitkuForm.environment === 'production' ? 'Production' : 'Sandbox'}
+                  </h4>
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    Endpoint: {duitkuForm.environment === 'production' ? 'api-prod.duitku.com' : 'api-sandbox.duitku.com'}
+                  </span>
+                </div>
+
+                {duitkuForm.environment === 'sandbox' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Sandbox Merchant Code"
+                      placeholder="Contoh: DXXXX atau D12345"
+                      value={duitkuForm.sandboxMerchantCode || duitkuForm.merchantCode || ''}
+                      onChange={(e) =>
+                        setDuitkuForm({
+                          ...duitkuForm,
+                          sandboxMerchantCode: e.target.value,
+                          merchantCode: e.target.value,
+                        })
+                      }
+                      helperText="Diperoleh dari dashboard Sandbox Duitku > Proyek."
+                    />
+                    <Input
+                      label="Sandbox API Key"
+                      placeholder="Contoh: 732B39FC61796845775D2C4FB05332AF"
+                      type="password"
+                      value={duitkuForm.sandboxApiKey || duitkuForm.apiKey || ''}
+                      onChange={(e) =>
+                        setDuitkuForm({
+                          ...duitkuForm,
+                          sandboxApiKey: e.target.value,
+                          apiKey: e.target.value,
+                        })
+                      }
+                      helperText="API Key rahasia untuk tanda tangan HMAC-SHA256."
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Production Merchant Code"
+                      placeholder="Contoh: DXXXX atau D98765"
+                      value={duitkuForm.prodMerchantCode || duitkuForm.merchantCode || ''}
+                      onChange={(e) =>
+                        setDuitkuForm({
+                          ...duitkuForm,
+                          prodMerchantCode: e.target.value,
+                          merchantCode: e.target.value,
+                        })
+                      }
+                      helperText="Diperoleh dari dashboard Production Duitku > Proyek."
+                    />
+                    <Input
+                      label="Production API Key"
+                      placeholder="API Key resmi dari dashboard Duitku Production"
+                      type="password"
+                      value={duitkuForm.prodApiKey || duitkuForm.apiKey || ''}
+                      onChange={(e) =>
+                        setDuitkuForm({
+                          ...duitkuForm,
+                          prodApiKey: e.target.value,
+                          apiKey: e.target.value,
+                        })
+                      }
+                      helperText="Kunci rahasia transaksi live."
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Masa Berlaku Invoice / VA (Menit)"
+                    type="number"
+                    value={String(duitkuForm.expiryPeriod || 1440)}
+                    onChange={(e) =>
+                      setDuitkuForm({ ...duitkuForm, expiryPeriod: parseInt(e.target.value) || 1440 })
+                    }
+                    helperText="Standar 1440 menit (24 jam)."
+                  />
+                </div>
+              </div>
+
+              {/* Duitku Dashboard Webhook Instructions */}
+              <div className="p-4 rounded-xl bg-black/30 border border-white/5 space-y-2 text-xs">
+                <p className="font-semibold text-zinc-300">
+                  Salin URL ini ke Dashboard Merchant Duitku (Menu Proyek &gt; Integrasi):
+                </p>
+                <div className="grid grid-cols-1 gap-2 font-mono text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-between gap-2">
+                    <div className="min-w-0 truncate">
+                      <span className="text-zinc-500 font-sans font-semibold">Callback / Webhook URL: </span>
+                      <span className="text-amber-300">https://www.fixprom.com/api/duitku-callback</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText('https://www.fixprom.com/api/duitku-callback');
+                        showToast({ type: 'success', title: 'Disalin!', message: 'Callback URL telah disalin.' });
+                      }}
+                      className="text-zinc-400 hover:text-white p-1"
+                      title="Salin Callback URL"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-zinc-900 border border-white/5 flex items-center justify-between gap-2">
+                    <div className="min-w-0 truncate">
+                      <span className="text-zinc-500 font-sans font-semibold">Return URL (Redirect): </span>
+                      <span className="text-amber-300">https://www.fixprom.com/#/pricing</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText('https://www.fixprom.com/#/pricing');
+                        showToast({ type: 'success', title: 'Disalin!', message: 'Return URL telah disalin.' });
+                      }}
+                      className="text-zinc-400 hover:text-white p-1"
+                      title="Salin Return URL"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={isSavingDuitku}
+                  icon={<CheckCircle2 className="w-4 h-4 text-black" />}
+                  onClick={handleSaveDuitku}
+                >
+                  Simpan Konfigurasi Duitku
+                </Button>
+              </div>
+            </BentoTile>
+
+            {/* 3. Dynamic Payment Methods Manager (Transfer Manual) */}
             <BentoTile className="p-6 space-y-6 bg-[#111115] border-white/10">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
                 <div>
