@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import {
-  User,
   ShieldCheck,
   Zap,
   Calendar,
@@ -44,18 +43,25 @@ export const UserProfileMenu: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const remainingHours = getRemainingTrialHours();
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen]);
 
@@ -214,7 +220,7 @@ export const UserProfileMenu: React.FC = () => {
       {/* Dropdown Popover */}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-2 w-80 rounded-2xl bg-[#111115] border border-white/10 shadow-2xl z-50 p-2 animate-fade-in backdrop-blur-xl"
+          className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-[#111115] border border-white/10 shadow-2xl z-50 p-2 animate-fade-in backdrop-blur-xl"
           role="menu"
           aria-orientation="vertical"
         >

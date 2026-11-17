@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Sparkles, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Sparkles, User, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLanguageStore } from '@/stores/language-store';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,9 @@ import { checkTrialDeviceEligibility, markDeviceTrialClaimed } from '@/lib/devic
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { signUp, loading, user, initialized } = useAuthStore();
+  const { language, t } = useLanguageStore();
 
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,12 +20,14 @@ export const SignupPage: React.FC = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
+    fullName?: string;
     email?: string;
     password?: string;
     confirm?: string;
   }>({});
   const [submitted, setSubmitted] = useState(false);
   const [isTrialExhaustedAccount, setIsTrialExhaustedAccount] = useState(false);
+  const [deviceWarning, setDeviceWarning] = useState<string | null>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -38,20 +42,27 @@ export const SignupPage: React.FC = () => {
     if (/[A-Z]/.test(p)) score++;
     if (/[0-9]/.test(p)) score++;
     if (/[^A-Za-z0-9]/.test(p)) score++;
-    const labels = ['', 'Lemah', 'Cukup', 'Baik', 'Kuat'];
+    const labels = [
+      '',
+      t('Lemah', 'Weak'),
+      t('Cukup', 'Fair'),
+      t('Baik', 'Good'),
+      t('Kuat', 'Strong'),
+    ];
     const colors = ['', 'text-red-400', 'text-orange-400', 'text-yellow-400', 'text-emerald-400'];
     return { score, label: labels[score] || '', color: colors[score] || '' };
   };
 
   const strength = password ? passwordStrength(password) : { score: 0, label: '', color: '' };
 
-  const { language, t } = useLanguageStore();
-  const [deviceWarning, setDeviceWarning] = useState<string | null>(null);
-
   const validate = (): boolean => {
-    const errors: { email?: string; password?: string; confirm?: string } = {};
-    const emailValidation = validateEmailAddress(email);
+    const errors: { fullName?: string; email?: string; password?: string; confirm?: string } = {};
 
+    if (fullName.trim() && fullName.trim().length < 2) {
+      errors.fullName = t('Nama minimal 2 karakter', 'Name must be at least 2 characters');
+    }
+
+    const emailValidation = validateEmailAddress(email);
     if (!emailValidation.isValid) {
       errors.email = language === 'en' ? emailValidation.errorMessageEn : emailValidation.errorMessage;
     }
@@ -93,10 +104,14 @@ export const SignupPage: React.FC = () => {
 
     // Secondary accounts on the same device/network are allowed to register,
     // but flagged so their profile is created with 0 trial credits.
+    const chosenDisplayName = fullName.trim() || email.trim().toLowerCase().split('@')[0];
     const { error: authError, session } = await signUp(
       email.trim().toLowerCase(),
       password,
-      { is_trial_exhausted: isExhausted }
+      {
+        display_name: chosenDisplayName,
+        is_trial_exhausted: isExhausted,
+      }
     );
 
     if (authError) {
@@ -123,11 +138,11 @@ export const SignupPage: React.FC = () => {
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-xl font-bold text-white">Cek Email Anda</h1>
+            <h1 className="text-xl font-bold text-white">{t('Cek Email Anda', 'Check Your Email')}</h1>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              Link konfirmasi dikirim ke{' '}
-              <span className="text-zinc-200 font-medium">{email}</span>.
-              Klik link di email untuk mengaktifkan akun, lalu login.
+              {t('Link konfirmasi dikirim ke', 'Confirmation link sent to')}{' '}
+              <span className="text-zinc-200 font-medium">{email}</span>.{' '}
+              {t('Klik link di email untuk mengaktifkan akun, lalu login.', 'Click the link in the email to activate your account, then sign in.')}
             </p>
           </div>
           {isTrialExhaustedAccount && (
@@ -147,22 +162,22 @@ export const SignupPage: React.FC = () => {
           <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-400 text-left space-y-2">
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-              <span>Cek folder <strong className="text-zinc-200">Spam</strong> jika tidak masuk inbox</span>
+              <span>{t('Cek folder', 'Check folder')} <strong className="text-zinc-200">Spam</strong> {t('jika tidak masuk inbox', 'if not in inbox')}</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-              <span>Link berlaku selama <strong className="text-zinc-200">24 jam</strong></span>
+              <span>{t('Link berlaku selama', 'Link valid for')} <strong className="text-zinc-200">{t('24 jam', '24 hours')}</strong></span>
             </div>
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-              <span>Belum dapat email? Tunggu 2-3 menit</span>
+              <span>{t('Belum dapat email? Tunggu 2-3 menit', 'Didn\'t get the email? Wait 2-3 minutes')}</span>
             </div>
           </div>
           <NavLink
             to="/login"
             className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-sm font-semibold transition-colors"
           >
-            Ke Halaman Login
+            {t('Ke Halaman Login', 'Go to Sign In Page')}
           </NavLink>
         </div>
       </div>
@@ -187,11 +202,11 @@ export const SignupPage: React.FC = () => {
             </div>
           </NavLink>
           <div className="pt-2">
-            <h1 className="text-xl font-bold text-white tracking-tight">Buat Akun Gratis</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">{t('Buat Akun Gratis', 'Create Free Account')}</h1>
             <p className="text-xs text-zinc-500 mt-1">
-              Sudah punya akun?{' '}
+              {t('Sudah punya akun?', 'Already have an account?')}{' '}
               <NavLink to="/login" className="text-amber-400 hover:text-amber-300 font-medium transition-colors">
-                Masuk di sini
+                {t('Masuk di sini', 'Sign in here')}
               </NavLink>
             </p>
           </div>
@@ -221,6 +236,33 @@ export const SignupPage: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {/* Nama Lengkap / Tampilan */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-zinc-300 block">
+                {t('Nama Tampilan / Studio', 'Display Name / Studio')}
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (fieldErrors.fullName) setFieldErrors((p) => ({ ...p, fullName: undefined }));
+                  }}
+                  placeholder={t('Contoh: Rizal Studio', 'e.g. Rizal Studio')}
+                  maxLength={50}
+                  autoComplete="name"
+                  className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
+                    fieldErrors.fullName
+                      ? 'border-red-500/50 focus:border-red-500'
+                      : 'border-white/10 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20'
+                  }`}
+                />
+              </div>
+              {fieldErrors.fullName && <p className="text-[11px] text-red-400">{fieldErrors.fullName}</p>}
+            </div>
+
             {/* Email */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-zinc-300 block">Email</label>
@@ -257,7 +299,7 @@ export const SignupPage: React.FC = () => {
                     setPassword(e.target.value);
                     if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: undefined }));
                   }}
-                  placeholder="Minimal 6 karakter"
+                  placeholder={t('Minimal 6 karakter', 'At least 6 characters')}
                   autoComplete="new-password"
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.password
@@ -303,7 +345,9 @@ export const SignupPage: React.FC = () => {
 
             {/* Confirm Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-zinc-300 block">Konfirmasi Password</label>
+              <label className="text-xs font-medium text-zinc-300 block">
+                {t('Konfirmasi Password', 'Confirm Password')}
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                 <input
@@ -313,7 +357,7 @@ export const SignupPage: React.FC = () => {
                     setConfirmPassword(e.target.value);
                     if (fieldErrors.confirm) setFieldErrors((p) => ({ ...p, confirm: undefined }));
                   }}
-                  placeholder="Ulangi password"
+                  placeholder={t('Ulangi password', 'Repeat password')}
                   autoComplete="new-password"
                   className={`w-full bg-[#1a1a22] border rounded-xl pl-10 pr-10 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition-all ${
                     fieldErrors.confirm
@@ -334,7 +378,7 @@ export const SignupPage: React.FC = () => {
               </div>
               {confirmPassword && confirmPassword === password && !fieldErrors.confirm && (
                 <p className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Password cocok
+                  <CheckCircle2 className="w-3 h-3" /> {t('Password cocok', 'Passwords match')}
                 </p>
               )}
               {fieldErrors.confirm && <p className="text-[11px] text-red-400">{fieldErrors.confirm}</p>}
@@ -348,16 +392,20 @@ export const SignupPage: React.FC = () => {
               icon={<UserPlus className="w-4 h-4 text-black" />}
               className="w-full"
             >
-              Daftar & Aktifkan Akun
+              {t('Daftar & Aktifkan Akun', 'Sign Up & Activate')}
             </Button>
           </form>
         </div>
 
         <p className="text-center text-[11px] text-zinc-600">
-          Trial 24 jam gratis setelah email dikonfirmasi. Tanpa kartu kredit.
+          {t(
+            'Trial 24 jam gratis setelah email dikonfirmasi. Tanpa kartu kredit.',
+            '24-hour free trial after email confirmation. No credit card required.'
+          )}
         </p>
       </div>
     </div>
   );
 };
+
 
