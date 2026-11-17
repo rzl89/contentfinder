@@ -144,17 +144,39 @@ export const TrendRadarPage: React.FC = () => {
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <Badge
-                  variant={
-                    item.status === 'verified_trend'
-                      ? 'emerald'
-                      : item.status === 'trend_inspired'
-                      ? 'amber'
-                      : 'blue'
-                  }
-                >
-                  {item.status.replace(/_/g, ' ').toUpperCase()}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={
+                      item.status === 'verified_trend'
+                        ? 'emerald'
+                        : item.status === 'trend_inspired'
+                        ? 'amber'
+                        : 'blue'
+                    }
+                  >
+                    {item.status.replace(/_/g, ' ').toUpperCase()}
+                  </Badge>
+
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded font-mono border ${
+                      item.platform === 'tiktok'
+                        ? 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+                        : item.platform === 'youtube_shorts'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                        : item.platform === 'instagram_reels'
+                        ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                    }`}
+                  >
+                    {item.platform === 'tiktok'
+                      ? 'TikTok'
+                      : item.platform === 'youtube_shorts'
+                      ? 'YouTube Shorts'
+                      : item.platform === 'instagram_reels'
+                      ? 'Instagram Reels'
+                      : 'Multi-Platform'}
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
                   <Globe2 className="w-3 h-3 text-zinc-500" />
