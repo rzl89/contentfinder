@@ -41,15 +41,22 @@ export const SettingsPage: React.FC = () => {
       setDialogLanguage(p.dialogLanguage);
       showToast({
         type: 'success',
-        title: 'Preset Konteks Diterapkan',
-        message: `Proyek beralih ke profil "${p.name}".`,
+        title: t('Preset Konteks Diterapkan', 'Context Preset Applied'),
+        message: t(
+          `Proyek beralih ke profil "${p.name}".`,
+          `Project switched to "${p.name}" profile.`
+        ),
       });
     }
   };
 
   const handleSaveCustomOverrides = () => {
     if (!currentProject) {
-      showToast({ type: 'warning', title: 'Belum Ada Proyek Aktif', message: 'Buat proyek terlebih dahulu.' });
+      showToast({
+        type: 'warning',
+        title: t('Belum Ada Proyek Aktif', 'No Active Project'),
+        message: t('Buat proyek terlebih dahulu.', 'Please create a project first.'),
+      });
       return;
     }
 
@@ -65,8 +72,11 @@ export const SettingsPage: React.FC = () => {
     updateCurrentProject({ contextProfile: updated });
     showToast({
       type: 'success',
-      title: 'Pengaturan Konteks Disimpan',
-      message: 'Perubahan akan diterapkan pada setiap generasi ide dan prompt berikutnya.',
+      title: t('Pengaturan Konteks Disimpan', 'Context Settings Saved'),
+      message: t(
+        'Perubahan akan diterapkan pada setiap generasi ide dan prompt berikutnya.',
+        'Changes will be applied to upcoming ideation and prompt generations.'
+      ),
     });
   };
 
@@ -108,53 +118,56 @@ export const SettingsPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input
-            label="Target Market / Audiens Sasaran"
+            label={t('Target Market / Audiens Sasaran', 'Target Market / Audience')}
             value={targetMarket}
             onChange={(e) => setTargetMarket(e.target.value)}
-            placeholder="Contoh: Indonesia Urban & Kreator Digital"
+            placeholder={t(
+              'Contoh: Indonesia Urban & Kreator Digital',
+              'e.g. Urban Creators & Digital Nomads'
+            )}
           />
 
           <Select
-            label="Default Environment"
+            label={t('Default Environment / Lokasi', 'Default Environment')}
             value={environment}
             onChange={(e) => setEnvironment(e.target.value as EnvironmentType)}
             options={[
-              { value: 'mixed', label: 'Mixed / Campuran Seimbang' },
-              { value: 'urban', label: 'Urban (Kota Modern)' },
-              { value: 'suburban', label: 'Suburban' },
-              { value: 'rural', label: 'Rural (Pedesaan)' },
-              { value: 'natural', label: 'Natural / Lanskap Alam' },
-              { value: 'indoor', label: 'Indoor / Interior' },
-              { value: 'historical', label: 'Historical' },
-              { value: 'fantasy', label: 'Fantasy' },
+              { value: 'mixed', label: t('Mixed / Campuran Seimbang', 'Balanced Mixed') },
+              { value: 'urban', label: t('Urban (Kota Modern)', 'Urban (Modern City)') },
+              { value: 'suburban', label: t('Suburban (Pinggiran Kota)', 'Suburban') },
+              { value: 'rural', label: t('Rural (Pedesaan)', 'Rural / Countryside') },
+              { value: 'natural', label: t('Natural / Lanskap Alam', 'Nature / Outdoors') },
+              { value: 'indoor', label: t('Indoor / Interior Ruangan', 'Indoor / Interior') },
+              { value: 'historical', label: t('Historical / Sejarah', 'Historical') },
+              { value: 'fantasy', label: t('Fantasy / Dunia Imajinasi', 'Fantasy') },
             ]}
           />
 
           <Select
-            label="Default Visual Style"
+            label={t('Default Gaya Visual', 'Default Visual Style')}
             value={visualStyle}
             onChange={(e) => setVisualStyle(e.target.value as VisualStyle)}
             options={[
-              { value: 'cinematic_realistic', label: 'Cinematic Realistic' },
-              { value: '3d_animation', label: '3D Animation' },
-              { value: '2d_animation', label: '2D Animation' },
-              { value: 'stickman', label: 'Stickman Animation' },
-              { value: 'anime', label: 'Anime Style' },
-              { value: 'stylized', label: 'Stylized 3D' },
+              { value: 'cinematic_realistic', label: t('Sinematik Realistis', 'Cinematic Realistic') },
+              { value: '3d_animation', label: t('Animasi 3D', '3D Animation') },
+              { value: '2d_animation', label: t('Animasi 2D', '2D Animation') },
+              { value: 'stickman', label: t('Animasi Stickman', 'Stickman Animation') },
+              { value: 'anime', label: t('Gaya Anime', 'Anime Style') },
+              { value: 'stylized', label: t('Stylized 3D', 'Stylized 3D') },
             ]}
           />
 
           <Select
-            label="Bahasa Dialog & Narasi"
+            label={t('Bahasa Dialog & Narasi', 'Dialogue & Narration Language')}
             value={dialogLanguage}
             onChange={(e) => setDialogLanguage(e.target.value as DialogLanguage)}
             options={[
-              { value: 'indonesian', label: 'Bahasa Indonesia (Natural Santai)' },
-              { value: 'english', label: 'English' },
-              { value: 'javanese', label: 'Bahasa Jawa' },
-              { value: 'sundanese', label: 'Bahasa Sunda' },
-              { value: 'mixed', label: 'Campuran / Code-switching' },
-              { value: 'none', label: 'Tanpa Dialog' },
+              { value: 'indonesian', label: t('Bahasa Indonesia (Natural Santai)', 'Indonesian (Natural Casual)') },
+              { value: 'english', label: t('Bahasa Inggris (English)', 'English') },
+              { value: 'javanese', label: t('Bahasa Jawa', 'Javanese') },
+              { value: 'sundanese', label: t('Bahasa Sunda', 'Sundanese') },
+              { value: 'mixed', label: t('Campuran / Code-switching', 'Mixed / Code-switching') },
+              { value: 'none', label: t('Tanpa Dialog (Hanya Visual & Audio SFX)', 'No Dialogue (Visual & SFX Only)') },
             ]}
           />
         </div>

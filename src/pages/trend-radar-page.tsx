@@ -135,9 +135,9 @@ export const TrendRadarPage: React.FC = () => {
               onChange={(e) => setStatus(e.target.value)}
               options={[
                 { value: 'all', label: t('Semua Status', 'All Statuses') },
-                { value: 'verified_trend', label: t('Verified Trend', 'Verified Trend') },
-                { value: 'trend_inspired', label: t('Trend-Inspired', 'Trend-Inspired') },
-                { value: 'evergreen', label: t('Evergreen', 'Evergreen') },
+                { value: 'verified_trend', label: t('Tren Terverifikasi', 'Verified Trend') },
+                { value: 'trend_inspired', label: t('Terinspirasi Tren', 'Trend-Inspired') },
+                { value: 'evergreen', label: t('Format Evergreen', 'Evergreen Format') },
               ]}
             />
           </div>
@@ -174,7 +174,11 @@ export const TrendRadarPage: React.FC = () => {
                           : 'blue'
                       }
                     >
-                      {item.status.replace(/_/g, ' ').toUpperCase()}
+                      {item.status === 'verified_trend'
+                        ? t('TREN TERVERIFIKASI', 'VERIFIED TREND')
+                        : item.status === 'trend_inspired'
+                        ? t('TERINSPIRASI TREN', 'TREND INSPIRED')
+                        : t('EVERGREEN', 'EVERGREEN')}
                     </Badge>
 
                     <span

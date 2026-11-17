@@ -29,7 +29,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'BCA (Bank Central Asia)',
     accountNumber: (import.meta.env.VITE_PAYMENT_BCA_NO as string) || '8290-8812-9901',
     accountHolder: (import.meta.env.VITE_PAYMENT_BCA_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
-    icon: 'ðŸ¦',
+    icon: '🏦',
     instructions: [
       'Buka BCA mobile atau myBCA.',
       'Pilih m-Transfer > Antar Rekening.',
@@ -42,7 +42,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'Bank Mandiri',
     accountNumber: (import.meta.env.VITE_PAYMENT_MANDIRI_NO as string) || '1370-0199-8821-2',
     accountHolder: (import.meta.env.VITE_PAYMENT_MANDIRI_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
-    icon: 'ðŸ¦',
+    icon: '🏦',
     instructions: [
       'Buka Livin\' by Mandiri.',
       'Pilih Transfer Rupiah > Rekening Mandiri.',
@@ -55,7 +55,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
     accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
     accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
-    icon: 'ðŸ“±',
+    icon: '📱',
     instructions: [
       'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
       'Pindai (Scan) QRIS yang tertera pada layar.',
@@ -68,7 +68,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
     name: 'DANA / GoPay E-Wallet',
     accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
     accountHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
-    icon: 'ðŸ’³',
+    icon: '💳',
     instructions: [
       'Buka aplikasi DANA atau GoPay.',
       'Kirim uang ke nomor HP di atas.',
@@ -87,7 +87,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'BCA (Bank Central Asia)',
         accountNumber: admin.bcaNumber || '8290-8812-9901',
         accountHolder: admin.bcaHolder || 'TEMPORAFORGE AI / RIZAL',
-        icon: 'ðŸ¦',
+        icon: '🏦',
         instructions: [
           'Buka BCA mobile atau myBCA.',
           'Pilih m-Transfer > Antar Rekening.',
@@ -100,7 +100,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'Bank Mandiri',
         accountNumber: admin.mandiriNumber || '1370-0199-8821-2',
         accountHolder: admin.mandiriHolder || 'TEMPORAFORGE AI / RIZAL',
-        icon: 'ðŸ¦',
+        icon: '🏦',
         instructions: [
           'Buka Livin\' by Mandiri.',
           'Pilih Transfer Rupiah > Rekening Mandiri.',
@@ -113,7 +113,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
         accountNumber: admin.qrisNmid || 'NMID: ID1020268899120',
         accountHolder: admin.qrisHolder || 'TEMPORAFORGE CREATIVE STUDIO',
-        icon: 'ðŸ“±',
+        icon: '📱',
         instructions: [
           'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
           'Pindai (Scan) QRIS yang tertera pada layar.',
@@ -126,7 +126,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         name: 'DANA / GoPay E-Wallet',
         accountNumber: admin.danaNumber || '0812-3456-7890',
         accountHolder: admin.danaHolder || 'RIZAL - TEMPORAFORGE',
-        icon: 'ðŸ’³',
+        icon: '💳',
         instructions: [
           'Buka aplikasi DANA atau GoPay.',
           'Kirim uang ke nomor HP di atas.',
@@ -392,13 +392,13 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
     const rawMessage = `Halo Admin Fixprom, saya ingin konfirmasi pembayaran langganan:
 
-ðŸ§¾ *Nomor Invoice:* ${order.invoiceNumber}
-ðŸ“¦ *Paket:* ${planName} (${cycle})
-ðŸ’³ *Metode:* ${bank}
-ðŸ’° *Total Transfer:* Rp ${order.totalAmount.toLocaleString('id-ID')} (Termasuk kode unik: ${order.uniqueCode})
+🧾 *Nomor Invoice:* ${order.invoiceNumber}
+📦 *Paket:* ${planName} (${cycle})
+💳 *Metode:* ${bank}
+💰 *Total Transfer:* Rp ${order.totalAmount.toLocaleString('id-ID')} (Termasuk kode unik: ${order.uniqueCode})
 â° *Waktu:* ${new Date(order.createdAt).toLocaleString('id-ID')}
 
-Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Terima kasih! ðŸ™`;
+Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Terima kasih! 🙏`;
 
     return `https://wa.me/${adminWA}?text=${encodeURIComponent(rawMessage)}`;
   },
