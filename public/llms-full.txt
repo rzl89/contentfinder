@@ -1,0 +1,36 @@
+# Fixprom — Full Knowledge Context for AI Engines & LLMs
+
+Fixprom is an AI video prompt compiler and short-form content studio developed for creators producing vertical video content (9:16) for TikTok, YouTube Shorts, and Instagram Reels.
+
+## 1. Entity Overview
+- **Name**: Fixprom
+- **Domain**: https://www.fixprom.com
+- **Target Audience**: Video Creators, AI Animators, Digital Marketers, Social Media Agencies.
+- **Languages**: Indonesian (Primary), English (International).
+- **Core Technology Stack**: React 19, Vite, TypeScript, Tailwind CSS, Supabase PostgreSQL with Row-Level Security (RLS), Web Cryptography API (AES-256-GCM).
+
+## 2. Model-Specific Prompt Compilers
+Each generative video AI model interprets prompts differently. Fixprom implements specialized compilation engines:
+1. **Google Veo 2**: Emphasizes cinematic lighting, natural physics, camera optics (e.g. 35mm lens, f/1.8), and temporal pacing.
+2. **Kling 1.5 / 2.0 Pro**: Structured camera movements (pan, zoom, orbit), high physical realism, and adherence to motion speed dynamics.
+3. **MiniMax Hailuo Video-01**: Expressive micro-acting, emotional facial continuity, and naturalistic atmospheric lighting.
+4. **OpenAI Sora**: Narrative scene sequencing, multi-camera perspective coherence, and spatial awareness.
+5. **Runway Gen-3 Alpha Turbo**: Precise cinematic direction, speed curves, volumetric lighting, and camera tracking keywords.
+6. **Luma Ray 2**: Dynamic physical interaction, fluid simulation, and seamless camera transitions.
+
+## 3. Continuity Quality Control (QC Engine)
+Fixprom solves character and stylistic drift across multi-scene video generation through:
+- **Continuity Anchors**: Guarantees that specific visual identifiers (e.g., "dark blue denim jacket with brass buttons", "silver round eyeglasses") are maintained in every scene prompt.
+- **Lighting Harmonization**: Enforces identical time-of-day and ambient color temperatures across sequential beats.
+- **Aspect Ratio Locking**: Standardizes 9:16 vertical video proportions to eliminate black bars or cropping distortion.
+
+## 4. BYOK Video Connect Architecture
+Fixprom features a Bring-Your-Own-Key model:
+- Keys are encrypted client-side using AES-256-GCM before persistent browser storage.
+- Video generation requests bypass intermediary third-party proxies, communicating directly with model provider endpoints.
+- No user API keys or generation credentials are stored in plaintext on Fixprom databases.
+
+## 5. Verification & Accuracy Principle
+Fixprom enforces an "antislop" data policy:
+- No artificial or hallucinated view counts.
+- Trend Radar observations reference verified platform publications (TikTok Creative Center, YouTube Culture Reports, Meta Best Practices).

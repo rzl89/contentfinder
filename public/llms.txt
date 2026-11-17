@@ -1,0 +1,18 @@
+# Fixprom — AI Video Prompt Compiler & Short-Form Content Studio
+
+> Fixprom (https://www.fixprom.com) is a production-grade web application designed for digital creators, video editors, and AI filmmakers. It bridges creative ideation with model-specific prompt engineering for cutting-edge generative video models.
+
+## Core Capabilities
+- **Creative Diversity Engine**: Generates non-repetitive, culturally grounded content ideas across 21 specialized short-form categories (including POV Immersion, Restoration ASMR, Microdrama, Local Folklore, and Educational Paradox).
+- **Model-Specific Prompt Compiler**: Dynamically formats cinematic prompts to match the exact syntax, keyword priorities, and negative constraints of leading AI video generators (Google Veo 2, Kling 1.5/2.0 Pro, MiniMax Hailuo Video-01, OpenAI Sora, Runway Gen-3 Alpha Turbo, and Luma Ray 2).
+- **Automated Quality Control (QC) Continuity**: Analyzes multi-scene storyboards to enforce visual character continuity anchors (outfit, hair, color palette) and aspect ratio synchronization.
+- **Trend Radar**: Aggregates verified viral video patterns from TikTok Creative Center, YouTube Culture & Trends, and Meta Creators with concrete hook breakdowns.
+- **Bring-Your-Own-Key (BYOK) Video Connect**: Zero-plaintext security architecture utilizing client-side AES-256-GCM encryption for users to generate videos directly via their own API keys (MiniMax Hailuo, Kling, Runway, Luma).
+
+## Key Links & Resources
+- Homepage: https://www.fixprom.com/
+- Features Overview: https://www.fixprom.com/fitur
+- 21 Idea Categories: https://www.fixprom.com/kategori
+- Trend Radar: https://www.fixprom.com/trends
+- Prompt Production Desk: https://www.fixprom.com/prompt-desk
+- Full Technical Documentation for LLMs: https://www.fixprom.com/llms-full.txt
