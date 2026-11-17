@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
+import { validateEmailAddress, validateEmailOnline } from '@/lib/disposable-email-validator';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -69,6 +70,23 @@ export const LoginPage: React.FC = () => {
     setIsEmailUnconfirmed(false);
 
     if (!validate()) return;
+
+    // Check if email belongs to a disposable or temporary provider
+    const localValidation = validateEmailAddress(email);
+    if (!localValidation.isValid && localValidation.isDisposable) {
+      setError(
+        'Akun dengan penyedia email sementara (disposable/temp email) dinonaktifkan. Silakan gunakan akun dengan email resmi.'
+      );
+      return;
+    }
+
+    const onlineValidation = await validateEmailOnline(email);
+    if (!onlineValidation.isValid && onlineValidation.isDisposable) {
+      setError(
+        'Akun dengan penyedia email sementara (disposable/temp email) dinonaktifkan. Silakan gunakan akun dengan email resmi.'
+      );
+      return;
+    }
 
     const { error: authError } = await signIn(email.trim().toLowerCase(), password);
 

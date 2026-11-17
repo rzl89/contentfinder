@@ -67,12 +67,13 @@ describe('Fixprom Anti-Abuse Shield — Disposable Email & Device Fingerprint', 
   describe('2. Device Fingerprint & Hardware Locking', () => {
     beforeEach(() => {
       clearInMemoryFingerprintCache();
+      const uniqueTestDeviceId = `test_device_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
       if (typeof localStorage !== 'undefined') {
         localStorage.clear();
       }
       if (typeof document !== 'undefined') {
+        document.cookie = `__fixprom_dev_id=${uniqueTestDeviceId}; path=/`;
         document.cookie = '__fixprom_trial_claimed=; max-age=0; path=/';
-        document.cookie = '__fixprom_dev_id=; max-age=0; path=/';
       }
     });
 

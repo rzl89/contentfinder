@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptionStore } from './subscription-store';
+import { validateEmailAddress } from '@/lib/disposable-email-validator';
 
 interface AuthState {
   user: User | null;
@@ -55,6 +56,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Get initial session from Supabase (persisted in localStorage)
     const { data } = await supabase.auth.getSession();
+    const sessionEmail = data.session?.user?.email;
+    if (sessionEmail && validateEmailAddress(sessionEmail).isDisposable) {
+      await supabase.auth.signOut();
+      set({ session: null, user: null, initialized: true });
+      return;
+    }
+
     set({
       session: data.session,
       user: data.session?.user ?? null,
@@ -67,6 +75,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     // Listen for future auth state changes
     supabase.auth.onAuthStateChange((_event, session) => {
+      const email = session?.user?.email;
+      if (email && validateEmailAddress(email).isDisposable) {
+        void supabase.auth.signOut();
+        set({ session: null, user: null });
+        return;
+      }
+
       set({
         session,
         user: session?.user ?? null,
@@ -96,6 +111,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signIn: async (email: string, password: string) => {
     set({ loading: true });
+
+    // Reject disposable emails immediately
+    const check = validateEmailAddress(email);
+    if (check.isDisposable) {
+      set({ loading: false });
+      return {
+        error: {
+          name: 'AuthError',
+          message:
+            'Akun dengan penyedia email sementara (disposable/temp email) dinonaktifkan. Silakan gunakan akun dengan email resmi.',
+        } as AuthError,
+      };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error && data.session) {
       set({ session: data.session, user: data.session.user });
