@@ -86,9 +86,15 @@ export function compileScenePrompt(
   } else if (targetModelId === 'google-veo-2') {
     // Veo 2 format: high-fidelity prompt
     compiledVideoPrompt = `High-definition cinematic capture: ${compiledVideoPrompt}`;
-  } else if (targetModelId === 'runway-gen3') {
+  } else if (targetModelId === 'runway-gen3' || targetModelId === 'runway-gen3-alpha') {
     // Runway Gen-3 format: continuous motion vectors and cinematic physical momentum
     compiledVideoPrompt = `${compiledVideoPrompt} Photorealistic motion, continuous dynamic vector, 4k master.`;
+  } else if (targetModelId === 'minimax-hailuo') {
+    // MiniMax Hailuo format: focus on physics realism and camera dynamics
+    compiledVideoPrompt = `${compiledVideoPrompt} Photorealistic motion, natural physics momentum, cinema textures.`;
+  } else if (targetModelId === 'openai-sora') {
+    // Sora format: detailed physical simulation & cinematography
+    compiledVideoPrompt = `Cinematic video shot. ${compiledVideoPrompt} Fluid dynamics, accurate physical momentum, 8k render.`;
   }
 
   return {

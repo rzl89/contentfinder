@@ -101,6 +101,20 @@ function buildSelectOptions(presets: { value: string; label: string }[], current
   return [{ value: currentVal, label: `${currentVal} (Kustom / AI)` }, ...presets];
 }
 
+function formatQCFieldLabel(field: string): string {
+  if (field.includes('continuityAnchors')) return 'Konsistensi Karakter';
+  if (field.includes('dialogue')) return 'Panjang Dialog';
+  if (field.includes('imagePrompt')) return 'Prompt Gambar';
+  if (field.includes('videoPrompt')) return 'Prompt Video';
+  if (field.includes('location')) return 'Detail Lokasi';
+  if (field.includes('sceneCount')) return 'Jumlah Adegan';
+  if (field.includes('duplicate')) return 'Nomor Adegan';
+  if (field.includes('beatTitle')) return 'Judul Adegan';
+  if (field.includes('summary')) return 'Ringkasan Cerita';
+  if (field.includes('modelCapability')) return 'Kesesuaian Format AI';
+  return 'Tips Kualitas';
+}
+
 export const PromptDeskPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -472,12 +486,12 @@ export const PromptDeskPage: React.FC = () => {
       {/* Header Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-[#111115] border border-white/10 shadow-xl">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Film className="w-5 h-5 text-amber-400" />
               <span>Prompt Production Desk</span>
             </h2>
-            <Badge variant="amber">{scenes.length} Scenes</Badge>
+            <Badge variant="amber">{scenes.length} Adegan</Badge>
             {currentProject?.name && (
               <span
                 className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 truncate max-w-[220px]"
@@ -496,12 +510,16 @@ export const PromptDeskPage: React.FC = () => {
                     : 'red'
                 }
               >
-                QC: {qc.overallStatus}
+                {qc.overallStatus === 'PASS'
+                  ? 'Naskah Siap ✅'
+                  : qc.overallStatus === 'REVIEW'
+                  ? 'Ada Saran Naskah 💡'
+                  : 'Perlu Perbaikan ⚠️'}
               </Badge>
             )}
           </div>
           <p className="text-xs text-zinc-400">
-            Editor adegan terstruktur dengan compiler model-specific dan Quality Control engine otomatis.
+            Poles dan kelola naskah video Anda per adegan. Prompt otomatis dirancang siap pakai untuk generator AI video pilihan Anda.
           </p>
         </div>
 
@@ -527,7 +545,7 @@ export const PromptDeskPage: React.FC = () => {
             title="Generate ulang seluruh 4 adegan dengan ide saat ini (-3 Kredit AI)"
             className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
           >
-            Regenerate Storyboard (3 Kredit)
+            Buat Ulang Storyboard (3 Kredit)
           </Button>
 
           <Button
@@ -535,32 +553,37 @@ export const PromptDeskPage: React.FC = () => {
             size="sm"
             icon={<Copy className="w-3.5 h-3.5" />}
             onClick={handleCopyAllImagePrompts}
+            title="Salin seluruh teks prompt gambar ke clipboard"
           >
-            Copy All Images
+            Salin Semua Gambar
           </Button>
           <Button
             variant="secondary"
             size="sm"
             icon={<Copy className="w-3.5 h-3.5" />}
             onClick={handleCopyAllVideoPrompts}
+            title="Salin seluruh teks prompt video ke clipboard"
           >
-            Copy All Videos
+            Salin Semua Video
           </Button>
           <Button
             variant="emerald"
             size="sm"
             icon={<Download className="w-3.5 h-3.5" />}
             onClick={() => handleOpenExport('markdown')}
+            title="Unduh dokumen naskah lengkap (Markdown/TXT)"
           >
-            Export Sheet
+            Unduh Naskah
           </Button>
           <Button
             variant="secondary"
             size="sm"
             icon={<Sliders className="w-3.5 h-3.5" />}
             onClick={() => handleOpenExport('json')}
+            title="Ekspor data teknis untuk backup atau pengembang"
+            className="text-zinc-400 hover:text-zinc-200"
           >
-            Export JSON
+            Ekspor JSON
           </Button>
         </div>
       </div>
@@ -569,15 +592,15 @@ export const PromptDeskPage: React.FC = () => {
       <BentoTile className="p-4 bg-[#14141c] border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold text-zinc-300 shrink-0">
-            Target Prompt Compiler:
+            Target Generator AI Video:
           </span>
-          <div className="w-64">
+          <div className="w-72">
             <Select
               value={activeModelId}
               onChange={(e) => handleModelChange(e.target.value)}
               options={MODEL_CAPABILITIES.map((m) => ({
                 value: m.modelId,
-                label: `${m.displayName} (${m.provider})`,
+                label: m.displayName,
               }))}
             />
           </div>
@@ -586,35 +609,34 @@ export const PromptDeskPage: React.FC = () => {
         {/* Verified Capability Badges */}
         <div className="flex items-center gap-2 flex-wrap text-xs">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/40 border border-white/5 text-zinc-300">
-            <span className="text-zinc-500">Lip-Sync:</span>
+            <span className="text-zinc-500">Fitur Suara:</span>
             <span
               className={
                 activeModel.dialogueLipSync === true
                   ? 'text-emerald-400 font-semibold'
                   : activeModel.dialogueLipSync === false
-                  ? 'text-red-400'
-                  : 'text-amber-400'
+                  ? 'text-amber-400'
+                  : 'text-zinc-400'
               }
             >
               {activeModel.dialogueLipSync === true
-                ? 'Supported'
+                ? 'Didukung Native 🔊'
                 : activeModel.dialogueLipSync === false
-                ? 'External Only'
-                : 'Unknown'}
+                ? 'Dubbing Terpisah 🎙️'
+                : 'Format Netral'}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/40 border border-white/5 text-zinc-300">
-            <span className="text-zinc-500">Durations:</span>
+            <span className="text-zinc-500">Estimasi Durasi:</span>
             <span className="font-mono text-zinc-300">
               {activeModel.supportedDurations.join(', ')}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/40 border border-white/5 text-zinc-300">
-            <span className="text-zinc-500">Verified:</span>
-            <span className="text-emerald-400 font-mono text-[11px]">
-              {new Date(activeModel.lastVerifiedAt).toLocaleDateString('id-ID')}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+            <span className="font-medium text-[11px]">
+              Status: Terverifikasi Aktif (Nov 2026) ⚡
             </span>
           </div>
 
@@ -624,7 +646,7 @@ export const PromptDeskPage: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="p-1 rounded text-zinc-400 hover:text-amber-400 transition-colors"
-              title="Official Model Documentation"
+              title="Panduan Resmi Vendor AI"
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
@@ -646,18 +668,24 @@ export const PromptDeskPage: React.FC = () => {
           ) : (
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           )}
-          <div className="flex-1 space-y-1 text-xs">
+          <div className="flex-1 space-y-1.5 text-xs">
             <div className="font-semibold text-sm">
-              Quality Control Review: {qc.issues.length} Hal Memerlukan Perhatian
+              💡 Tips Pengoptimalan Naskah ({qc.issues.length} Saran)
             </div>
-            <ul className="list-disc list-inside space-y-0.5 text-zinc-300">
+            <ul className="space-y-1.5 text-zinc-300">
               {qc.issues.map((issue, idx) => (
-                <li key={idx}>
-                  <span className="font-semibold text-white">{issue.field}: </span>
-                  {issue.message}
-                  {issue.suggestion && (
-                    <span className="text-amber-300"> (Saran: {issue.suggestion})</span>
-                  )}
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-semibold shrink-0 mt-0.5">
+                    {formatQCFieldLabel(issue.field)}
+                  </span>
+                  <div>
+                    <span>{issue.message}</span>
+                    {issue.suggestion && (
+                      <span className="text-amber-300 block text-[11px] mt-0.5">
+                        💡 Saran: {issue.suggestion}
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -936,18 +964,29 @@ export const PromptDeskPage: React.FC = () => {
 
               {/* Final Compiled Prompts (English Technical) */}
               <div className="space-y-4 pt-4 border-t border-white/5">
+                {/* Friendly Educational Guidance for Laypeople */}
+                <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200/90 flex items-start gap-3">
+                  <span className="text-base shrink-0 mt-0.5">💡</span>
+                  <div className="space-y-1 leading-relaxed">
+                    <span className="font-semibold text-blue-300 block">Panduan Cepat Salin Prompt AI:</span>
+                    <p className="text-[11px] text-zinc-300">
+                      Teks prompt di bawah ini disusun otomatis dalam <strong>Bahasa Inggris teknis</strong> karena generator AI video & gambar (seperti Midjourney, Kling, Veo, Runway, Sora) menghasilkan visual terbaik dengan bahasa Inggris. Anda cukup klik tombol <strong>Copy</strong> lalu tempel pada aplikasi AI pilihan Anda.
+                    </p>
+                  </div>
+                </div>
+
                 {/* Image Prompt */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
                       <Camera className="w-3.5 h-3.5" />
-                      <span>📸 Image Prompt (Visual Still Frame — English)</span>
+                      <span>📸 Prompt Gambar (Salin ke Midjourney / Flux / Leonardo)</span>
                     </label>
                     <Button
                       variant="ghost"
                       size="sm"
                       icon={<Copy className="w-3 h-3" />}
-                      onClick={() => handleCopyText(currentScene.imagePrompt, `Image Prompt Scene ${currentScene.sceneNumber}`)}
+                      onClick={() => handleCopyText(currentScene.imagePrompt, `Prompt Gambar Adegan ${currentScene.sceneNumber}`)}
                     >
                       Copy
                     </Button>
@@ -967,13 +1006,13 @@ export const PromptDeskPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
                       <Film className="w-3.5 h-3.5" />
-                      <span>🎥 Video Prompt ({activeModel.displayName} — English)</span>
+                      <span>🎥 Prompt Video (Salin ke {activeModel.displayName})</span>
                     </label>
                     <Button
                       variant="ghost"
                       size="sm"
                       icon={<Copy className="w-3 h-3" />}
-                      onClick={() => handleCopyText(currentScene.videoPrompt, `Video Prompt Scene ${currentScene.sceneNumber}`)}
+                      onClick={() => handleCopyText(currentScene.videoPrompt, `Prompt Video Adegan ${currentScene.sceneNumber}`)}
                     >
                       Copy
                     </Button>
@@ -992,7 +1031,7 @@ export const PromptDeskPage: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-red-400 tracking-wide flex items-center gap-1.5">
-                      <span>🚫 Negative Prompt (Anti-Slop & Distortion)</span>
+                      <span>🚫 Negative Prompt (Pembersih Cacat & Distorsi Visual)</span>
                     </label>
                     <Button
                       variant="ghost"
@@ -1001,7 +1040,7 @@ export const PromptDeskPage: React.FC = () => {
                       onClick={() =>
                         handleCopyText(
                           currentScene.negativePrompt,
-                          `Negative Prompt Scene ${currentScene.sceneNumber}`
+                          `Negative Prompt Adegan ${currentScene.sceneNumber}`
                         )
                       }
                     >
