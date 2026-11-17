@@ -4,7 +4,7 @@ import { Sparkles, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 
 import { useAuthStore } from '@/stores/auth-store';
 import { useLanguageStore } from '@/stores/language-store';
 import { Button } from '@/components/ui/button';
-import { validateEmailAddress } from '@/lib/disposable-email-validator';
+import { validateEmailAddress, validateEmailOnline } from '@/lib/disposable-email-validator';
 import { checkTrialDeviceEligibility, markDeviceTrialClaimed } from '@/lib/device-fingerprint';
 
 export const SignupPage: React.FC = () => {
@@ -77,11 +77,21 @@ export const SignupPage: React.FC = () => {
     setDeviceWarning(null);
     if (!validate()) return;
 
-    // Check device fingerprint eligibility
+    // 1. Check for temporary / disposable email via 108k domain database
+    const onlineValidation = await validateEmailOnline(email);
+    if (!onlineValidation.isValid) {
+      const errorMsg = language === 'en' ? onlineValidation.errorMessageEn : onlineValidation.errorMessage;
+      setFieldErrors((prev) => ({ ...prev, email: errorMsg }));
+      return;
+    }
+
+    // 2. Check device fingerprint eligibility
     const eligibility = await checkTrialDeviceEligibility(email.trim().toLowerCase());
     if (!eligibility.eligible) {
-      setDeviceWarning(language === 'en' ? eligibility.messageEn : eligibility.messageId);
-      // We don't block registration, but inform user their trial on this device is exhausted
+      const blockedMsg = language === 'en' ? eligibility.messageEn : eligibility.messageId;
+      setError(blockedMsg);
+      setDeviceWarning(blockedMsg);
+      return;
     }
 
     const { error: authError, session } = await signUp(email.trim().toLowerCase(), password);

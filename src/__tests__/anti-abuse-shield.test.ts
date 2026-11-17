@@ -36,6 +36,9 @@ describe('Fixprom Anti-Abuse Shield — Disposable Email & Device Fingerprint', 
         'fast@burnermail.io',
         'throwaway@dispostable.com',
         'anon@fakeinbox.com',
+        'xayeya3627@chuwel.com', // Active rotating domain from temp-mail.org
+        'bot_rot@vintomaper.biz',
+        'test@fleckens.hu',
       ];
 
       for (const email of disposableEmails) {

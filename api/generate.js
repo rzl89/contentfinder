@@ -4,6 +4,36 @@
  * Default Model: gpt-6-luna (with resilient automatic fallback)
  */
 
+import fs from 'fs';
+import path from 'path';
+
+let cachedDisposableDomains = null;
+function isDomainDisposable(domain) {
+  if (!domain) return false;
+  const cleanDomain = domain.toLowerCase().trim();
+  if (
+    /temp-?mail|disposable|throwaway|trash-?mail|10minute|burner|guerrilla|mailinator|yopmail|sharklaser|chuwel/i.test(
+      cleanDomain
+    )
+  ) {
+    return true;
+  }
+  if (!cachedDisposableDomains) {
+    try {
+      const jsonPath = path.join(process.cwd(), 'api', 'disposable-domains.json');
+      if (fs.existsSync(jsonPath)) {
+        const raw = fs.readFileSync(jsonPath, 'utf8');
+        cachedDisposableDomains = new Set(JSON.parse(raw));
+      } else {
+        cachedDisposableDomains = new Set();
+      }
+    } catch {
+      cachedDisposableDomains = new Set();
+    }
+  }
+  return cachedDisposableDomains.has(cleanDomain);
+}
+
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -22,15 +52,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Anti-Abuse: Block disposable / temporary emails
+  // Anti-Abuse: Block disposable / temporary emails (108,000+ domain database)
   const userEmail = req.body?.email || req.body?.payload?.userEmail;
   if (userEmail && typeof userEmail === 'string') {
     const domain = userEmail.trim().toLowerCase().split('@')[1];
-    const isDisposable =
-      /temp-?mail|disposable|throwaway|trash-?mail|10minute|burner|guerrilla|mailinator|yopmail|sharklaser/i.test(
-        domain || ''
-      );
-    if (isDisposable) {
+    if (isDomainDisposable(domain)) {
       return res.status(403).json({
         error: 'DISPOSABLE_EMAIL_BLOCKED',
         message:

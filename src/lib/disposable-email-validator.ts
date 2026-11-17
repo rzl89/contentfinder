@@ -31,6 +31,19 @@ const DISPOSABLE_DOMAINS = new Set<string>([
   'tempmailaddress.com',
   'tempail.com',
   'throwawaymail.com',
+  'chuwel.com',
+  'vintomaper.biz',
+  'fleckens.hu',
+  'cuvox.de',
+  'jourrapide.com',
+  'einrot.com',
+  'gustr.com',
+  'superrito.com',
+  'teleworm.us',
+  'armyspy.com',
+  'dayrep.com',
+  'rhyta.com',
+  'sogetthis.com',
   'yopmail.com',
   'yopmail.fr',
   'yopmail.net',
@@ -207,4 +220,46 @@ export function validateEmailAddress(email: string): EmailValidationResult {
     isDisposable: false,
     domain,
   };
+}
+
+/**
+ * Validates an email asynchronously against both local patterns and the
+ * comprehensive 108,000+ disposable domain database via /api/check-email.
+ */
+export async function validateEmailOnline(email: string): Promise<EmailValidationResult> {
+  const local = validateEmailAddress(email);
+  if (!local.isValid) {
+    return local;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+
+    const res = await fetch(`/api/check-email?email=${encodeURIComponent(email.trim().toLowerCase())}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.disposable) {
+        return {
+          isValid: false,
+          isDisposable: true,
+          domain: data.domain || local.domain,
+          errorMessage:
+            data.message ||
+            'Penyedia email sementara (disposable/temp email) tidak diizinkan. Silakan gunakan penyedia email resmi (Gmail, Yahoo, Outlook, iCloud, atau email kantor) untuk mengklaim Free Trial.',
+          errorMessageEn:
+            data.messageEn ||
+            'Disposable or temporary email services are not permitted. Please use a verified standard email provider (Gmail, Yahoo, Outlook, iCloud, or company email) to claim your Free Trial.',
+        };
+      }
+    }
+  } catch {
+    // Gracefully fallback to local validation if offline or network error
+  }
+
+  return local;
 }
