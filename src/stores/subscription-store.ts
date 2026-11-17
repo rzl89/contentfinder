@@ -310,12 +310,17 @@ function loadInitialState(): {
   manualActivations: ManualActivationRecord[];
   auditLogs: TokenAuditLog[];
 } {
+  // Check if device previously claimed trial via persistent cookie
+  const isTrialUsedOnDevice =
+    typeof document !== 'undefined' &&
+    document.cookie.includes('__fixprom_trial_claimed=1');
+
   const defaultSub: UserSubscription = {
     tier: 'free',
-    status: 'trial',
+    status: isTrialUsedOnDevice ? 'expired' : 'trial',
     trialStartedAt: new Date().toISOString(),
     trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    creditsBalance: 20,
+    creditsBalance: isTrialUsedOnDevice ? 0 : 20,
   };
 
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
@@ -326,8 +331,16 @@ function loadInitialState(): {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [], auditLogs: [] };
     const parsed = JSON.parse(raw);
+    const loadedSub = parsed.subscription || defaultSub;
+
+    // If device is flagged as trial used and sub is still unverified free trial, enforce 0 credits
+    if (isTrialUsedOnDevice && loadedSub.tier === 'free' && loadedSub.status === 'trial') {
+      loadedSub.creditsBalance = 0;
+      loadedSub.status = 'expired';
+    }
+
     return {
-      subscription: parsed.subscription || defaultSub,
+      subscription: loadedSub,
       orders: parsed.orders || [],
       storyboardGenerationsCount: Number(parsed.storyboardGenerationsCount) || 0,
       manualActivations: parsed.manualActivations || [],

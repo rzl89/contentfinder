@@ -190,8 +190,11 @@ ${idea.localizationNotes}`;
     if (!hasSufficientCredits(ideaCreditsCost)) {
       showToast({
         type: 'warning',
-        title: `Kredit AI Tidak Mencukupi (Butuh ${ideaCreditsCost} Kredit)`,
-        message: 'Kredit AI Anda telah habis. Silakan lakukan Top-Up Kredit atau perpanjang paket Creator Pro.',
+        title: t('Batas Free Trial Tercapai', 'Free Trial Quota Reached'),
+        message: t(
+          'Perangkat atau email Anda telah menggunakan kuota Free Trial. Silakan upgrade ke Creator Pro untuk melanjutkan.',
+          'Your device or email has already used the Free Trial quota. Please upgrade to Creator Pro to continue.'
+        ),
       });
       navigate('/pricing');
       return;
@@ -247,8 +250,11 @@ ${idea.localizationNotes}`;
     if (!hasSufficientCredits(storyboardCost)) {
       showToast({
         type: 'warning',
-        title: `Kredit AI Tidak Mencukupi (Butuh ${storyboardCost} Kredit)`,
-        message: `Menyusun 4 adegan storyboard membutuhkan ${storyboardCost} Kredit AI. Silakan Top-Up kredit atau upgrade ke Creator Pro untuk melanjutkan.`,
+        title: t('Batas Free Trial Tercapai', 'Free Trial Quota Reached'),
+        message: t(
+          'Perangkat atau email Anda telah menggunakan kuota Free Trial. Silakan upgrade ke Creator Pro untuk melanjutkan.',
+          'Your device or email has already used the Free Trial quota. Please upgrade to Creator Pro to continue.'
+        ),
       });
       navigate('/pricing');
       return;

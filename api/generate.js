@@ -22,6 +22,23 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Anti-Abuse: Block disposable / temporary emails
+  const userEmail = req.body?.email || req.body?.payload?.userEmail;
+  if (userEmail && typeof userEmail === 'string') {
+    const domain = userEmail.trim().toLowerCase().split('@')[1];
+    const isDisposable =
+      /temp-?mail|disposable|throwaway|trash-?mail|10minute|burner|guerrilla|mailinator|yopmail|sharklaser/i.test(
+        domain || ''
+      );
+    if (isDisposable) {
+      return res.status(403).json({
+        error: 'DISPOSABLE_EMAIL_BLOCKED',
+        message:
+          'Alamat email sementara (disposable/temp email) tidak diizinkan. Silakan gunakan email resmi untuk mengklaim Free Trial.',
+      });
+    }
+  }
+
   const apiKey = req.body?.customApiKey || process.env.OPENAI_API_KEY;
 
   if (!apiKey || apiKey.trim().length < 5) {

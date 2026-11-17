@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sparkles, Mail, Lock, UserPlus, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { Button } from '@/components/ui/button';
+import { validateEmailAddress } from '@/lib/disposable-email-validator';
+import { checkTrialDeviceEligibility, markDeviceTrialClaimed } from '@/lib/device-fingerprint';
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -41,14 +44,29 @@ export const SignupPage: React.FC = () => {
 
   const strength = password ? passwordStrength(password) : { score: 0, label: '', color: '' };
 
+  const { language, t } = useLanguageStore();
+  const [deviceWarning, setDeviceWarning] = useState<string | null>(null);
+
   const validate = (): boolean => {
     const errors: { email?: string; password?: string; confirm?: string } = {};
-    if (!email.trim()) errors.email = 'Email wajib diisi';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Format email tidak valid';
-    if (!password) errors.password = 'Password wajib diisi';
-    else if (password.length < 6) errors.password = 'Password minimal 6 karakter';
-    if (!confirmPassword) errors.confirm = 'Konfirmasi password wajib diisi';
-    else if (password !== confirmPassword) errors.confirm = 'Password tidak cocok';
+    const emailValidation = validateEmailAddress(email);
+
+    if (!emailValidation.isValid) {
+      errors.email = language === 'en' ? emailValidation.errorMessageEn : emailValidation.errorMessage;
+    }
+
+    if (!password) {
+      errors.password = t('Password wajib diisi', 'Password is required');
+    } else if (password.length < 6) {
+      errors.password = t('Password minimal 6 karakter', 'Password must be at least 6 characters');
+    }
+
+    if (!confirmPassword) {
+      errors.confirm = t('Konfirmasi password wajib diisi', 'Password confirmation is required');
+    } else if (password !== confirmPassword) {
+      errors.confirm = t('Password tidak cocok', 'Passwords do not match');
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -56,20 +74,30 @@ export const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setDeviceWarning(null);
     if (!validate()) return;
+
+    // Check device fingerprint eligibility
+    const eligibility = await checkTrialDeviceEligibility(email.trim().toLowerCase());
+    if (!eligibility.eligible) {
+      setDeviceWarning(language === 'en' ? eligibility.messageEn : eligibility.messageId);
+      // We don't block registration, but inform user their trial on this device is exhausted
+    }
 
     const { error: authError, session } = await signUp(email.trim().toLowerCase(), password);
 
     if (authError) {
       if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
-        setError('Email ini sudah terdaftar. Silakan login atau gunakan email lain.');
+        setError(t('Email ini sudah terdaftar. Silakan login atau gunakan email lain.', 'This email is already registered. Please sign in or use another email.'));
       } else {
         setError(authError.message);
       }
     } else if (session) {
-      // Auto-confirmed or active session
+      // Mark device as registered/claimed
+      await markDeviceTrialClaimed(email.trim().toLowerCase());
       navigate('/studio', { replace: true });
     } else {
+      await markDeviceTrialClaimed(email.trim().toLowerCase());
       setSubmitted(true);
     }
   };
@@ -148,6 +176,20 @@ export const SignupPage: React.FC = () => {
             <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {deviceWarning && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span>{deviceWarning}</span>
+                <div>
+                  <NavLink to="/pricing" className="text-amber-400 underline font-semibold hover:text-amber-300">
+                    {t('Lihat Paket Creator Pro', 'View Creator Pro Plans')} →
+                  </NavLink>
+                </div>
+              </div>
             </div>
           )}
 
