@@ -14,13 +14,15 @@ export interface ManualActivationRecord {
   notes?: string;
 }
 
-interface BankAccountInfo {
+export interface BankAccountInfo {
   id: PaymentMethodType;
   name: string;
   accountNumber: string;
   accountHolder: string;
   icon: string;
   instructions: string[];
+  category?: 'bank' | 'qris' | 'ewallet' | 'other';
+  isActive?: boolean;
 }
 
 export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
@@ -81,6 +83,9 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
 export function getPaymentAccounts(): BankAccountInfo[] {
   try {
     const admin = useAdminStore.getState().settings;
+    if (admin.customPaymentMethods && Array.isArray(admin.customPaymentMethods) && admin.customPaymentMethods.length > 0) {
+      return admin.customPaymentMethods;
+    }
     return [
       {
         id: 'bca',
@@ -88,6 +93,8 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         accountNumber: admin.bcaNumber || '8290-8812-9901',
         accountHolder: admin.bcaHolder || 'TEMPORAFORGE AI / RIZAL',
         icon: '🏦',
+        category: 'bank',
+        isActive: true,
         instructions: [
           'Buka BCA mobile atau myBCA.',
           'Pilih m-Transfer > Antar Rekening.',
@@ -101,6 +108,8 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         accountNumber: admin.mandiriNumber || '1370-0199-8821-2',
         accountHolder: admin.mandiriHolder || 'TEMPORAFORGE AI / RIZAL',
         icon: '🏦',
+        category: 'bank',
+        isActive: true,
         instructions: [
           'Buka Livin\' by Mandiri.',
           'Pilih Transfer Rupiah > Rekening Mandiri.',
@@ -114,6 +123,8 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         accountNumber: admin.qrisNmid || 'NMID: ID1020268899120',
         accountHolder: admin.qrisHolder || 'TEMPORAFORGE CREATIVE STUDIO',
         icon: '📱',
+        category: 'qris',
+        isActive: true,
         instructions: [
           'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
           'Pindai (Scan) QRIS yang tertera pada layar.',
@@ -127,6 +138,8 @@ export function getPaymentAccounts(): BankAccountInfo[] {
         accountNumber: admin.danaNumber || '0812-3456-7890',
         accountHolder: admin.danaHolder || 'RIZAL - TEMPORAFORGE',
         icon: '💳',
+        category: 'ewallet',
+        isActive: true,
         instructions: [
           'Buka aplikasi DANA atau GoPay.',
           'Kirim uang ke nomor HP di atas.',

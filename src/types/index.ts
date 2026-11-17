@@ -391,7 +391,19 @@ export interface NavItem {
 
 export type PlanTier = 'free' | 'pro' | 'studio';
 export type BillingCycle = 'monthly' | 'yearly';
-export type PaymentMethodType = 'bca' | 'mandiri' | 'bri' | 'qris' | 'gopay' | 'dana' | 'shopeepay';
+export type PaymentMethodType =
+  | 'bca'
+  | 'mandiri'
+  | 'bri'
+  | 'bni'
+  | 'bsi'
+  | 'cimb'
+  | 'qris'
+  | 'gopay'
+  | 'dana'
+  | 'ovo'
+  | 'shopeepay'
+  | (string & {});
 
 export interface SubscriptionOrder {
   invoiceNumber: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Check,
@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
 import { useLanguageStore } from '@/stores/language-store';
+import { useAdminStore } from '@/stores/admin-store';
 import {
   useSubscriptionStore,
   PRICING_PLANS,
@@ -31,6 +32,7 @@ export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { language, t } = useLanguageStore();
+  const { fetchPaymentMethods } = useAdminStore();
   const {
     subscription,
     activeOrder,
@@ -44,6 +46,11 @@ export const PricingPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('bca');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<SubscriptionOrder | null>(activeOrder);
+
+  // Sync dynamic payment methods from Supabase on mount
+  useEffect(() => {
+    void fetchPaymentMethods();
+  }, [fetchPaymentMethods]);
 
   const remainingHours = getRemainingTrialHours();
   const isTrialActive = subscription.status === 'trial' && remainingHours > 0;
@@ -65,7 +72,9 @@ export const PricingPage: React.FC = () => {
   };
 
   const paymentAccounts = getPaymentAccounts();
-  const selectedAccountInfo = paymentAccounts.find((a) => a.id === selectedPayment) || paymentAccounts[0];
+  const activeAccounts = paymentAccounts.filter((a) => a.isActive !== false);
+  const selectedAccountInfo =
+    activeAccounts.find((a) => a.id === selectedPayment) || activeAccounts[0] || paymentAccounts[0];
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
@@ -469,7 +478,7 @@ export const PricingPage: React.FC = () => {
                 {t('Pilih Rekening / Metode Pembayaran:', 'Select Payment Method / Account:')}
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {paymentAccounts.map((account) => (
+                {activeAccounts.map((account) => (
                   <button
                     key={account.id}
                     onClick={() => {
@@ -485,7 +494,7 @@ export const PricingPage: React.FC = () => {
                     }`}
                   >
                     <span>{account.icon}</span>
-                    <span className="truncate">{account.name.split(' ')[0]}</span>
+                    <span className="truncate">{account.name.split(' (')[0] || account.name}</span>
                   </button>
                 ))}
               </div>

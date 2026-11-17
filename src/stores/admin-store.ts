@@ -1,4 +1,16 @@
 import { create } from 'zustand';
+import { supabase } from '@/lib/supabase';
+
+export interface DynamicPaymentMethod {
+  id: string;
+  name: string;
+  accountNumber: string;
+  accountHolder: string;
+  icon: string;
+  category: 'bank' | 'qris' | 'ewallet' | 'other';
+  isActive: boolean;
+  instructions: string[];
+}
 
 export interface AdminSettings {
   // LLM Config
@@ -25,6 +37,7 @@ export interface AdminSettings {
   qrisHolder: string;
   danaNumber: string;
   danaHolder: string;
+  customPaymentMethods?: DynamicPaymentMethod[];
 }
 
 interface AdminState {
@@ -42,6 +55,15 @@ interface AdminState {
   updateAdminPin: (currentPin: string, newPin: string) => boolean;
   updateSettings: (partial: Partial<AdminSettings>) => void;
   resetToDefaults: () => void;
+
+  // Dynamic Payment Methods
+  fetchPaymentMethods: () => Promise<DynamicPaymentMethod[]>;
+  savePaymentMethods: (methods: DynamicPaymentMethod[]) => Promise<void>;
+  addPaymentMethod: (method: Omit<DynamicPaymentMethod, 'id'> & { id?: string }) => Promise<void>;
+  updatePaymentMethod: (id: string, updated: Partial<DynamicPaymentMethod>) => Promise<void>;
+  deletePaymentMethod: (id: string) => Promise<void>;
+  togglePaymentMethod: (id: string) => Promise<void>;
+  resetPaymentMethodsToDefault: () => Promise<void>;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -67,6 +89,70 @@ async function hashPin(pin: string): Promise<string> {
     .join('');
 }
 
+// ─── Default Payment Accounts ────────────────────────────────────────────────
+export const DEFAULT_PAYMENT_ACCOUNTS: DynamicPaymentMethod[] = [
+  {
+    id: 'bca',
+    name: 'BCA (Bank Central Asia)',
+    accountNumber: (import.meta.env.VITE_PAYMENT_BCA_NO as string) || '8290-8812-9901',
+    accountHolder: (import.meta.env.VITE_PAYMENT_BCA_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
+    icon: '🏦',
+    category: 'bank',
+    isActive: true,
+    instructions: [
+      'Buka BCA mobile atau myBCA.',
+      'Pilih m-Transfer > Antar Rekening.',
+      'Masukkan nomor rekening dan nominal transfer TEPAT beserta 3 digit kode unik.',
+      'Simpan bukti transfer / struk untuk konfirmasi WhatsApp.',
+    ],
+  },
+  {
+    id: 'mandiri',
+    name: 'Bank Mandiri',
+    accountNumber: (import.meta.env.VITE_PAYMENT_MANDIRI_NO as string) || '1370-0199-8821-2',
+    accountHolder: (import.meta.env.VITE_PAYMENT_MANDIRI_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
+    icon: '🏦',
+    category: 'bank',
+    isActive: true,
+    instructions: [
+      'Buka Livin\' by Mandiri.',
+      'Pilih Transfer Rupiah > Rekening Mandiri.',
+      'Masukkan nominal transfer TEPAT beserta 3 digit kode unik.',
+      'Simpan screenshot resi transaksi.',
+    ],
+  },
+  {
+    id: 'qris',
+    name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
+    accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
+    accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
+    icon: '📱',
+    category: 'qris',
+    isActive: true,
+    instructions: [
+      'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
+      'Pindai (Scan) QRIS yang tertera pada layar.',
+      'Input nominal transfer TEPAT sesuai invoice.',
+      'Simpan bukti pembayaran berhasil.',
+    ],
+  },
+  {
+    id: 'dana',
+    name: 'DANA / GoPay E-Wallet',
+    accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
+    accountHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
+    icon: '💳',
+    category: 'ewallet',
+    isActive: true,
+    instructions: [
+      'Buka aplikasi DANA atau GoPay.',
+      'Kirim uang ke nomor HP di atas.',
+      'Pastikan nama penerima sesuai sebelum konfirmasi PIN.',
+      'Screenshot bukti transfer berhasil.',
+    ],
+  },
+];
+
 // ─── Default Settings ────────────────────────────────────────────────────────
 export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {
   defaultModel: 'gpt-6-luna',
@@ -90,6 +176,7 @@ export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {
   qrisHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
   danaNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
   danaHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
+  customPaymentMethods: DEFAULT_PAYMENT_ACCOUNTS,
 };
 
 // ─── Storage helpers ─────────────────────────────────────────────────────────
@@ -97,7 +184,15 @@ function loadSettings(): AdminSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return DEFAULT_ADMIN_SETTINGS;
-    return { ...DEFAULT_ADMIN_SETTINGS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_ADMIN_SETTINGS,
+      ...parsed,
+      customPaymentMethods:
+        parsed.customPaymentMethods && Array.isArray(parsed.customPaymentMethods) && parsed.customPaymentMethods.length > 0
+          ? parsed.customPaymentMethods
+          : DEFAULT_ADMIN_SETTINGS.customPaymentMethods,
+    };
   } catch {
     return DEFAULT_ADMIN_SETTINGS;
   }
@@ -249,6 +344,114 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } catch { /* noop */ }
     set({ settings: DEFAULT_ADMIN_SETTINGS });
   },
+
+  fetchPaymentMethods: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'payment_accounts')
+        .single();
+      if (!error && data?.value && Array.isArray(data.value) && data.value.length > 0) {
+        const methods = data.value as DynamicPaymentMethod[];
+        get().updateSettings({ customPaymentMethods: methods });
+        return methods;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch remote payment accounts', e);
+    }
+    const current = get().settings.customPaymentMethods || DEFAULT_PAYMENT_ACCOUNTS;
+    return current;
+  },
+
+  savePaymentMethods: async (methods: DynamicPaymentMethod[]) => {
+    // Also keep legacy fields in sync if bca, mandiri, qris, or dana are present
+    const legacyUpdates: Partial<AdminSettings> = { customPaymentMethods: methods };
+    const bca = methods.find((m) => m.id === 'bca');
+    if (bca) {
+      legacyUpdates.bcaNumber = bca.accountNumber;
+      legacyUpdates.bcaHolder = bca.accountHolder;
+    }
+    const mandiri = methods.find((m) => m.id === 'mandiri');
+    if (mandiri) {
+      legacyUpdates.mandiriNumber = mandiri.accountNumber;
+      legacyUpdates.mandiriHolder = mandiri.accountHolder;
+    }
+    const qris = methods.find((m) => m.id === 'qris');
+    if (qris) {
+      legacyUpdates.qrisNmid = qris.accountNumber;
+      legacyUpdates.qrisHolder = qris.accountHolder;
+    }
+    const dana = methods.find((m) => m.id === 'dana');
+    if (dana) {
+      legacyUpdates.danaNumber = dana.accountNumber;
+      legacyUpdates.danaHolder = dana.accountHolder;
+    }
+
+    get().updateSettings(legacyUpdates);
+
+    // Persist to Supabase system_settings
+    try {
+      await supabase.from('system_settings').upsert({
+        key: 'payment_accounts',
+        value: methods,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to persist payment accounts to Supabase', e);
+    }
+  },
+
+  addPaymentMethod: async (method) => {
+    const current = get().settings.customPaymentMethods || [...DEFAULT_PAYMENT_ACCOUNTS];
+    const slug = (
+      method.id ||
+      method.name.toLowerCase().replace(/[^a-z0-9]/g, '') ||
+      `pay_${Date.now()}`
+    ).trim();
+
+    const newEntry: DynamicPaymentMethod = {
+      id: slug,
+      name: method.name.trim(),
+      accountNumber: method.accountNumber.trim(),
+      accountHolder: method.accountHolder.trim(),
+      icon: method.icon || '🏦',
+      category: method.category || 'bank',
+      isActive: method.isActive !== undefined ? method.isActive : true,
+      instructions:
+        method.instructions && method.instructions.length > 0
+          ? method.instructions
+          : [
+              `Lakukan pembayaran ke ${method.name} sesuai nominal invoice.`,
+              'Simpan bukti transfer/pembayaran berhasil untuk konfirmasi WhatsApp.',
+            ],
+    };
+
+    const updated = [...current.filter((m) => m.id !== slug), newEntry];
+    await get().savePaymentMethods(updated);
+  },
+
+  updatePaymentMethod: async (id, updated) => {
+    const current = get().settings.customPaymentMethods || [...DEFAULT_PAYMENT_ACCOUNTS];
+    const next = current.map((m) => (m.id === id ? { ...m, ...updated } : m));
+    await get().savePaymentMethods(next);
+  },
+
+  deletePaymentMethod: async (id) => {
+    const current = get().settings.customPaymentMethods || [...DEFAULT_PAYMENT_ACCOUNTS];
+    const next = current.filter((m) => m.id !== id);
+    await get().savePaymentMethods(next);
+  },
+
+  togglePaymentMethod: async (id) => {
+    const current = get().settings.customPaymentMethods || [...DEFAULT_PAYMENT_ACCOUNTS];
+    const next = current.map((m) => (m.id === id ? { ...m, isActive: !m.isActive } : m));
+    await get().savePaymentMethods(next);
+  },
+
+  resetPaymentMethodsToDefault: async () => {
+    await get().savePaymentMethods([...DEFAULT_PAYMENT_ACCOUNTS]);
+  },
 }));
 
 // ─── Helpers for other stores ─────────────────────────────────────────────────
@@ -262,5 +465,6 @@ export function getPaymentAccounts() {
     adminWhatsApp: settings.adminWhatsApp,
     proPriceMonthly: settings.proPriceMonthly,
     proPriceYearly: settings.proPriceYearly,
+    list: settings.customPaymentMethods || DEFAULT_PAYMENT_ACCOUNTS,
   };
 }
