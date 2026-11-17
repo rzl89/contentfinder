@@ -147,6 +147,8 @@ export const AdminPage: React.FC = () => {
   };
 
   const handleSavePaymentConfig = () => {
+    const cleanWA = (formWhatsApp.trim().replace(/\D/g, '') || '6285217975733').replace(/^0/, '62');
+
     updateSettings({
       bcaNumber: formBcaNo,
       bcaHolder: formBcaHolder,
@@ -156,7 +158,7 @@ export const AdminPage: React.FC = () => {
       qrisHolder: formQrisHolder,
       danaNumber: formDanaNo,
       danaHolder: formDanaHolder,
-      adminWhatsApp: formWhatsApp,
+      adminWhatsApp: cleanWA,
       proPriceMonthly: Number(formProPrice),
       trialDurationHours: Number(formTrialHours),
     });

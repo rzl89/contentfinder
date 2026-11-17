@@ -75,7 +75,7 @@ export const PAYMENT_ACCOUNTS: BankAccountInfo[] = [
   {
     id: 'dana',
     name: 'DANA / GoPay E-Wallet',
-    accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
+    accountNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '085217975733',
     accountHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
     icon: '💳',
     instructions: [
@@ -145,7 +145,7 @@ export function getPaymentAccounts(): BankAccountInfo[] {
       {
         id: 'dana',
         name: 'DANA / GoPay E-Wallet',
-        accountNumber: admin.danaNumber || '0812-3456-7890',
+        accountNumber: admin.danaNumber || '085217975733',
         accountHolder: admin.danaHolder || 'RIZAL - TEMPORAFORGE',
         icon: '💳',
         category: 'ewallet',
@@ -471,7 +471,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   },
 
   generateWhatsAppLink: (order) => {
-    let adminWA = get().adminWhatsApp;
+    let adminWA = get().adminWhatsApp || '6285217975733';
     try {
       const admin = useAdminStore.getState().settings;
       if (admin?.adminWhatsApp) {
@@ -479,6 +479,13 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       }
     } catch {
       // fallback
+    }
+
+    let cleanWA = adminWA.replace(/\\D/g, '');
+    if (cleanWA.startsWith('0')) {
+      cleanWA = '62' + cleanWA.slice(1);
+    } else if (!cleanWA.startsWith('62')) {
+      cleanWA = '62' + cleanWA;
     }
 
     const planName = PRICING_PLANS.pro.name;

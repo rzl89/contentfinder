@@ -281,7 +281,12 @@ export const AdminPanelPage: React.FC = () => {
   };
 
   const handleSaveSettings = () => {
-    updateSettings(localSettings);
+    const cleanSettings = {
+      ...localSettings,
+      adminWhatsApp: (localSettings.adminWhatsApp?.trim().replace(/\D/g, '') || '6285217975733').replace(/^0/, '62'),
+    };
+    updateSettings(cleanSettings);
+    setLocalSettings(cleanSettings);
     showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan telah disimpan.' });
   };
 

@@ -51,6 +51,12 @@ export const PricingPage: React.FC = () => {
     syncSubscriptionWithProfile,
   } = useSubscriptionStore();
 
+  const rawAdminWA =
+    useAdminStore((s) => s.settings.adminWhatsApp) ||
+    useSubscriptionStore((s) => s.adminWhatsApp) ||
+    '6285217975733';
+  const cleanAdminWA = (rawAdminWA.replace(/\D/g, '') || '6285217975733').replace(/^0/, '62');
+
   const duitkuConfig = useAdminStore((s) => s.settings.duitkuConfig);
   // TEMP: Duitku merchant account is pending verification — lock gateway until approved.
   // Set DUITKU_PENDING_VERIFICATION to false once merchant verification is complete.
@@ -565,7 +571,7 @@ export const PricingPage: React.FC = () => {
 
               <div className="pt-4 mt-2 border-t border-white/5">
                 <a
-                  href={`https://wa.me/${useSubscriptionStore.getState().adminWhatsApp}?text=${encodeURIComponent(
+                  href={`https://wa.me/${cleanAdminWA}?text=${encodeURIComponent(
                     `Halo Admin Fixprom, saya ingin membeli ${pkg.name} seharga Rp ${pkg.price.toLocaleString(
                       'id-ID'
                     )} untuk akun saya. Mohon petunjuk pembayarannya.`
