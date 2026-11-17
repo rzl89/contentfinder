@@ -41,8 +41,16 @@ import {
 export const PromptDeskPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { currentProject, updateScene, setScenes, setQCResult, setTargetModel } =
-    useProjectStore();
+  const {
+    projects,
+    currentProject,
+    createProject,
+    setCurrentProject,
+    updateScene,
+    setScenes,
+    setQCResult,
+    setTargetModel,
+  } = useProjectStore();
   const {
     subscription,
     hasSufficientCredits,
@@ -59,6 +67,13 @@ export const PromptDeskPage: React.FC = () => {
   const [exportContent, setExportContent] = useState('');
   const [isRegeneratingStoryboard, setIsRegeneratingStoryboard] = useState(false);
   const [isRegeneratingScene, setIsRegeneratingScene] = useState(false);
+
+  // Auto-connect first project if no active project is currently selected
+  useEffect(() => {
+    if (!currentProject && projects.length > 0) {
+      setCurrentProject(projects[0]);
+    }
+  }, [currentProject, projects, setCurrentProject]);
 
   const scenes = currentProject?.scenes || [];
   const currentScene = scenes[selectedSceneIndex] || null;
@@ -149,44 +164,66 @@ export const PromptDeskPage: React.FC = () => {
   };
 
   const handleAddScene = () => {
-    if (!currentProject) return;
-    const nextNum = scenes.length + 1;
-    const newScene: Scene = {
-      id: `scene_${Date.now()}_${nextNum}`,
-      projectId: currentProject.id,
-      sceneNumber: nextNum,
-      beatTitle: `Scene ${nextNum}: New Beat`,
-      purpose: 'Melanjutkan perkembangan cerita',
-      summary: 'Deskripsi adegan baru...',
-      location: {
-        environmentType: currentProject.contextProfile.environment,
-        description: 'Latar tempat adegan',
-        timeOfDay: 'Daytime',
-        weather: 'Clear',
-      },
-      characterActions: 'Karakter melakukan tindakan utama.',
-      props: [],
-      camera: {
-        shot: 'Medium Shot',
-        angle: 'Eye-level',
-        movement: 'Slow tracking',
-        framing: 'Rule of thirds',
-      },
-      lighting: 'Natural ambient lighting',
-      continuityAnchors: [],
-      imagePrompt: 'Cinematic wide shot of the environment with dramatic lighting and natural textures.',
-      videoPrompt: 'Camera slowly tracks forward into the scene with natural cinematic motion.',
-      negativePrompt: 'blurry, distorted, low quality',
-      locked: false,
-    };
+    try {
+      let project = currentProject;
+      if (!project) {
+        if (projects.length > 0) {
+          project = projects[0];
+          setCurrentProject(project);
+        } else {
+          project = createProject('Proyek Video Baru', 'time-travel', 'indonesia_natural');
+          setCurrentProject(project);
+        }
+      }
 
-    setScenes([...scenes, newScene]);
-    setSelectedSceneIndex(scenes.length);
-    showToast({
-      type: 'success',
-      title: 'Adegan Ditambahkan',
-      message: `Scene ${nextNum} berhasil dibuat.`,
-    });
+      const activeScenes = project.scenes || [];
+      const nextNum = activeScenes.length + 1;
+      const env = project.contextProfile?.environment || 'urban';
+
+      const newScene: Scene = {
+        id: `scene_${Date.now()}_${nextNum}`,
+        projectId: project.id,
+        sceneNumber: nextNum,
+        beatTitle: `Scene ${nextNum}: New Beat`,
+        purpose: 'Melanjutkan perkembangan cerita',
+        summary: 'Deskripsi adegan baru...',
+        location: {
+          environmentType: env,
+          description: 'Latar tempat adegan',
+          timeOfDay: 'Daytime',
+          weather: 'Clear',
+        },
+        characterActions: 'Karakter melakukan tindakan utama.',
+        props: [],
+        camera: {
+          shot: 'Medium Shot',
+          angle: 'Eye-level',
+          movement: 'Slow tracking',
+          framing: 'Rule of thirds',
+        },
+        lighting: 'Natural ambient lighting',
+        continuityAnchors: [],
+        imagePrompt: 'Cinematic wide shot of the environment with dramatic lighting and natural textures.',
+        videoPrompt: 'Camera slowly tracks forward into the scene with natural cinematic motion.',
+        negativePrompt: 'blurry, distorted, low quality',
+        locked: false,
+      };
+
+      setScenes([...activeScenes, newScene]);
+      setSelectedSceneIndex(activeScenes.length);
+      showToast({
+        type: 'success',
+        title: 'Adegan Ditambahkan',
+        message: `Scene ${nextNum} berhasil dibuat.`,
+      });
+    } catch (err: any) {
+      console.error('Failed to add scene:', err);
+      showToast({
+        type: 'error',
+        title: 'Gagal Menambah Adegan',
+        message: err?.message || 'Terjadi gangguan saat membuat adegan.',
+      });
+    }
   };
 
   const handleDeleteScene = (sceneNum: number) => {
@@ -378,6 +415,14 @@ export const PromptDeskPage: React.FC = () => {
               <span>Prompt Production Desk</span>
             </h2>
             <Badge variant="amber">{scenes.length} Scenes</Badge>
+            {currentProject?.name && (
+              <span
+                className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 truncate max-w-[220px]"
+                title={currentProject.name}
+              >
+                📁 {currentProject.name}
+              </span>
+            )}
             {qc && (
               <Badge
                 variant={
@@ -573,45 +618,63 @@ export const PromptDeskPage: React.FC = () => {
             </Button>
           </div>
 
-          <div className="space-y-2 max-h-[650px] overflow-y-auto pr-1">
-            {scenes.map((scene, idx) => {
-              const isSelected = selectedSceneIndex === idx;
-              return (
-                <div
-                  key={scene.id}
-                  onClick={() => setSelectedSceneIndex(idx)}
-                  className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer ${
-                    isSelected
-                      ? 'bg-amber-500/10 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
-                      : 'bg-[#111115] border-white/8 hover:border-white/20 hover:bg-[#16161c]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-amber-400">
-                      SCENE {scene.sceneNumber}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {scene.locked ? (
-                        <Lock className="w-3 h-3 text-amber-400" />
-                      ) : (
-                        <Unlock className="w-3 h-3 text-zinc-600" />
-                      )}
+          {scenes.length === 0 ? (
+            <div className="p-6 rounded-2xl bg-[#111115] border border-dashed border-white/10 text-center space-y-3">
+              <Film className="w-8 h-8 text-zinc-600 mx-auto" />
+              <p className="text-xs text-zinc-400">
+                Belum ada adegan. Klik tombol di atas untuk menambah adegan baru, atau rancang ide lengkap di Idea Studio.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5" />}
+                onClick={handleAddScene}
+                className="w-full justify-center"
+              >
+                Buat Adegan Pertama
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[650px] overflow-y-auto pr-1">
+              {scenes.map((scene, idx) => {
+                const isSelected = selectedSceneIndex === idx;
+                return (
+                  <div
+                    key={scene.id}
+                    onClick={() => setSelectedSceneIndex(idx)}
+                    className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-500/10 border-amber-500/50 shadow-md ring-1 ring-amber-500/30'
+                        : 'bg-[#111115] border-white/8 hover:border-white/20 hover:bg-[#16161c]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-amber-400">
+                        SCENE {scene.sceneNumber}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {scene.locked ? (
+                          <Lock className="w-3 h-3 text-amber-400" />
+                        ) : (
+                          <Unlock className="w-3 h-3 text-zinc-600" />
+                        )}
+                      </div>
+                    </div>
+                    <h4 className="text-xs font-semibold text-zinc-200 mt-1 line-clamp-1">
+                      {scene.beatTitle}
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                      {scene.summary}
+                    </p>
+                    <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-400">
+                      <span>{scene.camera.shot}</span>
+                      <span className="truncate max-w-[120px]">{scene.location.timeOfDay}</span>
                     </div>
                   </div>
-                  <h4 className="text-xs font-semibold text-zinc-200 mt-1 line-clamp-1">
-                    {scene.beatTitle}
-                  </h4>
-                  <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
-                    {scene.summary}
-                  </p>
-                  <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-400">
-                    <span>{scene.camera.shot}</span>
-                    <span className="truncate max-w-[120px]">{scene.location.timeOfDay}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Detailed Structured Scene Editor */}
@@ -888,8 +951,22 @@ export const PromptDeskPage: React.FC = () => {
               </div>
             </BentoTile>
           ) : (
-            <BentoTile className="p-12 text-center text-zinc-500">
-              Pilih adegan dari panel kiri atau buat adegan baru.
+            <BentoTile className="p-12 text-center text-zinc-500 space-y-4">
+              <Film className="w-12 h-12 text-zinc-600 mx-auto opacity-60" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-semibold text-zinc-300">Belum Ada Adegan yang Dipilih</h4>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                  Pilih salah satu nomor adegan dari panel kiri, atau klik tombol di bawah untuk membuat adegan baru langsung di storyboard.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5" />}
+                onClick={handleAddScene}
+              >
+                Tambah Adegan Baru
+              </Button>
             </BentoTile>
           )}
         </div>
