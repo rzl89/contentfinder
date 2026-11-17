@@ -4,19 +4,13 @@ import { Sidebar } from './sidebar';
 import { Menu, X, Sparkles, Globe, Zap } from 'lucide-react';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useLanguageStore } from '@/stores/language-store';
 
 export const AppLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState<'id' | 'en'>(() => {
-    return (localStorage.getItem('fixprom_lang') as 'id' | 'en') || 'id';
-  });
+  const { language, setLanguage, t } = useLanguageStore();
   const currentProject = useProjectStore((s) => s.currentProject);
   const subscription = useSubscriptionStore((s) => s.subscription);
-
-  const handleToggleLang = (lang: 'id' | 'en') => {
-    setCurrentLang(lang);
-    localStorage.setItem('fixprom_lang', lang);
-  };
 
   return (
     <div className="min-h-screen flex bg-[#09090b] text-zinc-100 font-sans">
@@ -58,11 +52,13 @@ export const AppLayout: React.FC = () => {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400 hidden sm:inline">Active Project:</span>
+              <span className="text-xs text-zinc-400 hidden sm:inline">
+                {t('Proyek Aktif:', 'Active Project:')}
+              </span>
               <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-medium text-amber-300">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span className="max-w-[200px] truncate">
-                  {currentProject?.name || 'Untitled Production Project'}
+                  {currentProject?.name || t('Proyek Produksi Baru', 'Untitled Production Project')}
                 </span>
               </div>
             </div>
@@ -73,19 +69,22 @@ export const AppLayout: React.FC = () => {
             <NavLink
               to="/pricing"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-xs font-semibold text-amber-300 transition-colors shadow-sm"
-              title="Sisa Kredit AI Anda — Klik untuk Isi Ulang"
+              title={t('Sisa Kredit AI Anda — Klik untuk Isi Ulang', 'Your AI Credits Balance — Click to Top Up')}
             >
               <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</span>
+              <span>
+                {subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)}{' '}
+                {t('Kredit', 'Credits')}
+              </span>
             </NavLink>
 
             {/* Language Switcher (ID / EN) */}
             <div className="flex items-center p-0.5 rounded-xl bg-zinc-900 border border-white/10 text-xs">
               <button
                 type="button"
-                onClick={() => handleToggleLang('id')}
+                onClick={() => setLanguage('id')}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  currentLang === 'id'
+                  language === 'id'
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
                 }`}
@@ -95,9 +94,9 @@ export const AppLayout: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleToggleLang('en')}
+                onClick={() => setLanguage('en')}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  currentLang === 'en'
+                  language === 'en'
                     ? 'bg-amber-500 text-black shadow-md'
                     : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
                 }`}

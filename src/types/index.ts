@@ -318,13 +318,18 @@ export interface Project {
 export interface TrendObservation {
   id: string;
   title: string;
+  titleEn?: string;
   description: string;
+  descriptionEn?: string;
   platform: Platform;
   region: string;
+  regionEn?: string;
   observedAt: string; // ISO-8601
   sourceUrl: string;
   format: string;
+  formatEn?: string;
   evidence: string;
+  evidenceEn?: string;
   status: 'verified_trend' | 'trend_inspired' | 'evergreen' | 'unverified';
   categoryRelevance: string[];
 }

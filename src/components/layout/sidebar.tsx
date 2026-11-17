@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { useLanguageStore } from '@/stores/language-store';
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const { subscription, getRemainingTrialHours } = useSubscriptionStore();
   const { user, signOut } = useAuthStore();
+  const { t } = useLanguageStore();
   const remainingHours = getRemainingTrialHours();
 
   const handleSignOut = async () => {
@@ -36,46 +38,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const navItems = [
     {
       to: '/studio',
-      label: 'Content Idea Studio',
+      label: t('Content Idea Studio', 'Content Idea Studio'),
       icon: <Lightbulb className="w-4 h-4" />,
-      badge: '21 Kategori',
+      badge: t('21 Kategori', '21 Categories'),
     },
     {
       to: '/projects',
-      label: 'My Projects',
+      label: t('Proyek Saya', 'My Projects'),
       icon: <FolderKanban className="w-4 h-4" />,
     },
     {
       to: '/trends',
-      label: 'Trend Radar',
+      label: t('Trend Radar', 'Trend Radar'),
       icon: <TrendingUp className="w-4 h-4" />,
       badge: 'Live',
     },
     {
       to: '/prompt-desk',
-      label: 'Prompt Production Desk',
+      label: t('Prompt Production Desk', 'Prompt Production Desk'),
       icon: <Wand2 className="w-4 h-4" />,
     },
     {
       to: '/byok',
-      label: 'BYOK Video Connectors',
+      label: t('BYOK Video Connect', 'BYOK Video Connect'),
       icon: <KeyRound className="w-4 h-4" />,
       badge: subscription.tier === 'pro' ? 'Secure' : 'PRO',
     },
     {
       to: '/pricing',
-      label: 'Langganan & Paket',
+      label: t('Langganan & Paket', 'Plans & Pricing'),
       icon: <CreditCard className="w-4 h-4" />,
       badge:
         subscription.tier === 'pro'
           ? 'Pro'
           : remainingHours > 0
-          ? `Trial ${remainingHours}j`
-          : 'Habis',
+          ? `${t('Trial', 'Trial')} ${remainingHours}j`
+          : t('Habis', 'Expired'),
     },
     {
       to: '/settings',
-      label: 'Settings & Context',
+      label: t('Pengaturan & Konteks', 'Settings & Context'),
       icon: <Settings className="w-4 h-4" />,
     },
   ];

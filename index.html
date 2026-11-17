@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/fixprom-icon.png" />
     <link rel="apple-touch-icon" href="/fixprom-icon.png" />
+    <script>
+      (function() {
+        try {
+          var lang = localStorage.getItem('fixprom_lang') || 'id';
+          document.documentElement.lang = lang;
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Primary SEO Meta Tags (Bilingual ID / EN) -->
     <title>Fixprom — AI Video Prompt Compiler & Short-Form Content Studio</title>
