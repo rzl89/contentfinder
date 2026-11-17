@@ -4,9 +4,21 @@ import { supabase } from '@/lib/supabase';
 import { useSubscriptionStore } from './subscription-store';
 import { validateEmailAddress } from '@/lib/disposable-email-validator';
 
+export interface UserProfile {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  plan_tier: string | null;
+  subscription_status: string | null;
+  credits_balance: number | null;
+  created_at: string | null;
+  updated_at?: string | null;
+}
+
 interface AuthState {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   loading: boolean;
   initialized: boolean;
 
@@ -17,11 +29,15 @@ interface AuthState {
   signOut: () => Promise<void>;
   resendConfirmation: (email: string) => Promise<{ error: AuthError | null }>;
   setSession: (session: Session | null) => void;
+  fetchProfile: () => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<{ error: Error | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
+  profile: null,
   loading: false,
   initialized: false,
 
@@ -71,6 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (data.session?.user) {
       void useSubscriptionStore.getState().syncSubscriptionWithProfile(data.session.user.id);
+      void get().fetchProfile();
     }
 
     // Listen for future auth state changes
@@ -78,7 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const email = session?.user?.email;
       if (email && validateEmailAddress(email).isDisposable) {
         void supabase.auth.signOut();
-        set({ session: null, user: null });
+        set({ session: null, user: null, profile: null });
         return;
       }
 
@@ -88,6 +105,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       if (session?.user) {
         void useSubscriptionStore.getState().syncSubscriptionWithProfile(session.user.id);
+        void get().fetchProfile();
+      } else {
+        set({ profile: null });
       }
     });
   },
@@ -107,6 +127,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ session: data.session, user: data.session.user });
       if (data.session.user) {
         void useSubscriptionStore.getState().syncSubscriptionWithProfile(data.session.user.id);
+        void get().fetchProfile();
       }
     }
     set({ loading: false });
@@ -134,6 +155,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ session: data.session, user: data.session.user });
       if (data.session.user) {
         void useSubscriptionStore.getState().syncSubscriptionWithProfile(data.session.user.id);
+        void get().fetchProfile();
       }
     }
     set({ loading: false });
@@ -143,7 +165,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ loading: true });
     await supabase.auth.signOut();
-    set({ user: null, session: null, loading: false });
+    set({ user: null, session: null, profile: null, loading: false });
   },
 
   resendConfirmation: async (email: string) => {
@@ -161,5 +183,78 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setSession: (session) => {
     set({ session, user: session?.user ?? null });
+    if (session?.user) {
+      void get().fetchProfile();
+    } else {
+      set({ profile: null });
+    }
+  },
+
+  fetchProfile: async () => {
+    const user = get().user;
+    if (!user) {
+      set({ profile: null });
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url, plan_tier, subscription_status, credits_balance, created_at, updated_at')
+        .eq('id', user.id)
+        .single();
+      if (!error && data) {
+        set({ profile: data as UserProfile });
+      }
+    } catch (err) {
+      console.warn('Failed to fetch profile', err);
+    }
+  },
+
+  updateDisplayName: async (displayName: string) => {
+    const user = get().user;
+    if (!user) return { error: new Error('User tidak terautentikasi') };
+    const cleanName = displayName.trim();
+    if (!cleanName) return { error: new Error('Nama tampilan tidak boleh kosong') };
+
+    try {
+      // 1. Update Supabase Auth metadata
+      const { data: authData, error: authErr } = await supabase.auth.updateUser({
+        data: { display_name: cleanName },
+      });
+      if (authErr) return { error: authErr };
+
+      // 2. Update profiles table
+      const { error: dbErr } = await supabase
+        .from('profiles')
+        .update({
+          display_name: cleanName,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+      if (dbErr) return { error: dbErr };
+
+      // 3. Update local store state
+      set((state) => ({
+        user: authData.user ?? state.user,
+        profile: state.profile ? { ...state.profile, display_name: cleanName } : null,
+      }));
+      return { error: null };
+    } catch (err: any) {
+      return { error: err };
+    }
+  },
+
+  updatePassword: async (newPassword: string) => {
+    if (!newPassword || newPassword.length < 6) {
+      return { error: new Error('Kata sandi minimal 6 karakter.') };
+    }
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      return { error };
+    } catch (err: any) {
+      return { error: err };
+    }
   },
 }));

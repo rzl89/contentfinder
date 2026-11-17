@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Sidebar } from './sidebar';
-import { Menu, X, Sparkles, Globe, Zap } from 'lucide-react';
+import { UserProfileMenu } from './user-profile-menu';
+import { Menu, X, Sparkles, Zap } from 'lucide-react';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useLanguageStore } from '@/stores/language-store';
@@ -105,6 +106,9 @@ export const AppLayout: React.FC = () => {
                 <span>EN</span>
               </button>
             </div>
+
+            {/* User Profile Menu */}
+            <UserProfileMenu />
           </div>
         </header>
 

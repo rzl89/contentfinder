@@ -26,9 +26,11 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const { subscription, getRemainingTrialHours } = useSubscriptionStore();
-  const { user, signOut } = useAuthStore();
+  const { user, profile, signOut } = useAuthStore();
   const { t } = useLanguageStore();
   const remainingHours = getRemainingTrialHours();
+
+  const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
 
   const handleSignOut = async () => {
     await signOut();
@@ -167,16 +169,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       {!collapsed && user && (
         <div className="px-4 pb-3 border-t border-white/5 pt-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <UserCircle2 className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 font-bold text-xs text-amber-300 uppercase">
+                {displayName ? displayName.charAt(0).toUpperCase() : <UserCircle2 className="w-4 h-4 text-amber-400" />}
               </div>
-              <span className="text-[11px] text-zinc-400 truncate">{user.email}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-zinc-200 truncate leading-tight">
+                  {displayName || user.email}
+                </p>
+                <p className="text-[10px] text-zinc-400 truncate leading-tight">
+                  {user.email}
+                </p>
+              </div>
             </div>
             <button
               onClick={handleSignOut}
-              title="Keluar"
-              className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+              title={t('Keluar', 'Sign Out')}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>
