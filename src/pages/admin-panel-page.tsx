@@ -613,6 +613,17 @@ export const AdminPanelPage: React.FC = () => {
     }
   };
 
+  const handleCustomGrant = (userId: string, userEmail: string) => {
+    const input = window.prompt(`Masukkan jumlah kredit AI yang ingin ditambahkan untuk ${userEmail}:`, '100');
+    if (!input) return;
+    const amount = parseInt(input.trim(), 10);
+    if (isNaN(amount) || amount <= 0) {
+      showToast({ type: 'error', title: 'Input Tidak Valid', message: 'Jumlah kredit harus berupa angka bulat positif.' });
+      return;
+    }
+    void handleGrantCredits(userId, amount, userEmail);
+  };
+
   // ── Format session time ───────────────────────────────────────────────────
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -1152,7 +1163,7 @@ export const AdminPanelPage: React.FC = () => {
                               size="sm"
                               variant="secondary"
                               onClick={() => handleGrantCredits(u.id, 100, u.email)}
-                              title="Tambah 100 Kredit AI"
+                              title="Tambah 100 Kredit (Booster Mini Rp 20rb)"
                               className="text-xs"
                             >
                               +100 Kredit
@@ -1161,11 +1172,31 @@ export const AdminPanelPage: React.FC = () => {
                             <Button
                               size="sm"
                               variant="secondary"
+                              onClick={() => handleGrantCredits(u.id, 300, u.email)}
+                              title="Tambah 300 Kredit (Booster Pro Rp 50rb)"
+                              className="text-xs text-amber-300 border-amber-500/30"
+                            >
+                              +300 Kredit
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="secondary"
                               onClick={() => handleGrantCredits(u.id, 350, u.email)}
-                              title="Tambah 350 Kredit AI"
+                              title="Tambah 350 Kredit (Alokasi Bulanan Pro)"
                               className="text-xs"
                             >
                               +350 Kredit
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleCustomGrant(u.id, u.email)}
+                              title="Input nominal kredit kustom"
+                              className="text-xs text-zinc-400 hover:text-white"
+                            >
+                              +Custom...
                             </Button>
 
                             {!isPro && (
