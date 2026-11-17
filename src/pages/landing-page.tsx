@@ -15,7 +15,6 @@ import {
   TrendingUp,
   CreditCard,
   Check,
-  ExternalLink,
   Eye,
   UserCircle2,
   LogIn,
@@ -24,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { CONTENT_CATEGORIES } from '@/context-engine';
 
 interface LandingPageProps {
@@ -33,6 +33,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { language, setLanguage, t } = useLanguageStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollTo = (id: string) => {
@@ -65,13 +66,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
       audio: 'Ambient cafe background audio, distant acoustic guitar (post-dub dialogue: "Tunggu, kamu lihat itu?")',
     },
     generic: {
-      model: 'AI Prompt Biasa (Generic Slop)',
-      camera: 'Tidak terdefinisi (kamera acak)',
+      model: t('AI Prompt Biasa (Generic Slop)', 'Generic AI Prompt (Slop)'),
+      camera: t('Tidak terdefinisi (kamera acak)', 'Undefined (random camera angle)'),
       lighting: 'Hyperrealistic, 8k, octane render, unreal engine 5, masterpiece, glowing light',
       subject:
         'A handsome Indonesian man in futuristic Jakarta street, highly detailed face, walking, trending on artstation, cinematic beauty, dramatic atmosphere.',
       negative: 'bad quality, worst quality',
-      audio: 'Tidak ada arahan audio atau lip-sync.',
+      audio: t('Tidak ada arahan audio atau lip-sync.', 'No audio or lip-sync direction.'),
     },
   };
 
@@ -87,7 +88,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
 
   return (
     <div className="min-h-screen bg-[#06060a] text-zinc-100 selection:bg-amber-500/30 selection:text-amber-200">
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Navbar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Navbar */}
       <header className="sticky top-0 z-50 bg-[#06060a]/90 backdrop-blur-md border-b border-white/5 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-3 group">
@@ -98,7 +99,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
                 <span>Fixprom</span>
               </span>
-              <p className="text-[10px] text-zinc-500 leading-none">Studio Ide & Prompt Video AI</p>
+              <p className="text-[10px] text-zinc-500 leading-none">
+                {t('Studio Ide & Prompt Video AI', 'AI Video Idea & Prompt Studio')}
+              </p>
             </div>
           </NavLink>
 
@@ -108,34 +111,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('demo')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              Contoh Prompt
+              {t('Contoh Prompt', 'Prompt Demo')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('fitur')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              Fitur Studio
+              {t('Fitur Studio', 'Studio Features')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('kategori')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              21 Kategori
+              {t('21 Kategori', '21 Categories')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('harga')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              Harga
+              {t('Harga', 'Pricing')}
             </button>
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Language Switcher (ID / EN) */}
+            <div className="flex items-center p-0.5 rounded-xl bg-zinc-900 border border-white/10 text-xs">
+              <button
+                type="button"
+                onClick={() => setLanguage('id')}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  language === 'id'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                }`}
+                title="Bahasa Indonesia"
+              >
+                <span>ID</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-amber-500 text-black shadow-md'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                }`}
+                title="English"
+              >
+                <span>EN</span>
+              </button>
+            </div>
+
             {user ? (
-              /* -- Logged in: show user badge + go to studio -- */
+              /* Logged in: show user badge + go to studio */
               <>
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-zinc-400">
                   <UserCircle2 className="w-3.5 h-3.5 text-amber-400" />
@@ -147,18 +178,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                   onClick={() => navigate('/studio')}
                   icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
                 >
-                  Buka Studio
+                  {t('Buka Studio', 'Open Studio')}
                 </Button>
               </>
             ) : (
-              /* -- Guest: show login + signup -- */
+              /* Guest: show login + signup */
               <>
                 <NavLink
                   to="/login"
                   className="hidden sm:inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 px-3 py-2 transition-colors"
                 >
                   <LogIn className="w-3.5 h-3.5" />
-                  Masuk
+                  {t('Masuk', 'Sign In')}
                 </NavLink>
                 <Button
                   variant="primary"
@@ -166,7 +197,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                   onClick={() => navigate('/signup')}
                   icon={<ArrowRight className="w-3.5 h-3.5 text-black" />}
                 >
-                  Daftar Gratis
+                  {t('Daftar Gratis', 'Get Started')}
                 </Button>
               </>
             )}
@@ -191,62 +222,63 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('demo')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              Contoh Prompt
+              {t('Contoh Prompt', 'Prompt Demo')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('fitur')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              Fitur Studio
+              {t('Fitur Studio', 'Studio Features')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('kategori')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              21 Kategori
+              {t('21 Kategori', '21 Categories')}
             </button>
             <button
               type="button"
               onClick={() => scrollTo('harga')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              Harga
+              {t('Harga', 'Pricing')}
             </button>
             {!user && (
               <NavLink
                 to="/login"
                 className="block px-3 py-2 rounded-lg text-xs text-amber-400 hover:bg-white/5 transition-colors"
               >
-                Masuk ke Akun
+                {t('Masuk ke Akun', 'Sign In to Account')}
               </NavLink>
             )}
           </div>
         )}
       </header>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Hero Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Hero Section */}
       <section className="relative px-6 pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden">
-        {/* Subtle ambient lighting backdrop */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center space-y-6 relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span>Context Engine & Multi-Model Video Prompt Compiler</span>
+            <span>{t('Context Engine & Multi-Model Video Prompt Compiler', 'Context Engine & Multi-Model Video Prompt Compiler')}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15]">
-            Ide Konten & Prompt Video AI yang{' '}
+            {t('Ide Konten & Prompt Video AI yang', 'AI Video Content Ideas & Prompts')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500">
-              Siap Masuk Studio Produksi
+              {t('Siap Masuk Studio Produksi', 'Ready for Production')}
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            Hentikan prompt video acak yang menghasilkan visual plastik dan karakter bermutasi.
-            Dari premis cerita lokal yang autentik hingga storyboard 4 adegan dengan parameter optik kamera untuk Kling 1.5, Google Veo 2, dan Runway Gen-3.
+            {t(
+              'Hentikan prompt video acak yang menghasilkan visual plastik dan karakter bermutasi. Dari premis cerita lokal yang autentik hingga storyboard 4 adegan dengan parameter optik kamera untuk Kling 1.5, Google Veo 2, dan Runway Gen-3.',
+              'Stop wasting credits on generic AI slop that distorts anatomy and character identity. Move from authentic narrative hooks to 4-scene storyboards with precise camera optics for Kling 1.5/2.0, Google Veo 2, and Runway Gen-3.'
+            )}
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
@@ -257,7 +289,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               icon={<ArrowRight className="w-4 h-4 text-black" />}
               className="w-full sm:w-auto"
             >
-              {user ? 'Buka Studio' : 'Mulai Gratis - Tanpa Kartu Kredit'}
+              {user
+                ? t('Buka Studio', 'Open Studio')
+                : t('Mulai Gratis - Tanpa Kartu Kredit', 'Start Free - No Credit Card Required')}
             </Button>
 
             <button
@@ -266,41 +300,52 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-amber-400" />
-              Lihat Perbandingan Prompt
+              {t('Lihat Perbandingan Prompt', 'View Prompt Comparison')}
             </button>
           </div>
 
-          {/* Social proof metric chips -  truthful and concrete */}
+          {/* Social proof metric chips */}
           <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left">
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
               <div className="text-xl font-bold font-mono text-amber-400">21</div>
-              <div className="text-[11px] text-zinc-400 mt-0.5">Kategori Konten Pendek</div>
+              <div className="text-[11px] text-zinc-400 mt-0.5">
+                {t('Kategori Konten Pendek', 'Short-Form Categories')}
+              </div>
             </div>
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
-              <div className="text-xl font-bold font-mono text-amber-400">4 Model</div>
-              <div className="text-[11px] text-zinc-400 mt-0.5">Kling, Veo 2, Runway, Luma</div>
+              <div className="text-xl font-bold font-mono text-amber-400">6+ Model</div>
+              <div className="text-[11px] text-zinc-400 mt-0.5">
+                {t('Compiler Spesifik Vendor', 'Model-Specific Compilers')}
+              </div>
             </div>
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
-              <div className="text-xl font-bold font-mono text-emerald-400">3 Detik</div>
-              <div className="text-[11px] text-zinc-400 mt-0.5">Hook Retensi Terverifikasi</div>
+              <div className="text-xl font-bold font-mono text-emerald-400">AES-256</div>
+              <div className="text-[11px] text-zinc-400 mt-0.5">
+                {t('Keamanan Vault BYOK', 'Client Vault Security')}
+              </div>
             </div>
             <div className="p-3.5 rounded-xl bg-[#111115] border border-white/5">
-              <div className="text-xl font-bold font-mono text-blue-400">AES-256</div>
-              <div className="text-[11px] text-zinc-400 mt-0.5">Enkripsi Kunci BYOK di Browser</div>
+              <div className="text-xl font-bold font-mono text-amber-400">0% Fake</div>
+              <div className="text-[11px] text-zinc-400 mt-0.5">
+                {t('Nol Angka Tren Palsu', 'Zero Fake Trend Metrics')}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Interactive Prompt Comparison Demo Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Interactive Demo Section */}
       <section id="demo" className="px-6 py-16 bg-[#0b0b0e] border-y border-white/5">
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Bukan Prompt AI Sembarangan. Ini Bahasa Sutradara.
+              {t('Perbandingan Kualitas Prompt Video', 'Prompt Quality Comparison')}
             </h2>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
-              Perhatikan perbedaan antara prompt AI generik yang boros token vs prompt terstruktur Fixprom yang dipahami engine AI video.
+              {t(
+                'Perhatikan perbedaan antara prompt AI generik yang boros token vs prompt terstruktur Fixprom yang dipahami engine AI video.',
+                'Compare generic AI prompts that waste tokens against Fixprom structured prompts engineered for generative video engines.'
+              )}
             </p>
           </div>
 
@@ -316,7 +361,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Prompt Fixprom (Director-Grade)
+                {t('Prompt Fixprom (Director-Grade)', 'Fixprom Prompt (Director-Grade)')}
               </button>
               <button
                 onClick={() => setActiveTab('generic')}
@@ -326,7 +371,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                     : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
-                Prompt AI Biasa (Slop Klise)
+                {t('Prompt AI Biasa (Slop Klise)', 'Generic AI Prompt (Slop)')}
               </button>
             </div>
           </div>
@@ -344,21 +389,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                 >
                   {samplePrompt[activeTab].model}
                 </span>
-                <span className="text-xs text-zinc-500">Scene 1 / Detik 0-3 Hook</span>
+                <span className="text-xs text-zinc-500">
+                  {t('Scene 1 / Detik 0-3 Hook', 'Scene 1 / 0-3s Hook')}
+                </span>
               </div>
               <button
                 onClick={handleCopyPrompt}
-                className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white px-2.5 py-1 rounded bg-black/40 border border-white/5 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white px-2.5 py-1 rounded bg-black/40 border border-white/5 transition-colors cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Tersalin' : 'Salin Prompt'}</span>
+                <span>{copied ? t('Tersalin', 'Copied') : t('Salin Prompt', 'Copy Prompt')}</span>
               </button>
             </div>
 
             <div className="space-y-4 text-xs font-mono">
               <div>
                 <span className="text-zinc-500 block uppercase tracking-wider text-[10px] mb-1">
-                  Gerakan Kamera & Lensa
+                  {t('Gerakan Kamera & Lensa', 'Camera Movement & Lens Optics')}
                 </span>
                 <p className="p-3 rounded-lg bg-black/40 border border-white/5 text-zinc-200">
                   {samplePrompt[activeTab].camera}
@@ -367,7 +414,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
 
               <div>
                 <span className="text-zinc-500 block uppercase tracking-wider text-[10px] mb-1">
-                  Prompt Video (Subject & Kinematika Fisik)
+                  {t('Prompt Video (Subject & Kinematika Fisik)', 'Video Prompt (Subject & Physical Kinematics)')}
                 </span>
                 <p className="p-3 rounded-lg bg-black/40 border border-white/5 text-amber-200/90 leading-relaxed">
                   {samplePrompt[activeTab].subject}
@@ -377,7 +424,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <span className="text-zinc-500 block uppercase tracking-wider text-[10px] mb-1">
-                    Negative Prompt (Anti-Slop Filter)
+                    {t('Negative Prompt (Anti-Slop Filter)', 'Negative Prompt (Anti-Slop Filter)')}
                   </span>
                   <p className="p-2.5 rounded-lg bg-black/40 border border-white/5 text-red-300/80 text-[11px]">
                     {samplePrompt[activeTab].negative}
@@ -385,7 +432,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                 </div>
                 <div>
                   <span className="text-zinc-500 block uppercase tracking-wider text-[10px] mb-1">
-                    Instruksi Audio & Lip-Sync
+                    {t('Instruksi Audio & Lip-Sync', 'Audio & Lip-Sync Direction')}
                   </span>
                   <p className="p-2.5 rounded-lg bg-black/40 border border-white/5 text-blue-300/80 text-[11px]">
                     {samplePrompt[activeTab].audio}
@@ -397,14 +444,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Feature Bento Grid Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* Feature Bento Grid */}
       <section id="fitur" className="px-6 py-20 max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Arsitektur Studio Konten yang Bekerja
+            {t('Arsitektur Studio Konten yang Bekerja', 'Production Studio Architecture')}
           </h2>
           <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
-            Empat pilar yang menghubungkan kreativitas lokal Anda ke generator video AI kelas industri.
+            {t(
+              'Empat pilar yang menghubungkan kreativitas cerita Anda ke generator video AI kelas industri.',
+              'Four core pillars connecting creative story concepts to industry-grade AI video generators.'
+            )}
           </p>
         </div>
 
@@ -415,14 +465,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <Compass className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Context Engine & Narasi Autentik</h3>
+              <h3 className="text-base font-bold text-white">
+                {t('Context Engine & Narasi Autentik', 'Context Engine & Narrative Grounding')}
+              </h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Menghilangkan stereotip malas pada AI. Dialog dapat dipilih dalam Bahasa Indonesia santai, Jawa, Sunda, atau Inggris. Latar cerita dirancang natural tanpa memaksakan warung atau motor jika cerita tidak membutuhkannya.
+                {t(
+                  'Menghilangkan stereotip malas pada AI. Dialog dapat dipilih dalam Bahasa Indonesia santai, Jawa, Sunda, atau Inggris. Latar cerita dirancang natural tanpa memaksakan klise visual.',
+                  'Eliminate generic AI cliches. Configure natural cultural dialog, grounded character personas, and believable environments without forced stereotypes.'
+                )}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs font-mono text-zinc-400">
-              <span>Preset Tersedia:</span>
-              <span className="text-amber-400">Indonesia Natural, Urban Modern, Nusantara Misteri</span>
+              <span>{t('Preset Tersedia:', 'Available Presets:')}</span>
+              <span className="text-amber-400">Indonesia Natural, Urban Modern, Nusantara Mystery</span>
             </div>
           </div>
 
@@ -432,9 +487,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <Camera className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Multi-Model Syntax Compiler</h3>
+              <h3 className="text-base font-bold text-white">
+                {t('Multi-Model Syntax Compiler', 'Multi-Model Syntax Compiler')}
+              </h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Tiap generator video punya format berbeda. Fixprom mengonversi storyboard Anda ke format perintah kamera Kling (<code className="text-amber-300 font-mono">[Camera: ...]</code>), Veo 2, Runway Gen-3, atau Luma Dream Machine secara otomatis.
+                {t(
+                  'Tiap generator video punya format berbeda. Fixprom mengonversi storyboard Anda ke format perintah kamera Kling, Veo 2, Sora, Hailuo, Runway Gen-3, atau Luma Ray 2 secara otomatis.',
+                  'Every generative video engine interprets instructions uniquely. Fixprom compiles your storyboard into exact syntax for Kling, Veo 2, Sora, Hailuo, Runway Gen-3, and Luma Ray 2.'
+                )}
               </p>
             </div>
           </div>
@@ -445,9 +505,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Character & World Bible Consistency</h3>
+              <h3 className="text-base font-bold text-white">
+                {t('Character & World Bible Consistency', 'Character & World Continuity')}
+              </h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Karakter mengunci 3 anchor fisik kanonis (warna jaket, jam tangan, gaya rambut) agar bentuk wajah dan pakaian tidak bermutasi saat berganti adegan di AI video.
+                {t(
+                  'Karakter mengunci 3 anchor fisik kanonis (warna pakaian, jam tangan, gaya rambut) agar bentuk wajah dan pakaian tidak bermutasi saat berganti adegan di AI video.',
+                  'Enforces 3 canonical continuity anchors (outfit, hair, color temperature) preventing character drift across sequential video beats.'
+                )}
               </p>
             </div>
           </div>
@@ -458,29 +523,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Client-side BYOK Security (AES-256-GCM)</h3>
+              <h3 className="text-base font-bold text-white">
+                {t('Client-side BYOK Security (AES-256-GCM)', 'Client-Side BYOK Security (AES-256-GCM)')}
+              </h3>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
-                Jika Anda ingin memakai API key AI Anda sendiri, kredensial disimpan terenkripsi di browser Anda via Web Crypto API. Server kami menerapkan zero-knowledge architecture: key Anda tidak pernah singgah di database kami.
+                {t(
+                  'Gunakan API key AI milik Anda sendiri. Kredensial dienkripsi di peramban Anda melalui Web Crypto API. Server kami menerapkan zero-knowledge architecture: key Anda tidak pernah singgah di database kami.',
+                  'Bring your own AI provider keys. Credentials are encrypted client-side using AES-256-GCM via the Web Cryptography API. Zero-knowledge architecture guarantees keys never touch Fixprom databases.'
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs font-mono text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Zero-knowledge client vault & ephemeral session purge</span>
+              <span>{t('Zero-knowledge client vault & ephemeral purge', 'Zero-knowledge client vault & ephemeral purge')}</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ 19 Categories Showcase Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* 21 Categories Showcase */}
       <section id="kategori" className="px-6 py-16 bg-[#0b0b0e] border-y border-white/5">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                21 Format Konten Berdaya Retensi Tinggi
+                {t('21 Format Konten Berdaya Retensi Tinggi', '21 High-Retention Content Formats')}
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-                Kategori terkurasi dari format video pendek dengan performa tervalidasi di TikTok dan Reels.
+                {t(
+                  'Kategori terkurasi dari format video pendek dengan performa tervalidasi di TikTok, Reels, dan Shorts.',
+                  'Curated short-form categories validated for audience retention across TikTok, Reels, and YouTube Shorts.'
+                )}
               </p>
             </div>
             <Button
@@ -489,7 +562,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => navigate('/studio')}
               icon={<ArrowRight className="w-3.5 h-3.5 text-zinc-400" />}
             >
-              Buka Semua di Studio
+              {t('Buka Semua di Studio', 'View All in Studio')}
             </Button>
           </div>
 
@@ -500,17 +573,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                 className="p-3.5 rounded-xl bg-[#111115] border border-white/5 hover:border-amber-500/30 hover:bg-[#14141c] transition-all cursor-pointer group flex flex-col justify-between"
                 onClick={() => navigate('/studio', { state: { categoryId: cat.id } })}
               >
-                <div>
-                  <div className="font-semibold text-zinc-200 group-hover:text-amber-300 transition-colors line-clamp-1">
-                    {cat.name}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-zinc-400">
+                    <span className="font-semibold text-white group-hover:text-amber-300 transition-colors">
+                      {cat.name}
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-500">
+                      {cat.group ? cat.group.split(' ')[0] : 'General'}
+                    </span>
                   </div>
-                  <div className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
                     {cat.description}
-                  </div>
+                  </p>
                 </div>
-                <div className="mt-2.5 pt-2 border-t border-white/5 text-[10px] text-zinc-500 font-mono flex items-center justify-between">
-                  <span>{cat.subcategories.length} subkategori</span>
-                  <span className="text-amber-400/80">{cat.group.split(' ')[0]}</span>
+                <div className="pt-2 mt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                  <span>{cat.suggestedDuration?.[0] || '15-60s'}</span>
+                  <span className="group-hover:translate-x-1 transition-transform text-amber-400">→</span>
                 </div>
               </div>
             ))}
@@ -518,14 +596,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Pricing Section Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
-      <section id="harga" className="px-6 py-20 max-w-5xl mx-auto space-y-12">
+      {/* Pricing Section */}
+      <section id="harga" className="px-6 py-20 max-w-6xl mx-auto space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Harga Terbuka Tanpa Jebakan
+            {t('Pilihan Paket & Langganan', 'Flexible Plans & Pricing')}
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
-            Mulai gratis dengan trial 24 jam. Upgrade kapan saja saat proyek Anda berkembang.
+          <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
+            {t(
+              'Mulai gratis dengan 20 kredit AI trial. Tingkatkan kapan saja untuk akses penuh ke 21 kategori dan BYOK direct connector.',
+              'Start free with 20 AI trial credits. Upgrade anytime for unrestricted access to all 21 categories and BYOK connectors.'
+            )}
           </p>
         </div>
 
@@ -535,24 +616,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
             <div className="space-y-4">
               <div>
                 <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                  Trial Akses Penuh
+                  {t('Trial Eksplorasi', 'Free Exploration')}
                 </span>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-white">Rp 0</span>
-                  <span className="text-xs text-zinc-500">/ 24 jam</span>
+                  <span className="text-xs text-zinc-500">/ 24 {t('jam', 'hours')}</span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
-                  Uji coba seluruh fitur studio tanpa perlu kartu kredit.
+                  {t(
+                    'Cocok untuk menguji kualitas prompt dan melihat perbandingan format video AI.',
+                    'Perfect for testing prompt compilation quality and previewing model-specific outputs.'
+                  )}
                 </p>
               </div>
 
-              <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
+              <div className="space-y-2.5 text-xs text-zinc-400 pt-2 border-t border-white/5">
                 {[
-                  'Alokasi 20 Kredit AI untuk eksplorasi awal',
-                  '3 Kategori Konten Unggulan (Time Travel, Stickman, POV)',
-                  'Generator ide hook 1-3 detik & story beats',
-                  'Akses Prompt Production Desk & Story Studio',
-                  'Ekspor storyboard Markdown & JSON',
+                  t('Alokasi 20 Kredit AI untuk eksplorasi awal', '20 AI Credits allocated for trial exploration'),
+                  t('3 Kategori Konten Unggulan (Time Travel, Stickman, POV)', '3 Featured Categories (Time Travel, Stickman, POV)'),
+                  t('Generator ide hook 1-3 detik & story beats', '1-3s Hook & narrative beat generator'),
+                  t('Akses Prompt Production Desk & Story Studio', 'Access to Prompt Production Desk & Story Studio'),
+                  t('Ekspor storyboard Markdown & JSON', 'Export storyboard in Markdown & JSON'),
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -568,14 +652,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => navigate('/studio')}
               className="w-full"
             >
-              Mulai Trial Sekarang
+              {t('Mulai Trial Sekarang', 'Start Free Trial')}
             </Button>
           </div>
 
           {/* Plan 2: Creator Pro (Featured) */}
           <div className="p-6 rounded-2xl bg-gradient-to-b from-[#18181f] to-[#111115] border-2 border-amber-500/40 space-y-6 flex flex-col justify-between relative shadow-xl shadow-amber-500/5">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-bold uppercase tracking-wider">
-              Pilihan Kreator
+              {t('Pilihan Kreator', 'Creator Choice')}
             </div>
 
             <div className="space-y-4">
@@ -585,22 +669,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                 </span>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-white">Rp 59.000</span>
-                  <span className="text-xs text-zinc-400">/ bulan</span>
+                  <span className="text-xs text-zinc-400">/ {t('bulan', 'month')}</span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
-                  Untuk konten kreator harian yang memproduksi video di TikTok, Reels, & Shorts.
+                  {t(
+                    'Untuk konten kreator harian yang memproduksi video di TikTok, Reels, & Shorts.',
+                    'For daily short-form creators producing across TikTok, Reels, and YouTube Shorts.'
+                  )}
                 </p>
               </div>
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  '350 Kredit AI / bulan (~70 storyboard video lengkap)',
-                  'Semua 21 Kategori Konten Terbuka Penuh',
-                  'Regenerasi adegan & storyboard kapan saja',
-                  'Opsi Top-Up Booster mulai Rp 20.000 (tidak hangus)',
-                  'Konektor BYOK Video Vault aman (Kling, Veo 2, Runway)',
-                  'Format ekspor semua vendor model AI',
-                  'Penyimpanan cloud database privat Supabase',
+                  t('350 Kredit AI / bulan (~70 storyboard video lengkap)', '350 AI Credits / month (~70 complete video storyboards)'),
+                  t('Semua 21 Kategori Konten Terbuka Penuh', 'All 21 Short-Form Categories Unlocked'),
+                  t('Regenerasi adegan & storyboard kapan saja', 'Unlimited scene & storyboard regeneration'),
+                  t('Opsi Top-Up Booster mulai Rp 20.000 (tidak hangus)', 'Booster top-up packs available (credits never expire)'),
+                  t('Konektor BYOK Video Vault aman (Kling, Veo 2, Runway)', 'Secure BYOK Video Vault (Kling, Veo 2, Runway, Hailuo)'),
+                  t('Format ekspor semua vendor model AI', 'Full export support for all AI video vendors'),
+                  t('Penyimpanan cloud database privat Supabase', 'Private cloud sync via Supabase PostgreSQL'),
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -616,7 +703,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => navigate('/pricing')}
               className="w-full"
             >
-              Aktifkan Creator Pro
+              {t('Aktifkan Creator Pro', 'Activate Creator Pro')}
             </Button>
           </div>
 
@@ -626,27 +713,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                    Tahunan (Hemat 30%)
+                    {t('Tahunan (Hemat 30%)', 'Yearly Pass (Save 30%)')}
                   </span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Hemat Rp 209rb
+                    {t('Hemat Rp 209rb', 'Save ~30%')}
                   </span>
                 </div>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-white">Rp 499.000</span>
-                  <span className="text-xs text-zinc-500">/ tahun</span>
+                  <span className="text-xs text-zinc-500">/ {t('tahun', 'year')}</span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
-                  Solusi hemat bagi studio kreatif dan produser video independen.
+                  {t(
+                    'Solusi hemat bagi studio kreatif dan produser video independen.',
+                    'Best value for creative agencies and independent video production teams.'
+                  )}
                 </p>
               </div>
 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
-                  'Semua fitur Creator Pro selama 1 tahun penuh',
-                  'Hemat 30% (Setara ~Rp 41.500 / bulan)',
-                  'Prioritas update prompt model video baru',
-                  'Garansi aktivasi instan via QRIS, BCA, Mandiri',
+                  t('Semua fitur Creator Pro selama 1 tahun penuh', 'All Creator Pro features for a full calendar year'),
+                  t('Hemat 30% (Setara ~Rp 41.500 / bulan)', 'Save 30% (~Rp 41,500 effective monthly rate)'),
+                  t('Prioritas update prompt model video baru', 'Priority updates for newly released AI video models'),
+                  t('Garansi aktivasi instan via QRIS, BCA, Mandiri', 'Instant activation via QRIS, BCA, and Mandiri'),
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -657,18 +747,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
             </div>
 
             <Button
-              variant="ghost"
+              variant="secondary"
               size="md"
               onClick={() => navigate('/pricing')}
               className="w-full"
             >
-              Pilih Paket Tahunan
+              {t('Pilih Paket Tahunan', 'Choose Yearly Pass')}
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Footer Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* CTA Bottom Banner */}
+      <section className="px-6 py-16 max-w-4xl mx-auto text-center space-y-6">
+        <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          {t('Siap Menghasilkan Video AI Berkualitas Tinggi?', 'Ready to Produce High-Retention AI Videos?')}
+        </h2>
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-xl mx-auto">
+          {t(
+            'Mulai susun ide cerita, kunci karakter konsisten, dan kompilasi prompt siap pakai sekarang.',
+            'Develop narrative hooks, lock visual character consistency, and compile production-ready prompts now.'
+          )}
+        </p>
+        <div>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => navigate(user ? '/studio' : '/signup')}
+            icon={<ArrowRight className="w-4 h-4 text-black" />}
+          >
+            {user ? t('Buka Studio Produksi', 'Open Production Studio') : t('Mulai Gratis Sekarang', 'Get Started Free Now')}
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer (Clean, Zero GitHub Link) */}
       <footer className="border-t border-white/5 px-6 py-12 bg-[#06060a] text-xs text-zinc-500">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
@@ -677,32 +790,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
             </div>
             <div>
               <span className="font-bold text-zinc-300">Fixprom</span>
-              <p className="text-[11px] text-zinc-600">Short-form Video Prompt & Context Studio</p>
+              <p className="text-[11px] text-zinc-600">
+                {t('Studio Ide & Prompt Video Pendek AI', 'Short-form AI Video Prompt & Context Studio')}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-6 text-[11px]">
-            <NavLink to={user ? '/studio' : '/signup'} className="hover:text-zinc-300 transition-colors">Buka Studio</NavLink>
-            <NavLink to="/pricing" className="hover:text-zinc-300 transition-colors">Langganan</NavLink>
-            <NavLink to={user ? '/byok' : '/login'} className="hover:text-zinc-300 transition-colors">Konektor BYOK</NavLink>
-            <a
-              href="https://github.com/rzl89/contentfinder"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
-            >
-              <span>GitHub</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <NavLink to={user ? '/studio' : '/signup'} className="hover:text-zinc-300 transition-colors">
+              {t('Buka Studio', 'Open Studio')}
+            </NavLink>
+            <NavLink to="/pricing" className="hover:text-zinc-300 transition-colors">
+              {t('Langganan & Paket', 'Plans & Pricing')}
+            </NavLink>
+            <NavLink to={user ? '/byok' : '/login'} className="hover:text-zinc-300 transition-colors">
+              {t('Konektor BYOK', 'BYOK Connect')}
+            </NavLink>
           </div>
 
           <div className="text-[11px] text-zinc-600">
-            © 2026 Fixprom. Built for Indonesian creators
+            © 2026 Fixprom. {t('Dibuat untuk kreator video pendek', 'Engineered for short-form video creators')}
           </div>
         </div>
       </footer>
     </div>
   );
 };
-
-

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { CONTENT_CATEGORIES, CONTEXT_PRESETS } from '@/context-engine';
 import {
   BentoTile,
@@ -24,6 +25,7 @@ import type { ContextProfilePreset } from '@/types';
 export const ProjectsPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { language, t } = useLanguageStore();
   const { projects, currentProject, createProject, setCurrentProject, deleteProject } =
     useProjectStore();
 
@@ -77,10 +79,13 @@ export const ProjectsPage: React.FC = () => {
         <div className="space-y-1">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <FolderKanban className="w-5 h-5 text-amber-400" />
-            <span>My Production Projects</span>
+            <span>{t('Proyek Produksi Saya', 'My Production Projects')}</span>
           </h2>
           <p className="text-xs text-zinc-400">
-            Daftar seluruh proyek produksi konten dan naskah storyboard tersimpan.
+            {t(
+              'Daftar seluruh proyek produksi konten dan naskah storyboard tersimpan.',
+              'Manage all your video content ideas and compiled production storyboards.'
+            )}
           </p>
         </div>
 
@@ -90,7 +95,7 @@ export const ProjectsPage: React.FC = () => {
           icon={<Plus className="w-4 h-4 text-black" />}
           onClick={() => setCreateModalOpen(true)}
         >
-          Buat Proyek Baru
+          {t('Buat Proyek Baru', 'Create New Project')}
         </Button>
       </div>
 
@@ -98,9 +103,14 @@ export const ProjectsPage: React.FC = () => {
       {projects.length === 0 ? (
         <BentoTile className="p-12 text-center space-y-3">
           <FolderKanban className="w-10 h-10 text-zinc-600 mx-auto" />
-          <h3 className="text-base font-semibold text-zinc-200">Belum Ada Proyek</h3>
+          <h3 className="text-base font-semibold text-zinc-200">
+            {t('Belum Ada Proyek', 'No Projects Yet')}
+          </h3>
           <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-            Mulai dari Idea Studio untuk mencari konsep atau buat proyek kosong langsung dari sini.
+            {t(
+              'Mulai dari Idea Studio untuk mencari konsep atau buat proyek kosong langsung dari sini.',
+              'Start from Idea Studio to explore concepts or create a blank project directly.'
+            )}
           </p>
           <Button
             variant="primary"
@@ -108,7 +118,7 @@ export const ProjectsPage: React.FC = () => {
             onClick={() => setCreateModalOpen(true)}
             className="mt-2"
           >
-            Buat Proyek Pertama
+            {t('Buat Proyek Pertama', 'Create First Project')}
           </Button>
         </BentoTile>
       ) : (

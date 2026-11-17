@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
+import { useLanguageStore } from '@/stores/language-store';
 import {
   useSubscriptionStore,
   PRICING_PLANS,
@@ -29,6 +30,7 @@ import type { BillingCycle, PlanTier, PaymentMethodType, SubscriptionOrder } fro
 export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { language, t } = useLanguageStore();
   const {
     subscription,
     activeOrder,
@@ -71,14 +73,16 @@ export const PricingPage: React.FC = () => {
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <Badge variant="amber" className="px-3 py-1 bg-amber-500/10">
           <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-400 inline" />
-          Monetisasi & Langganan Kreator
+          {t('Monetisasi & Langganan Kreator', 'Creator Plans & Pricing')}
         </Badge>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Investasi Terjangkau untuk Konten Video AI Berkualitas
+          {t('Investasi Terjangkau untuk Konten Video AI Berkualitas', 'Affordable Investment for High-Retention AI Video Content')}
         </h1>
         <p className="text-gray-400 text-sm sm:text-base">
-          Mulai dengan <strong>Free Trial 24 Jam</strong> untuk mencoba 3 kategori unggulan dan storyboard studio. Lanjutkan dengan langganan terjangkau mulai 
-          dari <strong>Rp 59.000 / bulan</strong> tanpa kartu kredit rumit — bayar via QRIS, BCA, Mandiri, atau E-Wallet.
+          {t(
+            'Mulai dengan Free Trial 24 Jam untuk mencoba 3 kategori unggulan dan storyboard studio. Lanjutkan dengan langganan terjangkau mulai dari Rp 59.000 / bulan tanpa kartu kredit rumit — bayar via QRIS, BCA, Mandiri, atau E-Wallet.',
+            'Start with a 24-hour Free Trial to explore 3 featured categories and the storyboard studio. Continue with plans starting at Rp 59,000 / month with instant QRIS, BCA, and Mandiri activation.'
+          )}
         </p>
 
         {/* Current User Status Banner */}
@@ -86,17 +90,21 @@ export const PricingPage: React.FC = () => {
           {isPaidActive ? (
             <div className="inline-flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Paket Anda: <strong>{subscription.tier.toUpperCase()}</strong> (Aktif) • Saldo: <strong>{subscription.creditsBalance ?? 350} Kredit AI</strong></span>
+              <span>
+                {t('Paket Anda:', 'Your Plan:')} <strong>{subscription.tier.toUpperCase()}</strong> ({t('Aktif', 'Active')}) • {t('Saldo:', 'Balance:')} <strong>{subscription.creditsBalance ?? 350} {t('Kredit AI', 'AI Credits')}</strong>
+              </span>
             </div>
           ) : isTrialActive ? (
             <div className="inline-flex items-center gap-2 bg-amber-950/40 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
               <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span>Masa Free Trial: Sisa <strong>~{remainingHours} Jam</strong> • Saldo: <strong>{subscription.creditsBalance ?? 20} Kredit AI</strong></span>
+              <span>
+                {t('Masa Free Trial: Sisa', 'Free Trial Remaining:')} <strong>~{remainingHours} {t('Jam', 'Hours')}</strong> • {t('Saldo:', 'Balance:')} <strong>{subscription.creditsBalance ?? 20} {t('Kredit AI', 'AI Credits')}</strong>
+              </span>
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 bg-red-950/40 border border-red-500/30 text-red-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium">
               <AlertCircle className="w-4 h-4 text-red-400" />
-              <span>Masa Trial Anda Telah Berakhir. Upgrade untuk terus memproduksi konten tanpa batas.</span>
+              <span>{t('Masa Trial Anda Telah Berakhir. Upgrade untuk terus memproduksi konten tanpa batas.', 'Your Free Trial has expired. Upgrade to keep producing unlimited storyboards.')}</span>
             </div>
           )}
         </div>
@@ -113,7 +121,7 @@ export const PricingPage: React.FC = () => {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Bayar Bulanan
+            {t('Bayar Bulanan', 'Monthly Billing')}
           </button>
           <button
             onClick={() => setBillingCycle('yearly')}
@@ -123,9 +131,9 @@ export const PricingPage: React.FC = () => {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            <span>Bayar Tahunan</span>
+            <span>{t('Bayar Tahunan', 'Yearly Billing')}</span>
             <span className="bg-emerald-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-              Hemat 30%
+              {t('Hemat 30%', 'Save 30%')}
             </span>
           </button>
         </div>

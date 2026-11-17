@@ -15,6 +15,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
   ContentIdea,
@@ -47,6 +48,7 @@ export const IdeaStudioPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+  const { language, t } = useLanguageStore();
   const { currentProject, createProject } = useProjectStore();
   const {
     subscription,
@@ -297,10 +299,13 @@ ${idea.localizationNotes}`;
             <span>AI Content Idea Studio — 21 Creative Frameworks</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
-            Eksplorasi Ide Konten & Narasi Video Pendek
+            {t('Eksplorasi Ide Konten & Narasi Video Pendek', 'Short-Form Content Ideas & Storytelling Studio')}
           </h2>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            Pilih dari 21 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.
+            {t(
+              'Pilih dari 21 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.',
+              'Select from 21 specialized short-form categories, ground narrative context with natural cultural personas, and develop ideas into multi-scene storyboards.'
+            )}
           </p>
         </div>
 
@@ -308,10 +313,13 @@ ${idea.localizationNotes}`;
           <NavLink
             to="/pricing"
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-semibold text-amber-300 transition-colors shadow-sm"
-            title="Klik untuk melihat kuota kredit atau beli paket"
+            title={t('Klik untuk melihat kuota kredit atau beli paket', 'Click to view credit balance or plans')}
           >
             <Zap className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span>Saldo: {subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</span>
+            <span>
+              {t('Saldo:', 'Balance:')} {subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)}{' '}
+              {t('Kredit', 'Credits')}
+            </span>
           </NavLink>
           <Button
             variant="emerald"
@@ -322,7 +330,7 @@ ${idea.localizationNotes}`;
               el?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
-            Mulai Buat Ide
+            {t('Mulai Buat Ide', 'Generate Ideas')}
           </Button>
         </div>
       </div>
@@ -334,7 +342,10 @@ ${idea.localizationNotes}`;
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-amber-400" />
-                <span>1. Pilih Kategori Konten ({CONTENT_CATEGORIES.length} Kategori)</span>
+                <span>
+                  {t('1. Pilih Kategori Konten', '1. Select Content Category')} ({CONTENT_CATEGORIES.length}{' '}
+                  {t('Kategori', 'Categories')})
+                </span>
               </h3>
               {subscription.tier !== 'pro' ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-medium text-amber-300">
@@ -665,7 +676,10 @@ ${idea.localizationNotes}`;
               onClick={handleGenerateIdeas}
               className="w-full sm:w-auto"
             >
-              Hasilkan {ideaCount} Ide Sekarang ({ideaCount === 10 ? '2' : '1'} Kredit)
+              {t(
+                `Hasilkan ${ideaCount} Ide Sekarang (${ideaCount === 10 ? '2' : '1'} Kredit)`,
+                `Generate ${ideaCount} Ideas Now (${ideaCount === 10 ? '2' : '1'} Credits)`
+              )}
             </Button>
           </div>
         </BentoTile>
@@ -679,10 +693,13 @@ ${idea.localizationNotes}`;
           </div>
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-zinc-100">
-              Fixprom AI Sedang Merancang {ideaCount} Ide Kreatif
+              {t(`Fixprom AI Sedang Merancang ${ideaCount} Ide Kreatif`, `Fixprom AI is Crafting ${ideaCount} Creative Ideas`)}
             </h4>
             <p className="text-xs text-zinc-400 max-w-md mx-auto">
-              Menerapkan creative angle berbeda (hook unik, eskalasi konflik, latar) serta menyaring duplikasi untuk memastikan setiap ide segar.
+              {t(
+                'Menerapkan creative angle berbeda (hook unik, eskalasi konflik, latar) serta menyaring duplikasi untuk memastikan setiap ide segar.',
+                'Applying diverse creative angles (unique hooks, conflict escalation, settings) and filtering duplicates to ensure fresh concepts.'
+              )}
             </p>
           </div>
         </BentoTile>
@@ -695,10 +712,15 @@ ${idea.localizationNotes}`;
             <div>
               <h3 className="text-base font-semibold text-zinc-100 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Hasil Eksplorasi: {ideas.length} Ide Konten</span>
+                <span>
+                  {t(`Hasil Eksplorasi: ${ideas.length} Ide Konten`, `Exploration Results: ${ideas.length} Content Ideas`)}
+                </span>
               </h3>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Pilih ide terbaik untuk dikembangkan menjadi Character Bible, World Bible, dan adegan Storyboard.
+                {t(
+                  'Pilih ide terbaik untuk dikembangkan menjadi Character Bible, World Bible, dan adegan Storyboard.',
+                  'Select the best idea to expand into Character Bible, World Bible, and Storyboard scenes.'
+                )}
               </p>
             </div>
           </div>
@@ -731,7 +753,7 @@ ${idea.localizationNotes}`;
                       icon={copiedKey === `hook_${idea.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       onClick={() => handleCopyHook(idea)}
                     >
-                      {copiedKey === `hook_${idea.id}` ? 'Hook Tersalin' : 'Salin Hook'}
+                      {copiedKey === `hook_${idea.id}` ? t('Hook Tersalin', 'Hook Copied') : t('Salin Hook', 'Copy Hook')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -739,7 +761,7 @@ ${idea.localizationNotes}`;
                       icon={copiedKey === `full_${idea.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       onClick={() => handleCopyFullIdea(idea)}
                     >
-                      {copiedKey === `full_${idea.id}` ? 'Ide Tersalin' : 'Salin Ide'}
+                      {copiedKey === `full_${idea.id}` ? t('Ide Tersalin', 'Idea Copied') : t('Salin Ide', 'Copy Idea')}
                     </Button>
                     <Button
                       variant="primary"
@@ -747,9 +769,9 @@ ${idea.localizationNotes}`;
                       loading={developingIdeaId === idea.id}
                       icon={<ArrowRight className="w-4 h-4 text-black" />}
                       onClick={() => handleDevelopIdea(idea)}
-                      title="Susun 4 adegan storyboard, character bible, dan world bible (-3 Kredit AI)"
+                      title={t('Susun 4 adegan storyboard, character bible, dan world bible (-3 Kredit AI)', 'Generate 4 storyboard scenes, character bible, and world bible (-3 AI Credits)')}
                     >
-                      Kembangkan ke Storyboard (3 Kredit)
+                      {t('Kembangkan ke Storyboard (3 Kredit)', 'Develop to Storyboard (3 Credits)')}
                     </Button>
                   </div>
                 </div>
@@ -757,7 +779,7 @@ ${idea.localizationNotes}`;
                 {/* Hook Callout Box */}
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
                   <span className="font-bold text-amber-400 block mb-0.5">
-                    🎣 Hook 1-3 Detik Pertama:
+                    {t('🎣 Hook 1-3 Detik Pertama:', '🎣 First 1-3s Hook:')}
                   </span>
                   <p className="text-zinc-200 italic font-mono">{idea.hook}</p>
                 </div>
@@ -765,11 +787,11 @@ ${idea.localizationNotes}`;
                 {/* Synopsis & Premise */}
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-zinc-400 font-semibold">Premis Inti: </span>
+                    <span className="text-zinc-400 font-semibold">{t('Premis Inti: ', 'Core Premise: ')}</span>
                     <span className="text-zinc-200">{idea.premise}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 font-semibold">Sinopsis Singkat: </span>
+                    <span className="text-zinc-400 font-semibold">{t('Sinopsis Singkat: ', 'Brief Synopsis: ')}</span>
                     <span className="text-zinc-300 leading-relaxed">{idea.synopsis}</span>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { developStoryFromIdea } from '@/lib/ai-generator';
 import {
   BentoTile,
@@ -118,6 +119,7 @@ function formatQCFieldLabel(field: string): string {
 export const PromptDeskPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { language, t } = useLanguageStore();
   const {
     projects,
     currentProject,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useByokStore } from '@/stores/byok-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useLanguageStore } from '@/stores/language-store';
 import {
   BentoTile,
   Button,
@@ -24,6 +25,7 @@ export const ByokPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { subscription } = useSubscriptionStore();
+  const { language, t } = useLanguageStore();
   const isPro = subscription.tier === 'pro';
 
   const {
@@ -53,17 +55,19 @@ export const ByokPage: React.FC = () => {
           {/* Text */}
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono font-medium">
-              <span>KHUSUS CREATOR PRO</span>
+              <span>{t('KHUSUS CREATOR PRO', 'CREATOR PRO EXCLUSIVE')}</span>
             </div>
             <h2 className="text-2xl font-bold text-white tracking-tight">
               BYOK Video Connectors
             </h2>
             <p className="text-sm font-semibold text-amber-400">
-              Fitur ini eksklusif Creator Pro — Rp 59rb/bln
+              {t('Fitur ini eksklusif Creator Pro — Rp 59rb/bln', 'Exclusive to Creator Pro — Rp 59k/mo')}
             </p>
             <p className="text-xs text-zinc-400 leading-relaxed pt-1">
-              Hubungkan API Key Anda sendiri ke Google Veo 2, Kling 1.5, Runway Gen-3, dan Luma Dream Machine.
-              Terenkripsi langsung di browser dengan standar AES-256-GCM.
+              {t(
+                'Hubungkan API Key Anda sendiri ke Google Veo 2, Kling 1.5/2.0, Runway Gen-3, dan Luma Ray 2. Terenkripsi langsung di browser dengan standar AES-256-GCM.',
+                'Connect your personal API keys to Google Veo 2, Kling 1.5/2.0, Runway Gen-3, and Luma Ray 2. Encrypted client-side with military-grade AES-256-GCM.'
+              )}
             </p>
           </div>
 
@@ -71,14 +75,14 @@ export const ByokPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-left space-y-2.5">
             {[
               'Google Veo 2 (Gemini API)',
-              'Kling 1.5 Pro',
+              'Kling 1.5 & 2.0 Pro',
               'Runway Gen-3 Alpha',
               'Luma Dream Machine Ray 2',
             ].map((provider) => (
               <div key={provider} className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">{provider}</span>
                 <span className="text-[10px] font-mono text-zinc-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                  Terkunci
+                  {t('Terkunci', 'Locked')}
                 </span>
               </div>
             ))}
@@ -93,10 +97,10 @@ export const ByokPage: React.FC = () => {
               icon={<ArrowRight className="w-4 h-4 text-black" />}
               className="w-full"
             >
-              Upgrade ke Creator Pro
+              {t('Upgrade ke Creator Pro', 'Upgrade to Creator Pro')}
             </Button>
             <p className="text-[11px] text-zinc-500">
-              Aktivasi instan via QRIS / Bank Transfer
+              {t('Aktivasi instan via QRIS / Bank Transfer', 'Instant activation via QRIS / Bank Transfer')}
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useProjectStore } from '@/stores/project-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { CONTEXT_PRESETS, DEFAULT_CONTEXT_PROFILE } from '@/context-engine';
 import {
   BentoTile,
@@ -19,6 +20,7 @@ import type { ContextProfilePreset, EnvironmentType, VisualStyle, DialogLanguage
 
 export const SettingsPage: React.FC = () => {
   const { showToast } = useToast();
+  const { language, t } = useLanguageStore();
   const { currentProject, updateCurrentProject } = useProjectStore();
 
   const activeProfile = currentProject?.contextProfile || DEFAULT_CONTEXT_PROFILE;
@@ -74,10 +76,13 @@ export const SettingsPage: React.FC = () => {
       <div className="space-y-1">
         <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
           <Settings className="w-5 h-5 text-amber-400" />
-          <span>Pengaturan & Konteks Narasi</span>
+          <span>{t('Pengaturan & Konteks Narasi', 'Settings & Cultural Context')}</span>
         </h2>
         <p className="text-xs text-zinc-400">
-          Kelola profil konteks, target audiens, dan preferensi gaya visual default untuk generator ide dan prompt.
+          {t(
+            'Kelola profil konteks, target audiens, dan preferensi gaya visual default untuk generator ide dan prompt.',
+            'Manage context profiles, target audiences, and default visual style preferences for ideation and prompt compiling.'
+          )}
         </p>
       </div>
 
@@ -85,14 +90,14 @@ export const SettingsPage: React.FC = () => {
         <div className="flex items-center justify-between pb-4 border-b border-white/5">
           <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
             <Globe className="w-4 h-4 text-emerald-400" />
-            <span>Pengaturan Context Profile Aktif</span>
+            <span>{t('Pengaturan Context Profile Aktif', 'Active Context Profile Settings')}</span>
           </h3>
           <Badge variant="amber">{activeProfile.name}</Badge>
         </div>
 
         {/* Preset Selector */}
         <Select
-          label="Pilih Preset Konteks"
+          label={t('Pilih Preset Konteks', 'Select Context Preset')}
           value={preset}
           onChange={(e) => handleApplyPreset(e.target.value as ContextProfilePreset)}
           options={Object.keys(CONTEXT_PRESETS).map((key) => ({
@@ -156,7 +161,7 @@ export const SettingsPage: React.FC = () => {
 
         <div className="pt-4 border-t border-white/5 flex items-center justify-between">
           <span className="text-xs text-zinc-500">
-            Perubahan disimpan langsung ke proyek aktif.
+            {t('Perubahan disimpan langsung ke proyek aktif.', 'Changes are saved directly to the active project.')}
           </span>
           <Button
             variant="primary"
@@ -164,7 +169,7 @@ export const SettingsPage: React.FC = () => {
             icon={<Sliders className="w-4 h-4 text-black" />}
             onClick={handleSaveCustomOverrides}
           >
-            Simpan Konfigurasi
+            {t('Simpan Konfigurasi', 'Save Configuration')}
           </Button>
         </div>
       </BentoTile>
