@@ -10,6 +10,16 @@
         try {
           var lang = localStorage.getItem('fixprom_lang') || 'id';
           document.documentElement.lang = lang;
+          if (lang === 'en') {
+            document.title = 'Fixprom — AI Video Prompt Compiler & Short-Form Content Studio';
+            var metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+              metaDesc.setAttribute(
+                'content',
+                'Fixprom is an AI video prompt compiler and short-form content ideation studio for TikTok, Reels, and Shorts. Generate diverse ideas, consistent storyboards, and compiled prompts for Kling, Hailuo, Sora, Veo 2, and Runway.'
+              );
+            }
+          }
         } catch (e) {}
       })();
     </script>
