@@ -107,26 +107,35 @@ export interface ContextProfile {
 export interface CategorySubcategory {
   id: string;
   name: string;
+  nameEn?: string;
   description: string;
+  descriptionEn?: string;
 }
 
 export interface ContentCategory {
   id: string;
   name: string;
+  nameEn?: string;
   description: string;
+  descriptionEn?: string;
   /** Grouping label for the sidebar (e.g. "Emotional", "Educational"). */
   group: string;
+  groupEn?: string;
   subcategories: CategorySubcategory[];
   /** High-level storytelling framework (e.g. "3-act micro-arc"). */
   creativeFramework: string;
+  creativeFrameworkEn?: string;
   /** Recommended hook style (e.g. "question", "shock_statement", "visual_mystery"). */
   hookStyle: string;
+  hookStyleEn?: string;
   /** Visual direction notes for this category. */
   visualGuidance: string;
+  visualGuidanceEn?: string;
   /** Indonesia-specific creative guidance (optional). */
   indonesiaGuidance?: string;
   suggestedDuration: DurationRange[];
   exampleIdeas: string[];
+  exampleIdeasEn?: string[];
   icon: string;
 }
 

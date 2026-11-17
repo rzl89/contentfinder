@@ -12,10 +12,7 @@ import {
   ShieldCheck,
   CreditCard,
   MessageCircle,
-  ExternalLink,
   RefreshCw,
-  Loader2,
-  Lock,
 } from 'lucide-react';
 import { BentoTile } from '@/components/ui/bento-tile';
 import { Button } from '@/components/ui/button';

@@ -24,7 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLanguageStore } from '@/stores/language-store';
-import { CONTENT_CATEGORIES } from '@/context-engine';
+import { CONTENT_CATEGORIES, getLocalizedCategories } from '@/context-engine';
 
 interface LandingPageProps {
   scrollToSection?: string;
@@ -567,7 +567,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 text-xs">
-            {CONTENT_CATEGORIES.map((cat) => (
+            {getLocalizedCategories(language).map((cat) => (
               <div
                 key={cat.id}
                 className="p-3.5 rounded-xl bg-[#111115] border border-white/5 hover:border-amber-500/30 hover:bg-[#14141c] transition-all cursor-pointer group flex flex-col justify-between"

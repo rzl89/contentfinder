@@ -9,6 +9,7 @@ import type {
 } from '@/types';
 import { getCategoryById } from '@/context-engine';
 import { useAdminStore } from '@/stores/admin-store';
+import { useLanguageStore } from '@/stores/language-store';
 import { saveIdeasToSupabase, fetchRecentIdeasFromSupabase } from '@/lib/supabase';
 import {
   getDiverseAngles,
@@ -30,7 +31,8 @@ import {
 export async function generateContentIdeas(
   config: IdeaGenerationConfig
 ): Promise<ContentIdea[]> {
-  const category = getCategoryById(config.categoryId);
+  const currentLang = typeof window !== 'undefined' ? useLanguageStore.getState().language : 'id';
+  const category = getCategoryById(config.categoryId, currentLang) || getCategoryById(config.categoryId);
   if (!category) {
     throw new Error(`Category not found: ${config.categoryId}`);
   }
@@ -81,6 +83,7 @@ export async function generateContentIdeas(
           ideaMemory: { recentIdeas },
           assignedAngles: assignedAngles.map((a) => `${a.name} (${a.angleDescription})`),
           creativeEntropy: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          uiLanguage: currentLang,
         },
       }),
     });
@@ -241,6 +244,7 @@ export async function developStoryFromIdea(
   // 1. Try calling the secure backend proxy
   try {
     const admin = typeof window !== 'undefined' ? useAdminStore.getState().settings : null;
+    const currentLang = typeof window !== 'undefined' ? useLanguageStore.getState().language : 'id';
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -254,6 +258,7 @@ export async function developStoryFromIdea(
           targetSceneCount,
           targetModel,
           dialogLanguage,
+          uiLanguage: currentLang,
         },
       }),
     });

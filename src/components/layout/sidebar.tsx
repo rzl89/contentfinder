@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       {/* Nav Menu */}
       <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-          {!collapsed ? 'Menu Studio' : '•••'}
+          {!collapsed ? t('Menu Studio', 'Studio Menu') : '•••'}
         </div>
         {navItems.map((item) => (
           <NavLink
@@ -204,17 +204,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                   <span>CREATOR PRO</span>
                 </span>
                 <span className="text-[10px] font-mono bg-emerald-500/20 px-2 py-0.5 rounded-full text-emerald-300 font-bold">
-                  ⚡ {subscription.creditsBalance ?? 350} Kredit
+                  ⚡ {subscription.creditsBalance ?? 350} {t('Kredit', 'Credits')}
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Akses seluruh 21 studio kategori & prompt compiler.
+                {t('Akses seluruh 21 studio kategori & prompt compiler.', 'Full access to all 21 category studios & prompt compiler.')}
               </p>
               <NavLink
                 to="/pricing"
                 className="block text-center text-[11px] font-medium py-1 px-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 transition-colors border border-emerald-500/20"
               >
-                + Top-Up Kredit
+                {t('+ Top-Up Kredit', '+ Top-Up Credits')}
               </NavLink>
             </div>
           ) : remainingHours > 0 ? (
@@ -225,35 +225,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                   Free Trial
                 </span>
                 <span className="text-[10px] font-mono bg-amber-500/20 px-2 py-0.5 rounded-full text-amber-300 font-bold">
-                  ⚡ {subscription.creditsBalance ?? 20} Kredit
+                  ⚡ {subscription.creditsBalance ?? 20} {t('Kredit', 'Credits')}
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Upgrade ke Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> (350 Kredit + Semua Fitur).
+                {t('Upgrade ke Pro hanya Rp 59rb/bln (350 Kredit + Semua Fitur).', 'Upgrade to Pro for just Rp 59k/mo (350 Credits + All Features).')}
               </p>
               <NavLink
                 to="/pricing"
                 className="block text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition-colors shadow"
               >
-                Langganan Sekarang
+                {t('Langganan Sekarang', 'Subscribe Now')}
               </NavLink>
             </div>
           ) : (
             <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-red-400">
-                <span>Masa Trial Habis</span>
+                <span>{t('Masa Trial Habis', 'Trial Expired')}</span>
                 <span className="text-[10px] font-mono bg-red-500/20 px-1.5 py-0.5 rounded text-red-300">
                   Expired
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Aktifkan akun Pro hanya <strong className="text-zinc-200">Rp 59rb/bln</strong> untuk lanjut.
+                {t('Aktifkan akun Pro hanya Rp 59rb/bln untuk lanjut.', 'Activate Pro account for just Rp 59k/mo to continue.')}
               </p>
               <NavLink
                 to="/pricing"
                 className="block text-center text-xs font-semibold py-1.5 px-3 rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors shadow"
               >
-                Beli Paket Pro
+                {t('Beli Paket Pro', 'Get Pro Plan')}
               </NavLink>
             </div>
           )}

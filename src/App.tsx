@@ -4,6 +4,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { AppLayout } from '@/components/layout';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { useAuthStore } from '@/stores/auth-store';
+import { useAdminStore } from '@/stores/admin-store';
 
 // Public pages
 import { LandingPage } from '@/pages/landing-page';
@@ -30,9 +31,13 @@ const ADMIN_SECRET_PATH = 'mstr-ype9-91ek';
 export function App() {
   const { initialize } = useAuthStore();
 
-  // Initialize Supabase auth session on app mount
+  // Initialize Supabase auth session & Admin realtime sync on app mount
   useEffect(() => {
     initialize();
+    const cleanupRealtime = useAdminStore.getState().initRealtimeSync();
+    return () => {
+      cleanupRealtime?.();
+    };
   }, [initialize]);
 
   return (

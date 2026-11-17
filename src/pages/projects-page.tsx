@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
 import { useLanguageStore } from '@/stores/language-store';
-import { CONTENT_CATEGORIES, CONTEXT_PRESETS } from '@/context-engine';
+import { CONTENT_CATEGORIES, CONTEXT_PRESETS, getLocalizedCategories } from '@/context-engine';
 import {
   BentoTile,
   Button,
@@ -207,10 +207,10 @@ export const ProjectsPage: React.FC = () => {
           />
 
           <Select
-            label="Kategori Konten Utama"
+            label={t('Kategori Konten Utama', 'Primary Content Category')}
             value={newCategoryId}
             onChange={(e) => setNewCategoryId(e.target.value)}
-            options={CONTENT_CATEGORIES.map((c) => ({
+            options={getLocalizedCategories(language).map((c) => ({
               value: c.id,
               label: `${c.name} (${c.group})`,
             }))}

@@ -34,6 +34,41 @@ interface AuthState {
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
+let profileSubscriptionChannel: ReturnType<typeof supabase.channel> | null = null;
+
+function setupProfileRealtime(userId: string) {
+  if (profileSubscriptionChannel) {
+    void supabase.removeChannel(profileSubscriptionChannel);
+    profileSubscriptionChannel = null;
+  }
+  profileSubscriptionChannel = supabase
+    .channel(`profile_realtime_${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${userId}`,
+      },
+      (payload) => {
+        const updated = payload?.new as UserProfile | undefined;
+        if (updated && updated.id === userId) {
+          useAuthStore.setState({ profile: updated });
+          void useSubscriptionStore.getState().syncSubscriptionWithProfile(userId);
+        }
+      }
+    )
+    .subscribe();
+}
+
+function cleanupProfileRealtime() {
+  if (profileSubscriptionChannel) {
+    void supabase.removeChannel(profileSubscriptionChannel);
+    profileSubscriptionChannel = null;
+  }
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
@@ -86,6 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
 
     if (data.session?.user) {
+      setupProfileRealtime(data.session.user.id);
       void useSubscriptionStore.getState().syncSubscriptionWithProfile(data.session.user.id);
       void get().fetchProfile();
     }
@@ -94,6 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     supabase.auth.onAuthStateChange((_event, session) => {
       const email = session?.user?.email;
       if (email && validateEmailAddress(email).isDisposable) {
+        cleanupProfileRealtime();
         void supabase.auth.signOut();
         set({ session: null, user: null, profile: null });
         return;
@@ -104,9 +141,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: session?.user ?? null,
       });
       if (session?.user) {
+        setupProfileRealtime(session.user.id);
         void useSubscriptionStore.getState().syncSubscriptionWithProfile(session.user.id);
         void get().fetchProfile();
       } else {
+        cleanupProfileRealtime();
         set({ profile: null });
       }
     });
@@ -163,6 +202,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signOut: async () => {
+    cleanupProfileRealtime();
     set({ loading: true });
     await supabase.auth.signOut();
     set({ user: null, session: null, profile: null, loading: false });

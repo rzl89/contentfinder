@@ -181,9 +181,15 @@ export default async function handler(req, res) {
         ideaMemory,
         assignedAngles = [],
         creativeEntropy,
+        uiLanguage = 'id',
       } = payload || {};
 
       const effectiveTopic = (additionalTheme || topic || '').trim();
+
+      const outputLanguageInstruction =
+        uiLanguage === 'en'
+          ? 'PRIMARY OUTPUT LANGUAGE: All narrative output fields (title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale) MUST be written in natural, fluent, modern ENGLISH.'
+          : 'PRIMARY OUTPUT LANGUAGE: Semua output narasi (title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale) HARUS ditulis dalam Bahasa Indonesia yang alami, mengalir, dan modern.';
 
       const languageInstruction =
         dialogLanguage === 'javanese'
@@ -233,6 +239,7 @@ RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
 3. LANGUAGE ACCURACY: Language for dialogue/hook quotes must follow: ${languageInstruction}
 4. STRATEGY ALIGNMENT: ${trendInstruction}
 5. VISUAL INTEGRITY: Ground visual style cleanly in "${visualStyle}".
+6. ${outputLanguageInstruction}
 
 BATCH DIVERSITY & NON-REPETITION MANDATE (CRITICAL):
 - Every idea in this batch MUST have a fundamentally different central conflict, point-of-view, setting, and payoff.
@@ -358,6 +365,7 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         targetModel = 'universal-neutral',
         dialogLanguage = 'indonesian',
         temperature = 0.7,
+        uiLanguage = 'id',
       } = payload || {};
 
       const languageInstruction =
@@ -370,6 +378,11 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
           : dialogLanguage === 'none'
           ? 'None (ambient SFX only)'
           : 'Bahasa Indonesia santai kontemporer';
+
+      const storyOutputLangInstruction =
+        uiLanguage === 'en'
+          ? 'All descriptions, role, appearance, clothing, personality, voiceStyle, world description, and scene summaries MUST be generated in natural, fluent ENGLISH.'
+          : 'Deskripsi karakter, role, penampilan, pakaian, kepribadian, gaya bicara, deskripsi dunia, dan ringkasan scene harus ditulis dalam Bahasa Indonesia yang alami dan modern.';
 
       const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer specializing in video AI models (${targetModel}).
 Transform this video idea into a fully articulated production package with 1 character bible, 1 world bible, and ${targetSceneCount} storyboard scenes.
@@ -396,6 +409,8 @@ CRITICAL ANTI-SLOP & PRODUCTION STANDARDS:
    - Scene 1 (hook): a short punchy line that stops the scroll.
    - Middle scenes: conversational or reactive lines showing character depth.
    - Final scene: memorable closing line fitting the story resolution.
+5. PRIMARY LANGUAGE CONTEXT:
+   - ${storyOutputLangInstruction}
 
 Respond ONLY with a valid JSON object matching:
 {

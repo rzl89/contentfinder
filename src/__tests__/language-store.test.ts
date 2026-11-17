@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useLanguageStore } from '../stores/language-store';
+import { useLanguageStore, getLocalizedCategory } from '../stores/language-store';
+import { getLocalizedCategories, getCategoryById, CONTENT_CATEGORIES } from '../context-engine';
 
 describe('useLanguageStore — Language Switching & Translation Logic', () => {
   beforeEach(() => {
@@ -40,5 +41,34 @@ describe('useLanguageStore — Language Switching & Translation Logic', () => {
 
     toggleLanguage();
     expect(useLanguageStore.getState().language).toBe('id');
+  });
+
+  it('localizes all 21 categories properly when switching to English', () => {
+    const categoriesId = getLocalizedCategories('id');
+    const categoriesEn = getLocalizedCategories('en');
+
+    expect(categoriesId).toHaveLength(21);
+    expect(categoriesEn).toHaveLength(21);
+
+    // In Indonesian
+    const timeTravelId = categoriesId.find((c) => c.id === 'time-travel');
+    expect(timeTravelId?.name).toBe('Perjalanan Waktu & POV Sejarah');
+    expect(timeTravelId?.subcategories[0].name).toBe('Sejarah & Peradaban');
+
+    // In English
+    const timeTravelEn = categoriesEn.find((c) => c.id === 'time-travel');
+    expect(timeTravelEn?.name).toBe('Time Travel & Historical POV');
+    expect(timeTravelEn?.subcategories[0].name).toBe('History & Civilizations');
+    expect(timeTravelEn?.exampleIdeas[0]).toContain('POV: You are an ancient spice merchant');
+
+    // Via getCategoryById
+    const stickmanEn = getCategoryById('stickman', 'en');
+    expect(stickmanEn?.name).toBe('Stickman Animation');
+    expect(stickmanEn?.subcategories[0].name).toBe('Stickman Comedy');
+
+    // Via localizeCategory store method
+    useLanguageStore.getState().setLanguage('en');
+    const localized = useLanguageStore.getState().localizeCategory(CONTENT_CATEGORIES[0]);
+    expect(localized.name).toBe('Time Travel & Historical POV');
   });
 });

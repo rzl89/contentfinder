@@ -3,6 +3,7 @@ import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import {
   CONTENT_CATEGORIES,
   getCategoryById,
+  getLocalizedCategories,
   CONTEXT_PRESETS,
 } from '@/context-engine';
 import {
@@ -93,7 +94,8 @@ export const IdeaStudioPage: React.FC = () => {
   const [developingIdeaId, setDevelopingIdeaId] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const activeCategory = getCategoryById(selectedCategoryId) || CONTENT_CATEGORIES[0];
+  const localizedCategories = getLocalizedCategories(language);
+  const activeCategory = getCategoryById(selectedCategoryId, language) || localizedCategories[0];
   const validSubcatId = activeCategory.subcategories.some((s) => s.id === selectedSubcatId)
     ? selectedSubcatId
     : activeCategory.subcategories[0]?.id || '';
@@ -106,8 +108,8 @@ export const IdeaStudioPage: React.FC = () => {
     'Social & Short-form Formats',
   ];
 
-  const filteredCategories = CONTENT_CATEGORIES.filter((cat) => {
-    const matchGroup = selectedGroupId === 'all' || cat.group === selectedGroupId;
+  const filteredCategories = localizedCategories.filter((cat) => {
+    const matchGroup = selectedGroupId === 'all' || cat.group === selectedGroupId || (cat.groupEn && cat.groupEn === selectedGroupId);
     const matchSearch =
       categorySearch === '' ||
       cat.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
@@ -418,7 +420,7 @@ ${idea.localizationNotes}`;
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="w-full sm:w-64">
               <Input
-                placeholder="Cari kategori..."
+                placeholder={t('Cari kategori...', 'Search categories...')}
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
                 icon={<Search className="w-3.5 h-3.5" />}
@@ -439,7 +441,7 @@ ${idea.localizationNotes}`;
                   : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border border-white/5'
               }`}
             >
-              {g === 'all' ? 'Semua Kategori' : g}
+              {g === 'all' ? t('Semua Kategori', 'All Categories') : g}
             </button>
           ))}
         </div>
@@ -512,7 +514,7 @@ ${idea.localizationNotes}`;
                   </p>
                 </div>
                 <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-400">
-                  <span>{cat.subcategories.length} subkategori</span>
+                  <span>{cat.subcategories.length} {t('subkategori', 'subcategories')}</span>
                   <span className="font-mono text-amber-400/80">{cat.group.split(' ')[0]}</span>
                 </div>
               </div>

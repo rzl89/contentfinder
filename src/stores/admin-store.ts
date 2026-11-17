@@ -93,6 +93,9 @@ interface AdminState {
   // Duitku Gateway
   fetchDuitkuConfig: () => Promise<DuitkuConfig>;
   saveDuitkuConfig: (config: Partial<DuitkuConfig>) => Promise<void>;
+
+  // Real-time synchronization
+  initRealtimeSync: () => () => void;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -283,6 +286,32 @@ function clearSession(): void {
   } catch { /* noop */ }
 }
 
+// ─── Multi-tab & Real-time Sync Broadcast ──────────────────────────────────────
+let adminSyncChannel: BroadcastChannel | null = null;
+function getBroadcastChannel(): BroadcastChannel | null {
+  if (typeof window === 'undefined' || typeof BroadcastChannel === 'undefined') return null;
+  if (!adminSyncChannel) {
+    try {
+      adminSyncChannel = new BroadcastChannel('fixprom_admin_sync');
+    } catch (e) {
+      console.warn('BroadcastChannel error', e);
+    }
+  }
+  return adminSyncChannel;
+}
+
+function notifyAdminSync(key: string) {
+  try {
+    getBroadcastChannel()?.postMessage({
+      type: 'ADMIN_SETTINGS_CHANGED',
+      key,
+      timestamp: Date.now(),
+    });
+  } catch (e) {
+    console.warn('Failed to postMessage to BroadcastChannel', e);
+  }
+}
+
 // ─── Store ───────────────────────────────────────────────────────────────────
 const initialSession = loadSession();
 const initialAttempts = loadAttemptState();
@@ -434,6 +463,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } catch (e) {
       console.warn('Failed to persist payment accounts to Supabase', e);
     }
+
+    // Broadcast change across tabs
+    notifyAdminSync('payment_accounts');
   },
 
   addPaymentMethod: async (method) => {
@@ -522,6 +554,75 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } catch (e) {
       console.warn('Failed to persist duitku_config to Supabase', e);
     }
+
+    // Broadcast change across tabs
+    notifyAdminSync('duitku_config');
+  },
+
+  initRealtimeSync: () => {
+    // 1. Initial fetch from remote Supabase
+    void get().fetchPaymentMethods();
+    void get().fetchDuitkuConfig();
+
+    // 2. Multi-tab BroadcastChannel listener
+    const bc = getBroadcastChannel();
+    const handleBroadcast = (event: MessageEvent) => {
+      const data = event.data;
+      if (data?.type === 'ADMIN_SETTINGS_CHANGED') {
+        if (data.key === 'payment_accounts') {
+          void get().fetchPaymentMethods();
+        } else if (data.key === 'duitku_config') {
+          void get().fetchDuitkuConfig();
+        } else {
+          void get().fetchPaymentMethods();
+          void get().fetchDuitkuConfig();
+        }
+      }
+    };
+    if (bc) {
+      bc.addEventListener('message', handleBroadcast);
+    }
+
+    // 3. Supabase Realtime postgres_changes subscription
+    const channel = supabase
+      .channel('system_settings_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'system_settings',
+        },
+        (payload: any) => {
+          const rec = payload?.new as { key?: string; value?: any } | undefined;
+          if (rec?.key === 'payment_accounts') {
+            if (rec.value && Array.isArray(rec.value)) {
+              get().updateSettings({ customPaymentMethods: rec.value });
+            } else {
+              void get().fetchPaymentMethods();
+            }
+          } else if (rec?.key === 'duitku_config') {
+            if (rec.value) {
+              get().updateSettings({
+                duitkuConfig: { ...DEFAULT_DUITKU_CONFIG, ...rec.value },
+              });
+            } else {
+              void get().fetchDuitkuConfig();
+            }
+          } else {
+            void get().fetchPaymentMethods();
+            void get().fetchDuitkuConfig();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (bc) {
+        bc.removeEventListener('message', handleBroadcast);
+      }
+      void supabase.removeChannel(channel);
+    };
   },
 }));
 

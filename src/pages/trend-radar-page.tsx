@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTrendStore } from '@/stores/trend-store';
 import { useProjectStore } from '@/stores/project-store';
 import { useLanguageStore } from '@/stores/language-store';
+import { getCategoryById } from '@/context-engine';
 import {
   BentoTile,
   Button,
@@ -251,9 +252,9 @@ export const TrendRadarPage: React.FC = () => {
                   {item.categoryRelevance.map((catId) => (
                     <span
                       key={catId}
-                      className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono border border-white/5"
+                      className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium border border-white/5"
                     >
-                      {catId}
+                      {getCategoryById(catId, language)?.name || catId}
                     </span>
                   ))}
                 </div>
