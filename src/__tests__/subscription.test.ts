@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useSubscriptionStore, PRICING_PLANS } from '@/stores/subscription-store';
+import { useSubscriptionStore, PRICING_PLANS, calculateActionCredits } from '@/stores/subscription-store';
 
 describe('Fixprom â€” Subscription & Monetization System', () => {
   beforeEach(() => {
@@ -107,22 +107,52 @@ describe('Fixprom â€” Subscription & Monetization System', () => {
     expect(store.hasSufficientCredits(3)).toBe(true);
     expect(store.hasSufficientCredits(25)).toBe(false);
 
-    // Deduct 1 credit for idea generation
-    const res1 = await store.deductCredits(1, 'generate_ideas');
+    // Deduct 1 credit for idea generation with metadata
+    const res1 = await store.deductCredits(1, 'generate_ideas', { wordCount: 50 });
     expect(res1.success).toBe(true);
     expect(res1.balance).toBe(19);
     expect(useSubscriptionStore.getState().subscription.creditsBalance).toBe(19);
 
     // Deduct 3 credits for storyboard generation
-    const res2 = await store.deductCredits(3, 'generate_storyboard');
+    const res2 = await store.deductCredits(3, 'generate_storyboard', { wordCount: 150 });
     expect(res2.success).toBe(true);
     expect(res2.balance).toBe(16);
+
+    // Verify audit logs exist
+    const logs = useSubscriptionStore.getState().auditLogs;
+    expect(logs.length).toBeGreaterThanOrEqual(2);
+    expect(logs[0].actionName).toBe('generate_storyboard');
 
     // Try to deduct more than remaining balance
     const resFail = await store.deductCredits(50, 'test_overflow');
     expect(resFail.success).toBe(false);
     expect(resFail.error).toBe('INSUFFICIENT_CREDITS');
     expect(useSubscriptionStore.getState().subscription.creditsBalance).toBe(16);
+  });
+
+  it('calculates hybrid credits correctly based on word count', () => {
+    // Normal input (< 1000 words) -> base cost
+    const normalIdeas = calculateActionCredits('generate_ideas', 50);
+    expect(normalIdeas.totalCost).toBe(1);
+    expect(normalIdeas.isExtended).toBe(false);
+
+    const normalStoryboard = calculateActionCredits('generate_storyboard', 200);
+    expect(normalStoryboard.totalCost).toBe(3);
+    expect(normalStoryboard.isExtended).toBe(false);
+
+    // Extended input (1300 words: +1 credit extra)
+    const extStoryboard = calculateActionCredits('generate_storyboard', 1300);
+    expect(extStoryboard.baseCost).toBe(3);
+    expect(extStoryboard.extraCredits).toBe(1);
+    expect(extStoryboard.totalCost).toBe(4);
+    expect(extStoryboard.isExtended).toBe(true);
+
+    // Very large input (2100 words: (2100 - 1000)/500 = 1100/500 = 2.2 -> ceil 3 extra)
+    const hugeStoryboard = calculateActionCredits('generate_storyboard', 2100);
+    expect(hugeStoryboard.baseCost).toBe(3);
+    expect(hugeStoryboard.extraCredits).toBe(3);
+    expect(hugeStoryboard.totalCost).toBe(6);
+    expect(hugeStoryboard.isExtended).toBe(true);
   });
 });
 

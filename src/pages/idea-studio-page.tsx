@@ -14,7 +14,7 @@ import {
 } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
-import { useSubscriptionStore } from '@/stores/subscription-store';
+import { useSubscriptionStore, calculateActionCredits } from '@/stores/subscription-store';
 import { useLanguageStore } from '@/stores/language-store';
 import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
@@ -181,7 +181,10 @@ ${idea.localizationNotes}`;
       return;
     }
 
-    const ideaCreditsCost = ideaCount === 10 ? 2 : 1;
+    const inputWords = `${additionalTheme.trim()} ${targetAudience.trim()}`.split(/\s+/).filter(Boolean).length;
+    const baseCost = ideaCount === 10 ? 2 : 1;
+    const creditCalculation = calculateActionCredits('generate_ideas', inputWords);
+    const ideaCreditsCost = creditCalculation.isExtended ? baseCost + creditCalculation.extraCredits : baseCost;
 
     // Check Credits
     if (!hasSufficientCredits(ideaCreditsCost)) {
@@ -213,8 +216,11 @@ ${idea.localizationNotes}`;
 
       setIdeas(generated);
 
-      // Deduct credits atomically
-      await deductCredits(ideaCreditsCost, 'generate_ideas');
+      // Deduct credits atomically with token/wordCount metadata for admin logging
+      await deductCredits(ideaCreditsCost, 'generate_ideas', {
+        wordCount: inputWords,
+        isExtended: creditCalculation.isExtended,
+      });
 
       showToast({
         type: 'success',
@@ -233,12 +239,16 @@ ${idea.localizationNotes}`;
   };
 
   const handleDevelopIdea = async (idea: ContentIdea) => {
-    // Check Credits (3 Credits for Storyboard)
-    if (!hasSufficientCredits(3)) {
+    const ideaWords = `${idea.title} ${idea.hook} ${idea.premise} ${idea.synopsis}`.split(/\s+/).filter(Boolean).length;
+    const creditCalculation = calculateActionCredits('generate_storyboard', ideaWords);
+    const storyboardCost = creditCalculation.totalCost;
+
+    // Check Credits
+    if (!hasSufficientCredits(storyboardCost)) {
       showToast({
         type: 'warning',
-        title: 'Kredit AI Tidak Mencukupi (Butuh 3 Kredit)',
-        message: 'Menyusun 4 adegan storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit atau upgrade ke Creator Pro untuk melanjutkan.',
+        title: `Kredit AI Tidak Mencukupi (Butuh ${storyboardCost} Kredit)`,
+        message: `Menyusun 4 adegan storyboard membutuhkan ${storyboardCost} Kredit AI. Silakan Top-Up kredit atau upgrade ke Creator Pro untuk melanjutkan.`,
       });
       navigate('/pricing');
       return;
@@ -266,14 +276,17 @@ ${idea.localizationNotes}`;
         scenes: developed.scenes,
       });
 
-      // 4. Increment usage counter & deduct 3 credits
+      // 4. Increment usage counter & deduct credits with audit metadata
       incrementStoryboardCount();
-      await deductCredits(3, 'generate_storyboard');
+      await deductCredits(storyboardCost, 'generate_storyboard', {
+        wordCount: ideaWords,
+        isExtended: creditCalculation.isExtended,
+      });
 
       showToast({
         type: 'success',
         title: 'Storyboard Siap di Production Desk!',
-        message: 'Karakter, World Bible, dan 4 adegan telah disusun lengkap. (-3 Kredit AI)',
+        message: `Karakter, World Bible, dan 4 adegan telah disusun lengkap. (-${storyboardCost} Kredit AI)`,
       });
 
       // 5. Navigate to Prompt Desk

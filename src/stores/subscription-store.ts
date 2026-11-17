@@ -203,6 +203,51 @@ export const TOPUP_PACKAGES: TopUpPackage[] = [
   },
 ];
 
+export interface TokenAuditLog {
+  id: string;
+  timestamp: string;
+  actionName: string;
+  creditsDeducted: number;
+  balanceAfter: number;
+  wordCount?: number;
+  isExtended?: boolean;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+}
+
+export function calculateActionCredits(
+  action: 'generate_ideas' | 'generate_storyboard' | 'regenerate_storyboard' | 'regenerate_single_scene',
+  inputWordCount = 0
+): {
+  baseCost: number;
+  extraCredits: number;
+  totalCost: number;
+  isExtended: boolean;
+  wordCount: number;
+} {
+  const baseCosts = {
+    generate_ideas: 1,
+    generate_storyboard: 3,
+    regenerate_storyboard: 3,
+    regenerate_single_scene: 1,
+  };
+
+  const baseCost = baseCosts[action] ?? 1;
+  const isExtended = inputWordCount > 1000;
+  // Setiap 500 kata di atas 1000 kata dikenakan +1 kredit tambahan
+  const extraCredits = isExtended ? Math.ceil((inputWordCount - 1000) / 500) : 0;
+  const totalCost = baseCost + extraCredits;
+
+  return {
+    baseCost,
+    extraCredits,
+    totalCost,
+    isExtended,
+    wordCount: inputWordCount,
+  };
+}
+
 interface SubscriptionState {
   subscription: UserSubscription;
   orders: SubscriptionOrder[];
@@ -210,6 +255,7 @@ interface SubscriptionState {
   adminWhatsApp: string;
   storyboardGenerationsCount: number;
   manualActivations: ManualActivationRecord[];
+  auditLogs: TokenAuditLog[];
 
   // Actions
   initializeTrial: () => void;
@@ -223,7 +269,17 @@ interface SubscriptionState {
   canGenerateStoryboard: () => boolean;
   isCategoryAccessible: (categoryId: string) => boolean;
   isByokAccessible: () => boolean;
-  deductCredits: (amount: number, actionName: string) => Promise<{ success: boolean; balance: number; error?: string }>;
+  deductCredits: (
+    amount: number,
+    actionName: string,
+    metadata?: {
+      wordCount?: number;
+      promptTokens?: number;
+      completionTokens?: number;
+      totalTokens?: number;
+      isExtended?: boolean;
+    }
+  ) => Promise<{ success: boolean; balance: number; error?: string }>;
   hasSufficientCredits: (required: number) => boolean;
   activateUserSubscription: (
     emailOrUserId: string,
@@ -252,6 +308,7 @@ function loadInitialState(): {
   orders: SubscriptionOrder[];
   storyboardGenerationsCount: number;
   manualActivations: ManualActivationRecord[];
+  auditLogs: TokenAuditLog[];
 } {
   const defaultSub: UserSubscription = {
     tier: 'free',
@@ -262,21 +319,22 @@ function loadInitialState(): {
   };
 
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [], auditLogs: [] };
   }
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
+    if (!raw) return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [], auditLogs: [] };
     const parsed = JSON.parse(raw);
     return {
       subscription: parsed.subscription || defaultSub,
       orders: parsed.orders || [],
       storyboardGenerationsCount: Number(parsed.storyboardGenerationsCount) || 0,
       manualActivations: parsed.manualActivations || [],
+      auditLogs: parsed.auditLogs || [],
     };
   } catch {
-    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [] };
+    return { subscription: defaultSub, orders: [], storyboardGenerationsCount: 0, manualActivations: [], auditLogs: [] };
   }
 }
 
@@ -285,6 +343,7 @@ function saveState(state: {
   orders: SubscriptionOrder[];
   storyboardGenerationsCount?: number;
   manualActivations?: ManualActivationRecord[];
+  auditLogs?: TokenAuditLog[];
 }) {
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
@@ -304,6 +363,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6281234567890', // Nomor WhatsApp konfirmasi admin
   storyboardGenerationsCount: initial.storyboardGenerationsCount,
   manualActivations: initial.manualActivations,
+  auditLogs: initial.auditLogs || [],
 
   initializeTrial: () => {
     const current = get().subscription;
@@ -470,11 +530,34 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
     return get().subscription.tier === 'pro';
   },
 
-  deductCredits: async (amount: number, actionName: string) => {
+  deductCredits: async (
+    amount: number,
+    actionName: string,
+    metadata?: {
+      wordCount?: number;
+      promptTokens?: number;
+      completionTokens?: number;
+      totalTokens?: number;
+      isExtended?: boolean;
+    }
+  ) => {
     const currentBal = get().subscription.creditsBalance ?? (get().subscription.tier === 'pro' ? 350 : 20);
     if (currentBal < amount) {
       return { success: false, balance: currentBal, error: 'INSUFFICIENT_CREDITS' };
     }
+
+    const logEntry: TokenAuditLog = {
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `log_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actionName,
+      creditsDeducted: amount,
+      balanceAfter: currentBal - amount,
+      wordCount: metadata?.wordCount,
+      isExtended: metadata?.isExtended,
+      promptTokens: metadata?.promptTokens,
+      completionTokens: metadata?.completionTokens,
+      totalTokens: metadata?.totalTokens,
+    };
 
     if (isSupabaseConfigured()) {
       try {
@@ -485,14 +568,18 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
         if (!error && data && data.success) {
           const newBal = data.balance;
+          logEntry.balanceAfter = newBal;
+          const updatedLogs = [logEntry, ...(get().auditLogs || [])].slice(0, 100);
           set((state) => ({
             subscription: { ...state.subscription, creditsBalance: newBal },
+            auditLogs: updatedLogs,
           }));
           saveState({
             subscription: get().subscription,
             orders: get().orders,
             storyboardGenerationsCount: get().storyboardGenerationsCount,
             manualActivations: get().manualActivations,
+            auditLogs: updatedLogs,
           });
           return { success: true, balance: newBal };
         }
@@ -503,14 +590,18 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
 
     // Local fallback for guest or offline mode
     const newBal = Math.max(0, currentBal - amount);
+    logEntry.balanceAfter = newBal;
+    const updatedLogs = [logEntry, ...(get().auditLogs || [])].slice(0, 100);
     set((state) => ({
       subscription: { ...state.subscription, creditsBalance: newBal },
+      auditLogs: updatedLogs,
     }));
     saveState({
       subscription: get().subscription,
       orders: get().orders,
       storyboardGenerationsCount: get().storyboardGenerationsCount,
       manualActivations: get().manualActivations,
+      auditLogs: updatedLogs,
     });
     return { success: true, balance: newBal };
   },

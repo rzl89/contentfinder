@@ -94,6 +94,11 @@ export default async function handler(req, res) {
     return {
       content: completion.choices?.[0]?.message?.content,
       modelUsed: activeModel,
+      usage: completion.usage || {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+      },
     };
   }
 
@@ -226,7 +231,7 @@ Dialog Language: ${dialogLanguage}
 Trend Approach: ${trendApproach}
 Entropy Seed: ${creativeEntropy || Date.now()}`;
 
-      const { content, modelUsed } = await callOpenAI(
+      const { content, modelUsed, usage } = await callOpenAI(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -300,7 +305,7 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
 
       const finalList = filteredList.length > 0 ? filteredList : list;
 
-      return res.status(200).json({ success: true, ideas: finalList, modelUsed });
+      return res.status(200).json({ success: true, ideas: finalList, modelUsed, usage });
     }
 
     if (action === 'develop_story') {
@@ -409,7 +414,7 @@ Synopsis: ${idea.synopsis}
 Visual Style: ${idea.visualStyle}
 Duration: ${idea.estimatedDuration}`;
 
-      const { content, modelUsed } = await callOpenAI(
+      const { content, modelUsed, usage } = await callOpenAI(
         [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -418,7 +423,7 @@ Duration: ${idea.estimatedDuration}`;
       );
 
       const parsed = JSON.parse(content);
-      return res.status(200).json({ success: true, package: parsed, modelUsed });
+      return res.status(200).json({ success: true, package: parsed, modelUsed, usage });
     }
 
     return res.status(400).json({ error: 'INVALID_ACTION', message: `Unknown action: ${action}` });
