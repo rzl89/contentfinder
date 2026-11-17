@@ -10,6 +10,8 @@ export interface DynamicPaymentMethod {
   category: 'bank' | 'qris' | 'ewallet' | 'other';
   isActive: boolean;
   instructions: string[];
+  qrImageUrl?: string;
+  nmid?: string;
 }
 
 export interface DuitkuConfig {
@@ -155,17 +157,20 @@ export const DEFAULT_PAYMENT_ACCOUNTS: DynamicPaymentMethod[] = [
   },
   {
     id: 'qris',
-    name: 'QRIS Semua Pembayaran (GoPay/OVO/Dana/BCA/Shopee)',
-    accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
-    accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
+    name: 'QRIS DANA Bisnis (Semua Bank & E-Wallet)',
+    accountNumber: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1026641496116',
+    accountHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'Fixprom, Service',
     icon: '📱',
     category: 'qris',
     isActive: true,
+    qrImageUrl: '/qris-fixprom.jpg',
+    nmid: 'ID1026641496116',
     instructions: [
-      'Buka aplikasi e-wallet atau mobile banking favorit Anda.',
-      'Pindai (Scan) QRIS yang tertera pada layar.',
-      'Input nominal transfer TEPAT sesuai invoice.',
-      'Simpan bukti pembayaran berhasil.',
+      'Buka aplikasi e-wallet (DANA, GoPay, OVO, ShopeePay) atau mobile banking pilihan Anda.',
+      'Pindai (Scan) QRIS di layar atau simpan gambar QRIS ke Galeri HP Anda.',
+      'Pastikan nama merchant tertera: "Fixprom, Service" (NMID: ID1026641496116).',
+      'Input nominal transfer TEPAT beserta 3 digit kode unik.',
+      'Simpan bukti transfer / struk pembayaran untuk konfirmasi WhatsApp.',
     ],
   },
   {
@@ -204,8 +209,8 @@ export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {
   bcaHolder: (import.meta.env.VITE_PAYMENT_BCA_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
   mandiriNumber: (import.meta.env.VITE_PAYMENT_MANDIRI_NO as string) || '1370-0199-8821-2',
   mandiriHolder: (import.meta.env.VITE_PAYMENT_MANDIRI_HOLDER as string) || 'TEMPORAFORGE AI / RIZAL',
-  qrisNmid: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1020268899120',
-  qrisHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'TEMPORAFORGE CREATIVE STUDIO',
+  qrisNmid: (import.meta.env.VITE_PAYMENT_QRIS_NMID as string) || 'NMID: ID1026641496116',
+  qrisHolder: (import.meta.env.VITE_PAYMENT_QRIS_HOLDER as string) || 'Fixprom, Service',
   danaNumber: (import.meta.env.VITE_PAYMENT_DANA_NO as string) || '0812-3456-7890',
   danaHolder: (import.meta.env.VITE_PAYMENT_DANA_HOLDER as string) || 'RIZAL - TEMPORAFORGE',
   customPaymentMethods: DEFAULT_PAYMENT_ACCOUNTS,

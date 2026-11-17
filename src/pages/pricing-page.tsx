@@ -13,6 +13,8 @@ import {
   CreditCard,
   MessageCircle,
   RefreshCw,
+  Download,
+  QrCode,
 } from 'lucide-react';
 import { BentoTile } from '@/components/ui/bento-tile';
 import { Button } from '@/components/ui/button';
@@ -56,7 +58,7 @@ export const PricingPage: React.FC = () => {
   const isDuitkuEnabled = !DUITKU_PENDING_VERIFICATION && duitkuConfig?.isEnabled !== false;
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('bca');
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('qris');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<SubscriptionOrder | null>(activeOrder);
 
@@ -853,37 +855,140 @@ export const PricingPage: React.FC = () => {
                 </div>
 
                 {/* Account Details Box */}
-                <div className="bg-field border border-amber-500/20 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] text-gray-400">{selectedAccountInfo.name}</p>
-                      <p className="font-mono text-base font-bold text-amber-400 tracking-wide mt-0.5">
-                        {selectedAccountInfo.accountNumber}
-                      </p>
-                      <p className="text-[11px] text-gray-300 mt-0.5">a.n. {selectedAccountInfo.accountHolder}</p>
+                {selectedAccountInfo.category === 'qris' || selectedAccountInfo.id === 'qris' ? (
+                  <div className="bg-field border border-amber-500/25 rounded-xl p-4 space-y-4">
+                    {/* QRIS Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                          <QrCode className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-xs text-white flex items-center gap-1.5">
+                            <span>QRIS DANA Bisnis</span>
+                            <span className="text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-semibold">
+                              ASPI / GPN
+                            </span>
+                          </p>
+                          <p className="text-[10px] text-zinc-400">
+                            {t('BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay & Semua Bank', 'BCA, Mandiri, BRI, BNI, GoPay, OVO, DANA, ShopeePay & All Banks')}
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={selectedAccountInfo.qrImageUrl || '/qris-fixprom.jpg'}
+                        download="qris-fixprom.jpg"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition-all shrink-0"
+                        title={t('Unduh QRIS untuk diunggah dari galeri aplikasi bank', 'Download QRIS to upload from mobile banking gallery')}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{t('Unduh QR', 'Download QR')}</span>
+                      </a>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleCopyAccount(selectedAccountInfo.accountNumber, selectedAccountInfo.name)}
-                      className="text-xs border-white/10 hover:border-amber-500"
-                    >
-                      <Copy className="w-3.5 h-3.5 mr-1" />
-                      {t('Salin', 'Copy')}
-                    </Button>
-                  </div>
 
-                  {/* Transfer Steps */}
-                  <div className="space-y-1.5 pt-3 border-t border-white/5 text-[11px] text-gray-400">
-                    <p className="font-semibold text-gray-300">{t('Petunjuk Transfer:', 'Transfer Steps:')}</p>
-                    {selectedAccountInfo.instructions.map((step, idx) => (
-                      <p key={idx} className="flex items-start gap-1.5">
-                        <span className="text-amber-400 font-bold">{idx + 1}.</span>
-                        <span>{step}</span>
-                      </p>
-                    ))}
+                    {/* QR Preview Frame */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/40 p-3.5 rounded-xl border border-white/5">
+                      <div className="bg-white p-2.5 rounded-xl shadow-xl shadow-black/70 shrink-0 max-w-[170px] w-full text-center">
+                        <img
+                          src={selectedAccountInfo.qrImageUrl || '/qris-fixprom.jpg'}
+                          alt="QRIS Fixprom, Service"
+                          className="w-full h-auto rounded object-contain mx-auto"
+                        />
+                        <p className="text-[9px] text-zinc-800 font-mono font-bold mt-1.5 pt-1 border-t border-zinc-200">
+                          NMID: ID1026641496116
+                        </p>
+                      </div>
+
+                      <div className="space-y-2.5 text-xs flex-1 w-full">
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                            {t('Merchant Resmi', 'Official Merchant')}
+                          </p>
+                          <p className="text-sm font-bold text-amber-300 flex items-center gap-1.5 mt-0.5">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                            Fixprom, Service
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                            {t('National Merchant ID (NMID)', 'National Merchant ID (NMID)')}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="font-mono text-xs font-semibold text-zinc-200 bg-zinc-800/80 px-2 py-0.5 rounded border border-white/5">
+                              ID1026641496116
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyAccount('ID1026641496116', 'NMID QRIS')}
+                              className="text-[10px] text-zinc-400 hover:text-white flex items-center gap-0.5 font-medium"
+                            >
+                              <Copy className="w-3 h-3" />
+                              <span>{t('Salin', 'Copy')}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Security Verification Reassurance */}
+                        <div className="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-[11px] text-emerald-300 space-y-1">
+                          <p className="font-semibold flex items-center gap-1 text-[11px]">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            {t('Pencegahan Penipuan & Keamanan', 'Fraud Prevention & Security')}
+                          </p>
+                          <p className="text-emerald-400/90 text-[10px] leading-relaxed">
+                            {t(
+                              'Sebelum memasukkan PIN transaksi, pastikan nama penerima di aplikasi Anda muncul sebagai "Fixprom, Service".',
+                              'Before entering your PIN, verify that the recipient name on your screen matches "Fixprom, Service".'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step-by-Step Instructions */}
+                    <div className="space-y-1.5 pt-1 text-[11px] text-gray-400">
+                      <p className="font-semibold text-gray-300">{t('Cara Membayar via QRIS:', 'How to Pay via QRIS:')}</p>
+                      {selectedAccountInfo.instructions.map((step, idx) => (
+                        <p key={idx} className="flex items-start gap-1.5">
+                          <span className="text-amber-400 font-bold">{idx + 1}.</span>
+                          <span>{step}</span>
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="bg-field border border-amber-500/20 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] text-gray-400">{selectedAccountInfo.name}</p>
+                        <p className="font-mono text-base font-bold text-amber-400 tracking-wide mt-0.5">
+                          {selectedAccountInfo.accountNumber}
+                        </p>
+                        <p className="text-[11px] text-gray-300 mt-0.5">a.n. {selectedAccountInfo.accountHolder}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleCopyAccount(selectedAccountInfo.accountNumber, selectedAccountInfo.name)}
+                        className="text-xs border-white/10 hover:border-amber-500"
+                      >
+                        <Copy className="w-3.5 h-3.5 mr-1" />
+                        {t('Salin', 'Copy')}
+                      </Button>
+                    </div>
+
+                    {/* Transfer Steps */}
+                    <div className="space-y-1.5 pt-3 border-t border-white/5 text-[11px] text-gray-400">
+                      <p className="font-semibold text-gray-300">{t('Petunjuk Transfer:', 'Transfer Steps:')}</p>
+                      {selectedAccountInfo.instructions.map((step, idx) => (
+                        <p key={idx} className="flex items-start gap-1.5">
+                          <span className="text-amber-400 font-bold">{idx + 1}.</span>
+                          <span>{step}</span>
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* CTA Button: Confirm to WhatsApp */}
                 <div className="space-y-2 pt-2">
