@@ -1,6 +1,6 @@
-# Fixprom — AI Video Prompt Compiler & Short-Form Content Studio
+# Fixprom — AI Prompt Studio untuk Konten TikTok, Reels & YouTube Shorts
 
-> Fixprom (https://www.fixprom.com) is a production-grade web application designed for digital creators, video editors, and AI filmmakers. It bridges creative ideation with model-specific prompt engineering for cutting-edge generative video models.
+> Fixprom (https://www.fixprom.com) is a production-grade AI prompt studio and short-form content ideation platform designed for digital creators, video editors, and AI filmmakers. It bridges creative ideation with model-specific prompt engineering for cutting-edge generative video models.
 
 ## Core Capabilities
 - **Creative Diversity Engine**: Generates non-repetitive, culturally grounded content ideas across 21 specialized short-form categories (including POV Immersion, Restoration ASMR, Microdrama, Local Folklore, and Educational Paradox).

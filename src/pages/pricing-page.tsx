@@ -50,7 +50,10 @@ export const PricingPage: React.FC = () => {
   } = useSubscriptionStore();
 
   const duitkuConfig = useAdminStore((s) => s.settings.duitkuConfig);
-  const isDuitkuEnabled = duitkuConfig?.isEnabled !== false;
+  // TEMP: Duitku merchant account is pending verification — lock gateway until approved.
+  // Set DUITKU_PENDING_VERIFICATION to false once merchant verification is complete.
+  const DUITKU_PENDING_VERIFICATION = true;
+  const isDuitkuEnabled = !DUITKU_PENDING_VERIFICATION && duitkuConfig?.isEnabled !== false;
 
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('bca');
@@ -629,6 +632,24 @@ export const PricingPage: React.FC = () => {
           title={t('Pilihan Metode Pembayaran & Checkout', 'Payment Method & Checkout')}
         >
           <div className="space-y-5 text-sm">
+            {/* Duitku Coming Soon Notice */}
+            {DUITKU_PENDING_VERIFICATION && (
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20 text-amber-300">
+                <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+                <div className="space-y-0.5">
+                  <p className="font-semibold text-[12px] text-amber-200">
+                    {t('Pembayaran Otomatis (Duitku) — Segera Hadir', 'Auto Payment (Duitku) — Coming Soon')}
+                  </p>
+                  <p className="text-[11px] text-amber-400/80 leading-relaxed">
+                    {t(
+                      'Verifikasi merchant Duitku sedang diproses. Gunakan Transfer Manual di bawah untuk saat ini — konfirmasi lewat WhatsApp.',
+                      'Duitku merchant verification is in progress. Use Manual Transfer below for now — confirm via WhatsApp.'
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Mode Selector Tabs (Duitku vs Manual) */}
             {isDuitkuEnabled && (
               <div className="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-xl border border-white/5">

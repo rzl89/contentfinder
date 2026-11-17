@@ -78,6 +78,15 @@ export default async function handler(req, res) {
     // Load configuration
     const config = (await fetchDuitkuConfig()) || {};
 
+    // Temporary lock: Duitku merchant verification is pending
+    const DUITKU_UNDER_VERIFICATION = true;
+    if (DUITKU_UNDER_VERIFICATION || config.isEnabled === false) {
+      return res.status(403).json({
+        success: false,
+        message: 'Metode pembayaran otomatis Duitku sedang dalam tahap verifikasi merchant (Segera Hadir). Silakan gunakan opsi transfer manual.',
+      });
+    }
+
     const environment = config.environment === 'production' ? 'production' : 'sandbox';
     let merchantCode = '';
     let apiKey = '';

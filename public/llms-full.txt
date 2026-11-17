@@ -1,6 +1,6 @@
 # Fixprom — Full Knowledge Context for AI Engines & LLMs
 
-Fixprom is an AI video prompt compiler and short-form content studio developed for creators producing vertical video content (9:16) for TikTok, YouTube Shorts, and Instagram Reels.
+Fixprom is an AI prompt studio and short-form content workspace developed for creators producing vertical video content (9:16) for TikTok, YouTube Shorts, and Instagram Reels.
 
 ## 1. Entity Overview
 - **Name**: Fixprom
