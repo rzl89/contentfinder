@@ -38,6 +38,69 @@ import {
   Zap,
 } from 'lucide-react';
 
+const FRAMING_OPTIONS = [
+  { value: 'Extreme Close-Up', label: 'Extreme Close-Up (Detail Mata/Objek)' },
+  { value: 'Close-Up', label: 'Close-Up (Wajah Penuh)' },
+  { value: 'Medium Close-Up', label: 'Medium Close-Up (Dada ke Atas)' },
+  { value: 'Medium Shot', label: 'Medium Shot (Pinggang ke Atas)' },
+  { value: 'Cowboy Shot', label: 'Cowboy Shot (Lutut ke Atas)' },
+  { value: 'Wide Shot', label: 'Wide Shot (Seluruh Badan & Latar)' },
+  { value: 'Extreme Wide Shot', label: 'Extreme Wide Shot (Pemandangan Luas)' },
+];
+
+const ANGLE_OPTIONS = [
+  { value: 'Eye-level', label: 'Eye-Level (Sejajar Mata / Realistis)' },
+  { value: 'Low angle', label: 'Low Angle (Dari Bawah / Menegangkan)' },
+  { value: 'High angle', label: 'High Angle (Dari Atas / Subjek Rentan)' },
+  { value: 'Over-the-shoulder', label: 'Over-The-Shoulder (Dari Balik Bahu)' },
+  { value: 'Dutch angle', label: 'Dutch Angle (Miring / Distorsi Dramatis)' },
+  { value: "Bird's-eye view", label: "Bird's Eye (Tegak Lurus Langit / Peta)" },
+  { value: "Worm's-eye view", label: "Worm's Eye (Menempel di Lantai)" },
+];
+
+const MOVEMENT_OPTIONS = [
+  { value: 'Static tripod', label: 'Static (Tripod Tanpa Gerakan)' },
+  { value: 'Slow push in', label: 'Slow Push In (Maju Perlahan ke Subjek)' },
+  { value: 'Pull out', label: 'Pull Out / Zoom Out (Mundur Menjauh)' },
+  { value: 'Tracking right', label: 'Tracking Right (Kamera Mengikuti ke Kanan)' },
+  { value: 'Tracking left', label: 'Tracking Left (Kamera Mengikuti ke Kiri)' },
+  { value: 'Pan left', label: 'Pan Left (Menoleh ke Sisi Kiri)' },
+  { value: 'Pan right', label: 'Pan Right (Menoleh ke Sisi Kanan)' },
+  { value: 'Tilt up', label: 'Tilt Up (Kamera Mendongak ke Atas)' },
+  { value: 'Tilt down', label: 'Tilt Down (Kamera Menunduk ke Bawah)' },
+  { value: 'Orbit around subject', label: 'Orbit 360 (Memutar Keliling Subjek)' },
+  { value: 'Crane shot down', label: 'Crane / Drone Down (Turun Vertikal)' },
+  { value: 'Handheld subtle shake', label: 'Handheld (Goyangan Alami Tangan)' },
+];
+
+const TIME_OF_DAY_OPTIONS = [
+  { value: 'Golden hour', label: 'Golden Hour (Senja Keemasan Hangat)' },
+  { value: 'Blue hour', label: 'Blue Hour (Pendar Dingin Senja/Fajar)' },
+  { value: 'Bright midday sunlight', label: 'Siang Terik (Bright Midday)' },
+  { value: 'Soft morning light', label: 'Pagi Hari (Soft Morning Light)' },
+  { value: 'Overcast diffuse daylight', label: 'Mendung Halus (Overcast)' },
+  { value: 'Twilight dusk', label: 'Twilight / Remang Senja' },
+  { value: 'Malam hari', label: 'Malam Hari (Interior Lampu Hangat)' },
+  { value: 'Midnight city ambient light', label: 'Tengah Malam (Lampu Jalan & Kota)' },
+  { value: 'Moody neon lighting', label: 'Moody Neon (Cyberpunk / Lampu Toko)' },
+];
+
+const WEATHER_OPTIONS = [
+  { value: 'Cerah & Jernih', label: 'Cerah & Jernih (Clear Atmosphere)' },
+  { value: 'Hujan & Pantulan Aspal Basah', label: 'Hujan & Pantulan Aspal Basah' },
+  { value: 'Berkabut & Volumetric Haze', label: 'Berkabut & Volumetric Haze' },
+  { value: 'Mendung Berawan', label: 'Mendung Berawan (Cloudy Overcast)' },
+  { value: 'Angin Berhembus Kencang', label: 'Angin Berhembus Kencang (Windy)' },
+  { value: 'Suasana Temaram Hening', label: 'Suasana Temaram Hening & Gelap' },
+];
+
+function buildSelectOptions(presets: { value: string; label: string }[], currentVal?: string) {
+  if (!currentVal) return presets;
+  const exists = presets.some((p) => p.value.toLowerCase() === currentVal.trim().toLowerCase());
+  if (exists) return presets;
+  return [{ value: currentVal, label: `${currentVal} (Kustom / AI)` }, ...presets];
+}
+
 export const PromptDeskPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -771,19 +834,21 @@ export const PromptDeskPage: React.FC = () => {
                       })
                     }
                   />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Select
                       label="Waktu Pencahayaan"
                       value={currentScene.location.timeOfDay}
+                      options={buildSelectOptions(TIME_OF_DAY_OPTIONS, currentScene.location.timeOfDay)}
                       onChange={(e) =>
                         updateScene(currentScene.sceneNumber, {
                           location: { ...currentScene.location, timeOfDay: e.target.value },
                         })
                       }
                     />
-                    <Input
+                    <Select
                       label="Cuaca & Suasana"
                       value={currentScene.location.weather}
+                      options={buildSelectOptions(WEATHER_OPTIONS, currentScene.location.weather)}
                       onChange={(e) =>
                         updateScene(currentScene.sceneNumber, {
                           location: { ...currentScene.location, weather: e.target.value },
@@ -798,19 +863,21 @@ export const PromptDeskPage: React.FC = () => {
                   <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider block">
                     🎥 Sinematografi & Kamera
                   </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Select
                       label="Framing Shot"
                       value={currentScene.camera.shot}
+                      options={buildSelectOptions(FRAMING_OPTIONS, currentScene.camera.shot)}
                       onChange={(e) =>
                         updateScene(currentScene.sceneNumber, {
                           camera: { ...currentScene.camera, shot: e.target.value },
                         })
                       }
                     />
-                    <Input
+                    <Select
                       label="Sudut Kamera"
                       value={currentScene.camera.angle}
+                      options={buildSelectOptions(ANGLE_OPTIONS, currentScene.camera.angle)}
                       onChange={(e) =>
                         updateScene(currentScene.sceneNumber, {
                           camera: { ...currentScene.camera, angle: e.target.value },
@@ -818,9 +885,10 @@ export const PromptDeskPage: React.FC = () => {
                       }
                     />
                   </div>
-                  <Input
+                  <Select
                     label="Gerakan Kamera (Movement)"
                     value={currentScene.camera.movement}
+                    options={buildSelectOptions(MOVEMENT_OPTIONS, currentScene.camera.movement)}
                     onChange={(e) =>
                       updateScene(currentScene.sceneNumber, {
                         camera: { ...currentScene.camera, movement: e.target.value },
