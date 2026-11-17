@@ -149,7 +149,7 @@ export default async function handler(req, res) {
     const productTitle = `Fixprom Creator Pro (${durationLabel})`;
 
     const callbackUrl = 'https://www.fixprom.com/api/duitku-callback';
-    const returnUrl = `https://www.fixprom.com/#/pricing?status=duitku_return&orderId=${merchantOrderId}`;
+    const returnUrl = `https://www.fixprom.com/api/duitku-return?status=duitku_return&orderId=${merchantOrderId}`;
 
     const expiryPeriod = Number(config.expiryPeriod) > 0 ? Number(config.expiryPeriod) : 1440; // 24 hours in minutes
 
