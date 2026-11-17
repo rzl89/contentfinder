@@ -72,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
         subscription.tier === 'pro'
           ? 'Pro'
           : remainingHours > 0
-          ? `${t('Trial', 'Trial')} ${remainingHours}j`
-          : t('Habis', 'Expired'),
+            ? `${t('Trial', 'Trial')} ${remainingHours}j`
+            : t('Habis', 'Expired'),
     },
     {
       to: '/settings',
@@ -144,14 +144,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
                       item.badge === 'Live'
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         : item.badge === 'Secure'
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        : item.badge === 'Pro' || item.badge === 'PRO' || item.badge === 'Master'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
-                        : item.badge === 'Habis'
-                        ? 'bg-red-500/20 text-red-300 border-red-500/40'
-                        : String(item.badge).startsWith('Trial')
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        : 'bg-zinc-800 text-zinc-300 border-white/5'
+                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          : item.badge === 'Pro' || item.badge === 'PRO' || item.badge === 'Master'
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-bold'
+                            : item.badge === 'Habis'
+                              ? 'bg-red-500/20 text-red-300 border-red-500/40'
+                              : String(item.badge).startsWith('Trial')
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                : 'bg-zinc-800 text-zinc-300 border-white/5'
                     )}
                   >
                     {item.badge}
