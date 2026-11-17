@@ -189,7 +189,7 @@ export const AdminPage: React.FC = () => {
       <div className="min-h-[75vh] flex items-center justify-center p-4 animate-fade-in">
         <div className="max-w-md w-full bg-[#111115] border border-white/10 rounded-2xl p-8 shadow-2xl space-y-6 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600" />
-          
+
           <div className="text-center space-y-2">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
               <Lock className="w-6 h-6" />
@@ -293,11 +293,10 @@ export const AdminPage: React.FC = () => {
       <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto">
         <button
           onClick={() => setActiveTab('ai')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'ai'
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'ai'
               ? 'bg-amber-500 text-black shadow-lg font-bold'
               : 'bg-[#111115] text-zinc-400 hover:text-white border border-white/5'
-          }`}
+            }`}
         >
           <Bot className="w-4 h-4" />
           <span>Model AI & LLM (GPT-6 Luna)</span>
@@ -305,11 +304,10 @@ export const AdminPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('byok')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'byok'
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'byok'
               ? 'bg-amber-500 text-black shadow-lg font-bold'
               : 'bg-[#111115] text-zinc-400 hover:text-white border border-white/5'
-          }`}
+            }`}
         >
           <KeyRound className="w-4 h-4" />
           <span>Keamanan & Proteksi BYOK</span>
@@ -317,11 +315,10 @@ export const AdminPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('payment')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'payment'
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'payment'
               ? 'bg-amber-500 text-black shadow-lg font-bold'
               : 'bg-[#111115] text-zinc-400 hover:text-white border border-white/5'
-          }`}
+            }`}
         >
           <CreditCard className="w-4 h-4" />
           <span>Rekening Bank & Harga Paket</span>
@@ -329,11 +326,10 @@ export const AdminPage: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('system')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            activeTab === 'system'
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === 'system'
               ? 'bg-amber-500 text-black shadow-lg font-bold'
               : 'bg-[#111115] text-zinc-400 hover:text-white border border-white/5'
-          }`}
+            }`}
         >
           <Layers className="w-4 h-4" />
           <span>Status Sistem & Proyek</span>
@@ -567,7 +563,7 @@ export const AdminPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   label="Nomor WhatsApp Admin Konfirmasi"
-                  placeholder="Contoh: 6281234567890 (Gunakan format 62)"
+                  placeholder="Contoh: 6285217975733 (Gunakan format 62)"
                   value={formWhatsApp}
                   onChange={(e) => setFormWhatsApp(e.target.value)}
                   helperText="Tautan konfirmasi transfer di checkout akan otomatis mengarah ke WA ini."

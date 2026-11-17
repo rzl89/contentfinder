@@ -765,11 +765,10 @@ export const AdminPanelPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${
-                activeTab === tab.id
+              className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
                   ? 'border-amber-500 text-amber-300'
                   : 'border-transparent text-zinc-500 hover:text-zinc-300'
-              }`}
+                }`}
             >
               {tab.icon}
               {tab.label}
@@ -856,11 +855,10 @@ export const AdminPanelPage: React.FC = () => {
                   <button
                     key={m.name}
                     onClick={() => { setLocalSettings({ ...localSettings, defaultModel: m.name }); }}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      localSettings.defaultModel === m.name
+                    className={`p-3 rounded-xl border text-left transition-all ${localSettings.defaultModel === m.name
                         ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
                         : 'bg-black/30 border-white/5 text-zinc-400 hover:border-white/15 hover:text-zinc-200'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-bold">{m.label}</span>
@@ -917,11 +915,10 @@ export const AdminPanelPage: React.FC = () => {
                     <button
                       key={d.id}
                       onClick={() => setDurationPreset(d.id as typeof durationPreset)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                        durationPreset === d.id
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${durationPreset === d.id
                           ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                           : 'bg-black/30 border-white/5 text-zinc-400 hover:text-zinc-200'
-                      }`}
+                        }`}
                     >
                       {d.label}
                     </button>
@@ -1006,11 +1003,10 @@ export const AdminPanelPage: React.FC = () => {
                       return (
                         <div
                           key={record.id}
-                          className={`p-4 rounded-xl border space-y-2 text-xs ${
-                            isRevoked || isExpired
+                          className={`p-4 rounded-xl border space-y-2 text-xs ${isRevoked || isExpired
                               ? 'bg-red-950/10 border-red-500/10 opacity-60'
                               : 'bg-black/30 border-white/5'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div className="space-y-0.5">
@@ -1342,7 +1338,7 @@ export const AdminPanelPage: React.FC = () => {
                   label="WhatsApp Admin Konfirmasi (format internasional: 628xxx)"
                   value={localSettings.adminWhatsApp}
                   onChange={(e) => setLocalSettings({ ...localSettings, adminWhatsApp: e.target.value })}
-                  placeholder="6281234567890"
+                  placeholder="6285217975733"
                 />
               </div>
 
@@ -1381,11 +1377,10 @@ export const AdminPanelPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDuitkuForm({ ...duitkuForm, isEnabled: !duitkuForm.isEnabled })}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                      duitkuForm.isEnabled
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${duitkuForm.isEnabled
                         ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
                         : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700'
-                    }`}
+                      }`}
                   >
                     <Power className="w-3.5 h-3.5" />
                     <span>{duitkuForm.isEnabled ? 'Aktif di Checkout' : 'Nonaktif di Checkout'}</span>
@@ -1400,11 +1395,10 @@ export const AdminPanelPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDuitkuForm({ ...duitkuForm, environment: 'sandbox' })}
-                    className={`p-3.5 rounded-xl border text-left transition-all ${
-                      duitkuForm.environment === 'sandbox'
+                    className={`p-3.5 rounded-xl border text-left transition-all ${duitkuForm.environment === 'sandbox'
                         ? 'bg-amber-500/10 border-amber-500/50 text-white shadow-sm shadow-amber-500/10'
                         : 'bg-zinc-900/50 border-white/5 text-zinc-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold">Mode Sandbox (Uji Coba)</span>
@@ -1418,11 +1412,10 @@ export const AdminPanelPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setDuitkuForm({ ...duitkuForm, environment: 'production' })}
-                    className={`p-3.5 rounded-xl border text-left transition-all ${
-                      duitkuForm.environment === 'production'
+                    className={`p-3.5 rounded-xl border text-left transition-all ${duitkuForm.environment === 'production'
                         ? 'bg-blue-500/10 border-blue-500/50 text-white shadow-sm shadow-blue-500/10'
                         : 'bg-zinc-900/50 border-white/5 text-zinc-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold">Mode Production (Live)</span>
@@ -1620,11 +1613,10 @@ export const AdminPanelPage: React.FC = () => {
                   return (
                     <div
                       key={method.id}
-                      className={`p-4 rounded-xl border transition-all space-y-3 ${
-                        isActive
+                      className={`p-4 rounded-xl border transition-all space-y-3 ${isActive
                           ? 'bg-[#16161d] border-white/10 hover:border-amber-500/40'
                           : 'bg-zinc-900/40 border-white/5 opacity-60'
-                      }`}
+                        }`}
                     >
                       {/* Top Header of Card */}
                       <div className="flex items-start justify-between gap-2">
@@ -1648,11 +1640,10 @@ export const AdminPanelPage: React.FC = () => {
                           type="button"
                           onClick={() => handleTogglePayment(method.id, isActive, method.name)}
                           title={isActive ? 'Klik untuk nonaktifkan' : 'Klik untuk aktifkan'}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                            isActive
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${isActive
                               ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
                               : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200'
-                          }`}
+                            }`}
                         >
                           <Power className="w-3 h-3" />
                           <span>{isActive ? 'Aktif' : 'Nonaktif'}</span>

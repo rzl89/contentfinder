@@ -386,7 +386,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   subscription: initial.subscription,
   orders: initial.orders,
   activeOrder: null,
-  adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6281234567890', // Nomor WhatsApp konfirmasi admin
+  adminWhatsApp: (import.meta.env.VITE_ADMIN_WHATSAPP as string) || '6285217975733', // Nomor WhatsApp konfirmasi admin
   storyboardGenerationsCount: initial.storyboardGenerationsCount,
   manualActivations: initial.manualActivations,
   auditLogs: initial.auditLogs || [],
