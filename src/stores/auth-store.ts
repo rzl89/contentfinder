@@ -12,7 +12,7 @@ interface AuthState {
 
   // Actions
   initialize: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | null; session?: Session | null }>;
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<{ error: AuthError | null; session?: Session | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   resendConfirmation: (email: string) => Promise<{ error: AuthError | null }>;
@@ -92,18 +92,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  signUp: async (email: string, password: string) => {
+  signUp: async (email: string, password: string, metadata?: Record<string, any>) => {
     set({ loading: true });
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        data: metadata || {},
         // Redirect after email confirmation (HashRouter: /#/login)
         emailRedirectTo: `${window.location.origin}/#/login`,
       },
     });
     if (!error && data?.session) {
       set({ session: data.session, user: data.session.user });
+      if (data.session.user) {
+        void useSubscriptionStore.getState().syncSubscriptionWithProfile(data.session.user.id);
+      }
     }
     set({ loading: false });
     return { error, session: data?.session ?? null };

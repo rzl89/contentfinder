@@ -37,6 +37,7 @@ import {
   RotateCw,
   Sparkles,
   Zap,
+  Crown,
 } from 'lucide-react';
 
 const FRAMING_OPTIONS = [
@@ -359,8 +360,8 @@ export const PromptDeskPage: React.FC = () => {
     if (!hasSufficientCredits(3)) {
       showToast({
         type: 'warning',
-        title: 'Kredit AI Tidak Mencukupi (Butuh 3 Kredit)',
-        message: 'Regenerasi storyboard membutuhkan 3 Kredit AI. Silakan Top-Up kredit atau perpanjang paket Creator Pro.',
+        title: 'Pemberitahuan Kuota Akun',
+        message: 'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan. Silakan upgrade ke Creator Pro untuk menggunakan seluruh fitur studio kreatif tanpa batas.',
       });
       navigate('/pricing');
       return;
@@ -430,8 +431,8 @@ export const PromptDeskPage: React.FC = () => {
     if (!hasSufficientCredits(1)) {
       showToast({
         type: 'warning',
-        title: 'Kredit AI Tidak Mencukupi (Butuh 1 Kredit)',
-        message: 'Regenerasi 1 adegan membutuhkan 1 Kredit AI. Silakan Top-Up kredit Anda.',
+        title: 'Pemberitahuan Kuota Akun',
+        message: 'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan. Silakan upgrade ke Creator Pro untuk menggunakan seluruh fitur studio kreatif tanpa batas.',
       });
       navigate('/pricing');
       return;
@@ -485,6 +486,32 @@ export const PromptDeskPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in pb-16">
+      {/* Polite Account Quota Notice Banner for secondary / exhausted trial accounts */}
+      {subscription.tier === 'free' && (subscription.status === 'expired' || (subscription.creditsBalance ?? 0) <= 0) && (
+        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold text-white">
+                Pemberitahuan Kuota Free Trial
+              </h4>
+              <p className="text-xs text-zinc-300 leading-relaxed max-w-2xl">
+                Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan oleh akun pertama Anda. Agar dapat mulai mengeksplorasi dan menggunakan seluruh fitur studio kreatif tanpa batas, silakan upgrade akun Anda ke Creator Pro.
+              </p>
+            </div>
+          </div>
+          <NavLink
+            to="/pricing"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-semibold shrink-0 transition-all shadow-md shadow-amber-500/20"
+          >
+            <Crown className="w-3.5 h-3.5" />
+            Upgrade ke Creator Pro
+          </NavLink>
+        </div>
+      )}
+
       {/* Header Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-2xl bg-[#111115] border border-white/10 shadow-xl">
         <div className="space-y-1">

@@ -852,13 +852,21 @@ Saya lampirkan bukti transfer di chat ini. Mohon segera diaktivasi akun saya. Te
           });
           return;
         } else {
-          // Normal free/trial account with active credits
-          set((state) => ({
-            subscription: {
-              ...state.subscription,
-              creditsBalance: profile.credits_balance ?? 20,
-            },
-          }));
+          // Free tier or trial account — sync credits and status from DB
+          const isExpired = profile.subscription_status === 'expired' || (profile.credits_balance ?? 0) <= 0;
+          const updatedSub: UserSubscription = {
+            ...get().subscription,
+            tier: 'free',
+            status: isExpired ? 'expired' : 'trial',
+            creditsBalance: profile.credits_balance ?? (isExpired ? 0 : 20),
+          };
+          set({ subscription: updatedSub });
+          saveState({
+            subscription: updatedSub,
+            orders: get().orders,
+            storyboardGenerationsCount: get().storyboardGenerationsCount,
+            manualActivations: get().manualActivations,
+          });
         }
       }
 

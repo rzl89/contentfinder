@@ -23,6 +23,7 @@ export const SignupPage: React.FC = () => {
     confirm?: string;
   }>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isTrialExhaustedAccount, setIsTrialExhaustedAccount] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -87,14 +88,16 @@ export const SignupPage: React.FC = () => {
 
     // 2. Check device fingerprint eligibility
     const eligibility = await checkTrialDeviceEligibility(email.trim().toLowerCase());
-    if (!eligibility.eligible) {
-      const blockedMsg = language === 'en' ? eligibility.messageEn : eligibility.messageId;
-      setError(blockedMsg);
-      setDeviceWarning(blockedMsg);
-      return;
-    }
+    const isExhausted = !eligibility.eligible;
+    setIsTrialExhaustedAccount(isExhausted);
 
-    const { error: authError, session } = await signUp(email.trim().toLowerCase(), password);
+    // Secondary accounts on the same device/network are allowed to register,
+    // but flagged so their profile is created with 0 trial credits.
+    const { error: authError, session } = await signUp(
+      email.trim().toLowerCase(),
+      password,
+      { is_trial_exhausted: isExhausted }
+    );
 
     if (authError) {
       if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
@@ -127,6 +130,20 @@ export const SignupPage: React.FC = () => {
               Klik link di email untuk mengaktifkan akun, lalu login.
             </p>
           </div>
+          {isTrialExhaustedAccount && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-300 text-left space-y-1.5">
+              <div className="flex items-center gap-2 font-semibold text-amber-200">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{t('Pemberitahuan Kuota Akun', 'Account Quota Notice')}</span>
+              </div>
+              <p className="leading-relaxed text-zinc-300">
+                {t(
+                  'Akun Anda berhasil didaftarkan. Karena perangkat atau jaringan internet ini sebelumnya telah mengklaim kuota Free Trial, akun ini memerlukan upgrade ke paket Creator Pro untuk mulai menggunakan fitur studio.',
+                  'Your account has been registered. Because this device or network has previously claimed a Free Trial, this account requires an upgrade to Creator Pro to start using studio features.'
+                )}
+              </p>
+            </div>
+          )}
           <div className="p-4 bg-[#0f0f13] border border-white/10 rounded-xl text-xs text-zinc-400 text-left space-y-2">
             <div className="flex items-start gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />

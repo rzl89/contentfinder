@@ -42,6 +42,7 @@ import {
   Check,
   Zap,
   ShieldCheck,
+  Crown,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
@@ -190,10 +191,10 @@ ${idea.localizationNotes}`;
     if (!hasSufficientCredits(ideaCreditsCost)) {
       showToast({
         type: 'warning',
-        title: t('Batas Free Trial Tercapai', 'Free Trial Quota Reached'),
+        title: t('Pemberitahuan Kuota Akun', 'Account Quota Notice'),
         message: t(
-          'Perangkat atau email Anda telah menggunakan kuota Free Trial. Silakan upgrade ke Creator Pro untuk melanjutkan.',
-          'Your device or email has already used the Free Trial quota. Please upgrade to Creator Pro to continue.'
+          'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan. Silakan upgrade ke Creator Pro untuk menggunakan seluruh fitur studio kreatif tanpa batas.',
+          'Hello! The Free Trial quota for this device or network was previously claimed. Please upgrade to Creator Pro to unlock and use all studio features.'
         ),
       });
       navigate('/pricing');
@@ -250,10 +251,10 @@ ${idea.localizationNotes}`;
     if (!hasSufficientCredits(storyboardCost)) {
       showToast({
         type: 'warning',
-        title: t('Batas Free Trial Tercapai', 'Free Trial Quota Reached'),
+        title: t('Pemberitahuan Kuota Akun', 'Account Quota Notice'),
         message: t(
-          'Perangkat atau email Anda telah menggunakan kuota Free Trial. Silakan upgrade ke Creator Pro untuk melanjutkan.',
-          'Your device or email has already used the Free Trial quota. Please upgrade to Creator Pro to continue.'
+          'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan. Silakan upgrade ke Creator Pro untuk menggunakan seluruh fitur studio kreatif tanpa batas.',
+          'Hello! The Free Trial quota for this device or network was previously claimed. Please upgrade to Creator Pro to unlock and use all studio features.'
         ),
       });
       navigate('/pricing');
@@ -353,6 +354,35 @@ ${idea.localizationNotes}`;
           </Button>
         </div>
       </div>
+
+      {/* Polite Account Quota Notice Banner for secondary / exhausted trial accounts */}
+      {subscription.tier === 'free' && (subscription.status === 'expired' || (subscription.creditsBalance ?? 0) <= 0) && (
+        <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 backdrop-blur-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold text-white">
+                {t('Pemberitahuan Kuota Free Trial', 'Free Trial Notice')}
+              </h4>
+              <p className="text-xs text-zinc-300 leading-relaxed max-w-2xl">
+                {t(
+                  'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan oleh akun pertama Anda. Agar dapat mulai mengeksplorasi dan menggunakan seluruh fitur studio kreatif tanpa batas, silakan upgrade akun Anda ke Creator Pro.',
+                  'Hello! The Free Trial quota for this device or internet network was previously claimed by your primary account. To start exploring and generating creative content without limits, please upgrade your account to Creator Pro.'
+                )}
+              </p>
+            </div>
+          </div>
+          <NavLink
+            to="/pricing"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black text-xs font-semibold shrink-0 transition-all shadow-md shadow-amber-500/20"
+          >
+            <Crown className="w-3.5 h-3.5" />
+            {t('Upgrade ke Creator Pro', 'Upgrade to Creator Pro')}
+          </NavLink>
+        </div>
+      )}
 
       {/* 1. Category Selection Section */}
       <section className="space-y-4">

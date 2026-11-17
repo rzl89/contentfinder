@@ -2,9 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { validateEmailAddress } from '@/lib/disposable-email-validator';
 import {
   getDeviceFingerprint,
+  getHardwareFingerprint,
   checkTrialDeviceEligibility,
   markDeviceTrialClaimed,
   clearInMemoryFingerprintCache,
+  setMockDeviceFingerprint,
 } from '@/lib/device-fingerprint';
 
 describe('Fixprom Anti-Abuse Shield — Disposable Email & Device Fingerprint', () => {
@@ -67,12 +69,15 @@ describe('Fixprom Anti-Abuse Shield — Disposable Email & Device Fingerprint', 
   describe('2. Device Fingerprint & Hardware Locking', () => {
     beforeEach(() => {
       clearInMemoryFingerprintCache();
-      const uniqueTestDeviceId = `test_device_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      // Generate a unique device+hardware pair per test run so DB rows never collide.
+      // setMockDeviceFingerprint bypasses all browser API calls and makes
+      // getDeviceFingerprint() / getHardwareFingerprint() return controlled values.
+      const uniqueId = `test_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      setMockDeviceFingerprint(`dev_${uniqueId}`, `hw_${uniqueId}`);
       if (typeof localStorage !== 'undefined') {
         localStorage.clear();
       }
       if (typeof document !== 'undefined') {
-        document.cookie = `__fixprom_dev_id=${uniqueTestDeviceId}; path=/`;
         document.cookie = '__fixprom_trial_claimed=; max-age=0; path=/';
       }
     });
@@ -98,7 +103,7 @@ describe('Fixprom Anti-Abuse Shield — Disposable Email & Device Fingerprint', 
       // 3. Second check on the same device with a different email (multi-accounting attempt)
       const secondCheck = await checkTrialDeviceEligibility('another_alt_account@gmail.com');
       expect(secondCheck.eligible).toBe(false);
-      expect(secondCheck.messageId).toContain('Perangkat atau email Anda telah menggunakan kuota Free Trial');
+      expect(secondCheck.messageId).toContain('Perangkat atau jaringan internet Anda telah menggunakan kuota Free Trial');
     });
   });
 });
