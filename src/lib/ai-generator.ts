@@ -72,6 +72,7 @@ export async function generateContentIdeas(
       body: JSON.stringify({
         action: 'generate_ideas',
         customApiKey: admin?.openAiApiKey || undefined,
+        systemPromptOverride: admin?.systemPromptOverride?.trim() || undefined,
         payload: {
           model: admin?.defaultModel || 'gpt-6-luna',
           temperature: admin?.temperature || 0.8,
@@ -265,6 +266,7 @@ export async function developStoryFromIdea(
       body: JSON.stringify({
         action: 'develop_story',
         customApiKey: admin?.openAiApiKey || undefined,
+        systemPromptOverride: admin?.systemPromptOverride?.trim() || undefined,
         payload: {
           model: admin?.defaultModel || 'gpt-6-luna',
           temperature: admin?.temperature || 0.7,

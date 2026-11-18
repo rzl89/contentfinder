@@ -67,6 +67,12 @@ export default async function handler(req, res) {
 
   const apiKey = req.body?.customApiKey || process.env.OPENAI_API_KEY;
 
+  // Optional admin-defined system prompt override (from Admin Panel → systemPromptOverride field)
+  const adminSystemPromptOverride =
+    typeof req.body?.systemPromptOverride === 'string' && req.body.systemPromptOverride.trim().length > 20
+      ? req.body.systemPromptOverride.trim()
+      : null;
+
   if (!apiKey || apiKey.trim().length < 5) {
     return res.status(500).json({
       error: 'OPENAI_API_KEY_MISSING',
@@ -230,7 +236,35 @@ export default async function handler(req, res) {
               .join('\n')}\n`
           : '';
 
-      const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
+      // Use admin-defined system prompt override if set; fall back to built-in default
+      const systemPrompt = adminSystemPromptOverride
+        ? `${adminSystemPromptOverride}
+
+--- DYNAMIC CONTEXT (injected per request) ---
+Language for dialogue/hook quotes: ${languageInstruction}
+Strategy: ${trendInstruction}
+Visual style: ${visualStyle}
+${outputLanguageInstruction}
+${historyContext}${anglesContext}
+FORMAT REQUIREMENT:
+Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
+{
+  "ideas": [
+    {
+      "title": "string",
+      "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
+      "premise": "string (premis unik yang berbeda dari ide lainnya)",
+      "synopsis": "string",
+      "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
+      "conflict": "string",
+      "ending": "string (payoff / twist)",
+      "suggestedLocation": "string",
+      "localizationNotes": "string",
+      "creativeRationale": "string"
+    }
+  ]
+}`
+        : `You are Fixprom AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
 Your task is to generate EXACTLY ${count} high-retention, creative, and completely DIVERSE video ideas.
 
 RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
@@ -386,7 +420,17 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
           ? 'All descriptions, role, appearance, clothing, personality, voiceStyle, world description, and scene summaries MUST be generated in natural, fluent ENGLISH.'
           : 'Deskripsi karakter, role, penampilan, pakaian, kepribadian, gaya bicara, deskripsi dunia, dan ringkasan scene harus ditulis dalam Bahasa Indonesia yang alami dan modern.';
 
-      const systemPrompt = `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
+      // Use admin-defined system prompt override if set; otherwise use built-in FlowStoryboard-Pro prompt
+      const systemPrompt = adminSystemPromptOverride
+        ? `${adminSystemPromptOverride}
+
+--- DYNAMIC CONTEXT (injected per request) ---
+Target scene count: ${effectiveSceneCount}
+Dialogue language: ${languageInstruction}
+Output language: ${storyOutputLangInstruction}
+Target AI video model: ${targetModel}
+Respond ONLY with valid JSON matching the full schema provided.`
+        : `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
 Your job: convert ANY user idea into a complete production package containing:
 1. Character Bible and World Bible
 2. Exactly ${effectiveSceneCount} storyboard scenes (covering the full 9-panel narrative arc)
