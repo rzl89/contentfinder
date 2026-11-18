@@ -76,9 +76,12 @@ export const IdeaStudioPage: React.FC = () => {
     return 'time-travel';
   });
 
+  const [ideaMode, setIdeaMode] = useState<'ai_generate' | 'manual_input'>('ai_generate');
+  const [storyboardType, setStoryboardType] = useState<'clip' | 'ad'>('clip');
+  const [productBrandName, setProductBrandName] = useState<string>('');
   const [selectedSubcatId, setSelectedSubcatId] = useState<string>('');
   const [platform, setPlatform] = useState<Platform>('tiktok');
-  const [duration, setDuration] = useState<DurationRange>('15s');
+  const [duration, setDuration] = useState<DurationRange>('10s');
   const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic_realistic');
   const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>('indonesian');
@@ -215,6 +218,9 @@ ${idea.localizationNotes}`;
         additionalTheme: additionalTheme.trim(),
         targetAudience: 'Audiens umum & kreator konten digital',
         ideaCount,
+        storyboardType,
+        ideaMode,
+        productBrandName: productBrandName.trim(),
       });
 
       setIdeas(generated);
@@ -309,6 +315,111 @@ ${idea.localizationNotes}`;
       });
     } finally {
       setDevelopingIdeaId(null);
+    }
+  };
+
+  const handleDevelopManualIdea = async () => {
+    const userPromptText = additionalTheme.trim();
+    if (!userPromptText) {
+      showToast({
+        type: 'warning',
+        title: 'Naskah / Ide Masih Kosong',
+        message: 'Silakan tuliskan naskah cerita, ide adegan, atau konsep iklan produk Anda.',
+      });
+      return;
+    }
+
+    const inputWords = userPromptText.split(/\s+/).filter(Boolean).length;
+    const creditCalculation = calculateActionCredits('generate_storyboard', inputWords);
+    const storyboardCost = creditCalculation.totalCost;
+
+    if (!hasSufficientCredits(storyboardCost)) {
+      showToast({
+        type: 'warning',
+        title: t('Pemberitahuan Kuota Akun', 'Account Quota Notice'),
+        message: t(
+          'Halo! Kuota Free Trial untuk perangkat atau jaringan internet ini sebelumnya telah digunakan. Silakan upgrade ke Creator Pro untuk menggunakan seluruh fitur studio kreatif tanpa batas.',
+          'Hello! The Free Trial quota for this device or network was previously claimed. Please upgrade to Creator Pro to unlock and use all studio features.'
+        ),
+      });
+      navigate('/pricing');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const generatedTitle =
+        storyboardType === 'ad' && productBrandName.trim()
+          ? `${productBrandName.trim()} Commercial`
+          : userPromptText.slice(0, 50) + (userPromptText.length > 50 ? '...' : '');
+
+      const manualIdea: ContentIdea = {
+        id: `idea_manual_${Date.now()}`,
+        title: generatedTitle,
+        hook: `[Detik 0-3] Pembuka visual: ${userPromptText.slice(0, 80)}`,
+        premise: userPromptText,
+        synopsis: userPromptText,
+        storyBeats: [
+          'Beat 1 (Hook): Kejadian tak terduga langsung menghentikan scroll penonton.',
+          'Beat 2 (Eskalasi): Situasi berkembang rumit dengan konflik atau adegan produk utama.',
+          'Beat 3 (Puncak/Climax): Momen paling memukau dan bernilai tinggi.',
+          'Beat 4 (Payoff/End Card): Resolusi kuat atau call to action yang berkesan.',
+        ],
+        conflict: 'Tantangan visual narasi utama',
+        ending: 'Penyelesaian cerita atau call-to-action berkesan',
+        estimatedDuration: duration,
+        visualStyle,
+        suggestedLocation: 'Latar sinematik terkurasi sesuai arahan ide',
+        localizationNotes: 'Format universal FlowStoryboard-Pro',
+        creativeRationale: `Storyboard mandiri: ${storyboardType === 'ad' ? 'Product Commercial' : 'Cinematic Clip'}`,
+        storyboardType,
+        categoryId: activeCategory.id,
+        saved: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      let proj = currentProject;
+      if (!proj) {
+        proj = createProject(generatedTitle, activeCategory.id, contextPreset);
+      }
+
+      const targetModel = proj?.targetModel || 'universal-neutral';
+      const developed = await developStoryFromIdea(manualIdea, 9, targetModel, dialogLanguage);
+
+      useProjectStore.getState().updateCurrentProject({
+        name: generatedTitle,
+        categoryId: activeCategory.id,
+        selectedIdea: manualIdea,
+        characters: developed.characters,
+        worldBible: developed.worldBible,
+        scenes: developed.scenes,
+        masterStoryboardImagePrompt: developed.imagePromptJson,
+        masterStoryboardVideoPrompt: developed.videoPromptJson,
+        storyboardPlanSummary: developed.planSummary,
+        storyboardValidationReport: developed.validationReport,
+      });
+
+      incrementStoryboardCount();
+      await deductCredits(storyboardCost, 'generate_storyboard', {
+        wordCount: inputWords,
+        isExtended: creditCalculation.isExtended,
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Storyboard Berhasil Disusun!',
+        message: `9-Panel Storyboard Grid dan Video Prompt 10 Detik telah siap. (-${storyboardCost} Kredit AI)`,
+      });
+
+      navigate('/prompt-desk');
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Menyusun Storyboard',
+        message: err.message || 'Terjadi kesalahan pada engine storyboard.',
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -582,51 +693,52 @@ ${idea.localizationNotes}`;
 
         <BentoTile className="p-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Subcategory */}
+            {/* 1. Metode Pembuatan Ide */}
             <Select
-              label="Subkategori Konten"
-              value={selectedSubcatId || activeCategory.subcategories[0]?.id}
-              onChange={(e) => setSelectedSubcatId(e.target.value)}
-              options={activeCategory.subcategories.map((s) => ({
-                value: s.id,
-                label: s.name,
-              }))}
-            />
-
-            {/* Target Duration in Seconds */}
-            <Select
-              label="Durasi Video (Detik)"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value as DurationRange)}
+              label="Metode Pembuatan Ide"
+              value={ideaMode}
+              onChange={(e) => setIdeaMode(e.target.value as 'ai_generate' | 'manual_input')}
               options={[
-                { value: '5s', label: '5 Detik (Ultra Micro Hook)' },
-                { value: '10s', label: '10 Detik (Google Flow & Storyboard Master)' },
-                { value: '15s', label: '15 Detik (TikTok & Reels Standar Viral)' },
-                { value: '30s', label: '30 Detik (Story Hook & Eskalasi)' },
-                { value: '60s', label: '60 Detik (Alur Cerita Mendalam)' },
-                { value: '90s', label: '90 Detik (Mini Movie / Drama)' },
-                { value: '1-3min', label: '1–3 Menit (Story Series Panjang)' },
+                { value: 'ai_generate', label: '✨ Digenerate oleh AI (Eksplorasi Ide Terkurasi)' },
+                { value: 'manual_input', label: '✍️ Buat Sendiri (Langsung Susun Storyboard)' },
               ]}
             />
 
-            {/* Visual Style */}
+            {/* 2. Tipe Storyboard */}
+            <Select
+              label="Tipe Storyboard"
+              value={storyboardType}
+              onChange={(e) => setStoryboardType(e.target.value as 'clip' | 'ad')}
+              options={[
+                { value: 'clip', label: '🎬 Movie, Drama, or Animated Clip' },
+                { value: 'ad', label: '🏷️ Product Ad / Commercial' },
+              ]}
+            />
+
+            {/* 3. Gaya Visual (10 Gaya FlowStoryboard-Pro Master) */}
             <Select
               label="Gaya Visual"
               value={visualStyle}
               onChange={(e) => setVisualStyle(e.target.value as VisualStyle)}
               options={[
-                { value: 'cinematic_realistic', label: 'Cinematic Realistic (Default)' },
-                { value: '3d_animation', label: '3D Animation High-Detail' },
-                { value: '2d_animation', label: '2D Hand-drawn Animation' },
-                { value: 'stickman', label: 'Stickman Minimalist Animation' },
-                { value: 'anime', label: 'Modern Anime / Makoto Shinkai Style' },
+                { value: 'cinematic_realistic', label: '01 — Ultra Photorealistic Cinematic' },
+                { value: 'anime_ghibli', label: '02 — Studio Ghibli Anime' },
+                { value: '3d_animation', label: '03 — 3D Cartoon Animation' },
+                { value: '2d_cartoon', label: '04 — 2D Cartoon (Flat colors, bold outlines)' },
+                { value: 'anime', label: '05 — Modern Anime (Shonen style)' },
+                { value: 'claymation', label: '06 — Stop-motion / Claymation' },
+                { value: '3d_product_commercial', label: '07 — Glossy 3D Product Commercial (Studio look)' },
+                { value: 'vintage_35mm', label: '08 — Vintage Retro 35mm Film' },
+                { value: 'neon_music_video', label: '09 — Neon Stylized Music-Video Look' },
+                { value: 'documentary_realism', label: '10 — Documentary Realism' },
+                { value: 'stickman', label: 'Stickman Minimalist Animation (Viral Spec)' },
                 { value: 'stylized', label: 'Stylized Pixar / 3D Character' },
                 { value: 'surreal_fantasy', label: 'Surreal / Fantasy Ethereal' },
                 { value: 'minimalist_faceless', label: 'Minimalist Faceless Aesthetic' },
               ]}
             />
 
-            {/* Target Platform */}
+            {/* 4. Target Platform / Aspek Rasio */}
             <Select
               label="Target Platform"
               value={platform}
@@ -635,12 +747,28 @@ ${idea.localizationNotes}`;
                 { value: 'tiktok', label: 'TikTok (9:16 Vertical)' },
                 { value: 'instagram_reels', label: 'Instagram Reels (9:16)' },
                 { value: 'youtube_shorts', label: 'YouTube Shorts (9:16)' },
-                { value: 'facebook_reels', label: 'Facebook Reels' },
-                { value: 'multi_platform', label: 'Multi-Platform Universal' },
+                { value: 'multi_platform', label: 'YouTube / Widescreen (16:9 Landscape)' },
+                { value: 'facebook_reels', label: 'Facebook / Feed Square (1:1)' },
               ]}
             />
 
-            {/* Dialogue Language */}
+            {/* 5. Durasi Video (Detik) */}
+            <Select
+              label="Durasi Video (Detik)"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value as DurationRange)}
+              options={[
+                { value: '10s', label: '10 Detik (Google Flow & Storyboard Master)' },
+                { value: '5s', label: '5 Detik (Ultra Micro Hook)' },
+                { value: '15s', label: '15 Detik (TikTok & Reels Standar Viral)' },
+                { value: '30s', label: '30 Detik (Story Hook & Eskalasi)' },
+                { value: '60s', label: '60 Detik (Alur Cerita Mendalam)' },
+                { value: '90s', label: '90 Detik (Mini Movie / Drama)' },
+                { value: '1-3min', label: '1–3 Menit (Story Series Panjang)' },
+              ]}
+            />
+
+            {/* 6. Bahasa Dialog & Narasi */}
             <Select
               label="Bahasa Dialog & Narasi"
               value={dialogLanguage}
@@ -651,26 +779,48 @@ ${idea.localizationNotes}`;
                 { value: 'javanese', label: 'Bahasa Jawa' },
                 { value: 'sundanese', label: 'Bahasa Sunda' },
                 { value: 'mixed', label: 'Campuran / Code-switching' },
-                { value: 'none', label: 'Tanpa Dialog (Hanya Teks/Audio)' },
+                { value: 'none', label: 'Tanpa Dialog (Ambient SFX / Musik)' },
               ]}
             />
 
-            {/* Idea Count */}
-            <Select
-              label="Jumlah Ide yang Dihasilkan"
-              value={ideaCount.toString()}
-              onChange={(e) => setIdeaCount(Number(e.target.value) as 5 | 10)}
-              options={[
-                { value: '5', label: '5 Pilihan Ide Terkurasi' },
-                { value: '10', label: '10 Pilihan Ide Lengkap' },
-              ]}
-            />
+            {/* 7. Pilihan Jumlah Ide (hanya tampil jika mode ai_generate) */}
+            {ideaMode === 'ai_generate' && (
+              <Select
+                label="Jumlah Ide yang Dihasilkan"
+                value={ideaCount.toString()}
+                onChange={(e) => setIdeaCount(Number(e.target.value) as 5 | 10)}
+                options={[
+                  { value: '5', label: '3–5 Pilihan Ide Terkurasi (Standar Dokumen)' },
+                  { value: '10', label: '10 Pilihan Ide Lengkap' },
+                ]}
+              />
+            )}
           </div>
 
-          <div className="pt-2">
+          {/* Kolom Opsional Khusus Product Ad */}
+          {storyboardType === 'ad' && (
+            <div className="pt-1">
+              <Input
+                label="Nama Produk / Brand (Opsional)"
+                placeholder="Contoh: Lumina Smart Glasses, Kopi Senja, GlowSkin Hydrating Serum..."
+                value={productBrandName}
+                onChange={(e) => setProductBrandName(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="pt-1">
             <Input
-              label="Ide Cerita, Tema, atau Kata Kunci (Opsional)"
-              placeholder="Contoh: Stickman menemukan portal rahasia di dalam lukisan kuno, misteri kedai kopi senja, rahasia teknologi AI..."
+              label={
+                ideaMode === 'manual_input'
+                  ? 'Ide Cerita / Naskah Klip / Konsep Iklan Anda (Wajib)'
+                  : 'Ide Cerita, Tema, atau Kata Kunci (Opsional)'
+              }
+              placeholder={
+                ideaMode === 'manual_input'
+                  ? 'Tuliskan alur cerita lengkap, adegan demi adegan, atau konsep produk Anda. AI akan langsung menyusun 9-panel visual storyboard...'
+                  : 'Contoh: Stickman menemukan portal rahasia di lukisan kuno, rahasia teknologi AI, kedai kopi senja...'
+              }
               value={additionalTheme}
               onChange={(e) => setAdditionalTheme(e.target.value)}
             />
@@ -679,29 +829,42 @@ ${idea.localizationNotes}`;
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
             <div className="space-y-1.5 text-xs">
               <div className="text-zinc-400">
-                Profil aktif: <span className="text-amber-400 font-medium">{CONTEXT_PRESETS[contextPreset].name}</span>. Prompt teknis otomatis berbahasa Inggris.
+                Engine: <span className="text-amber-400 font-medium">FlowStoryboard-Pro Master</span>. Prompt teknis visual otomatis bernomor 1–9 siap pakai.
               </div>
               <div className="inline-flex items-center gap-2 text-[11px] text-amber-300 font-mono bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
                 <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
                 <span>
-                  Biaya aksi: <strong>{ideaCount === 10 ? '2 Kredit AI' : '1 Kredit AI'}</strong> • Saldo Anda: <strong>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</strong>
+                  Biaya aksi: <strong>{ideaMode === 'manual_input' ? '3 Kredit AI' : ideaCount === 10 ? '2 Kredit AI' : '1 Kredit AI'}</strong> • Saldo Anda: <strong>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</strong>
                 </span>
               </div>
             </div>
 
-            <Button
-              variant="primary"
-              size="lg"
-              loading={isGenerating}
-              icon={<Sparkles className="w-5 h-5 text-black" />}
-              onClick={handleGenerateIdeas}
-              className="w-full sm:w-auto"
-            >
-              {t(
-                `Hasilkan ${ideaCount} Ide Sekarang (${ideaCount === 10 ? '2' : '1'} Kredit)`,
-                `Generate ${ideaCount} Ideas Now (${ideaCount === 10 ? '2' : '1'} Credits)`
-              )}
-            </Button>
+            {ideaMode === 'manual_input' ? (
+              <Button
+                variant="primary"
+                size="lg"
+                loading={isGenerating}
+                icon={<ArrowRight className="w-5 h-5 text-black" />}
+                onClick={handleDevelopManualIdea}
+                className="w-full sm:w-auto font-bold shadow-lg shadow-amber-500/20"
+              >
+                Langsung Susun Storyboard (3 Kredit)
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="lg"
+                loading={isGenerating}
+                icon={<Sparkles className="w-5 h-5 text-black" />}
+                onClick={handleGenerateIdeas}
+                className="w-full sm:w-auto font-bold shadow-lg shadow-amber-500/20"
+              >
+                {t(
+                  `Hasilkan ${ideaCount} Ide Sekarang (${ideaCount === 10 ? '2' : '1'} Kredit)`,
+                  `Generate ${ideaCount} Ideas Now (${ideaCount === 10 ? '2' : '1'} Credits)`
+                )}
+              </Button>
+            )}
           </div>
         </BentoTile>
       </section>

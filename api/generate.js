@@ -171,19 +171,20 @@ export default async function handler(req, res) {
       const {
         categoryName,
         categoryDescription,
-        subcatName,
         platform = 'TikTok',
-        duration = '30-60s',
+        duration = '10s',
         visualStyle = 'cinematic_realistic',
-        contextName = 'Indonesia Natural',
+        contextName = 'Universal',
         targetMarket = 'Indonesia',
-        targetAudience = 'Digital youth & creator audience',
+        targetAudience = 'General digital audience',
         dialogLanguage = 'indonesian',
         trendApproach = 'trend_first',
+        storyboardType = 'clip',
+        productBrandName = '',
         additionalTheme,
         topic,
         count = 5,
-        temperature = 0.8,
+        temperature = 0.75,
         ideaMemory,
         assignedAngles = [],
         creativeEntropy,
@@ -191,6 +192,7 @@ export default async function handler(req, res) {
       } = payload || {};
 
       const effectiveTopic = (additionalTheme || topic || '').trim();
+      const isProductAd = storyboardType === 'ad';
 
       const outputLanguageInstruction =
         uiLanguage === 'en'
@@ -199,52 +201,46 @@ export default async function handler(req, res) {
 
       const languageInstruction =
         dialogLanguage === 'javanese'
-          ? 'Bahasa Jawa (ngoko/krama natural sehari-hari).'
+          ? 'Bahasa Jawa'
           : dialogLanguage === 'sundanese'
-          ? 'Bahasa Sunda (akrab natural).'
+          ? 'Bahasa Sunda'
           : dialogLanguage === 'english'
-          ? 'English (clear, conversational modern English).'
+          ? 'English'
           : dialogLanguage === 'mixed'
-          ? 'Campuran / Code-switching (Bahasa Indonesia santai campur istilah umum).'
+          ? 'Campuran / Code-switching'
           : dialogLanguage === 'none'
-          ? 'Tanpa dialog (visual-only storytelling dengan sound effects/musik atmosferik).'
-          : 'Bahasa Indonesia santai, kontemporer, dan akrab (tanpa kata kaku baku).';
+          ? 'None (ambient SFX / music only)'
+          : 'Bahasa Indonesia santai kontemporer';
 
-      const trendInstruction =
-        trendApproach === 'trend_first'
-          ? 'STRATEGI VIRAL & RETENSI TINGGI: Hook 0-3 detik agresif tervalidasi dari pola retensi short-form (visual shock, pertanyaan tak terduga, atau adegan tengah konflik).'
-          : 'STRATEGI NARRATIVE-FIRST: Alur dramatik berbobot, karakter mendalam, dan payoff emosional yang berkesan.';
-
-      // Format previous ideas for negative constraint / anti-repetition
+      // Anti-repetition memory
       const recentList = Array.isArray(ideaMemory?.recentIdeas) ? ideaMemory.recentIdeas : [];
       const historyContext =
         recentList.length > 0
-          ? `\nPREVIOUSLY GENERATED IDEAS (DO NOT REPEAT OR CLOSELY PARAPHRASE THESE CONCEPTS):\n${recentList
+          ? `\nPREVIOUS IDEAS (DO NOT DUPLICATE):\n${recentList
               .slice(0, 15)
-              .map(
-                (item, idx) =>
-                  `- [History #${idx + 1}] "${item.title}": ${item.hook} — ${item.premise}`
-              )
-              .join('\n')}\nCRITICAL: The ideas you generate now MUST be substantially different from all the above in premise, core conflict, and setting.\n`
-          : '';
-
-      // Format angle diversity directions
-      const anglesContext =
-        assignedAngles.length > 0
-          ? `\nASSIGNED CREATIVE ANGLES (Apply one distinct angle to each idea):\n${assignedAngles
-              .map((ang, idx) => `Idea #${idx + 1} angle directive: ${ang}`)
+              .map((item, idx) => `- [History #${idx + 1}] "${item.title}": ${item.hook}`)
               .join('\n')}\n`
           : '';
 
-      // Use admin-defined system prompt override if set; fall back to built-in default
-      const systemPrompt = adminSystemPromptOverride
-        ? `${adminSystemPromptOverride}
+      const anglesContext =
+        assignedAngles.length > 0
+          ? `\nASSIGNED CREATIVE ANGLES:\n${assignedAngles
+              .map((ang, idx) => `- Idea #${idx + 1} angle: ${ang}`)
+              .join('\n')}\n`
+          : '';
 
---- DYNAMIC CONTEXT (injected per request) ---
-Language for dialogue/hook quotes: ${languageInstruction}
-Strategy: ${trendInstruction}
-Visual style: ${visualStyle}
-${outputLanguageInstruction}
+      const defaultSystemPromptIdeas = `You are "FlowStoryboard-Pro", a veteran commercial director & ad-film engineer with 10+ years of hands-on experience crafting TV commercials, cinematic movie/drama clips, and animated spots, now specialized in the Google Flow + Omni Flash (Veo) pipeline.
+Your job: Convert the user's category, theme, and parameters into EXACTLY ${count} production-ready, diverse video concepts for ${isProductAd ? 'Product Commercial / Ad' : 'Movie / Drama / Animated Clip'}.
+
+GOLDEN RULES (STRICT):
+1. CRITICAL SYSTEM CONSTRAINT: You are a text-based prompt engineer. Output ONLY valid JSON code blocks.
+2. BEAT STRUCTURE:
+${isProductAd
+  ? '   • ADS (products / e-commerce): 1 Hook -> 2 Problem/Context -> 3 Product Reveal -> 4-5 Feature close-ups -> 6 Benefit demo -> 7 Lifestyle shot -> 8 Result/social proof -> 9 CTA + logo.'
+  : '   • MOVIE / DRAMA / ANIMATED clips: 1 Establishing shot -> 2 Character intro -> 3 Setup -> 4-5 Build-up -> 6 Conflict -> 7-8 Climax -> 9 Resolution / end frame.'}
+3. DIVERSITY: Every idea in this batch must have a distinct central conflict, setting, visual hook, and payoff.
+4. VISUAL PRECISION: Ground visual tone cleanly in "${visualStyle}".
+5. ${outputLanguageInstruction}
 ${historyContext}${anglesContext}
 FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
@@ -257,43 +253,7 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
       "synopsis": "string",
       "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
       "conflict": "string",
-      "ending": "string (payoff / twist)",
-      "suggestedLocation": "string",
-      "localizationNotes": "string",
-      "creativeRationale": "string"
-    }
-  ]
-}`
-        : `You are Fixprom AI powered by ${requestedModel}, an elite content strategist and creative director for short-form video creators (${platform}).
-Your task is to generate EXACTLY ${count} high-retention, creative, and completely DIVERSE video ideas.
-
-RULES OF AUTHENTICITY & ANTI-SLOP (STRICT):
-1. NO AI-CLICHÉ HOOKS: Do NOT use tired AI openings like "Pernahkah kamu membayangkan...", "Tahukah kamu bahwa...", "Bayangkan jika...", or "Unlock the secret". Start with an immediate concrete situation, dialogue snippet, or unexpected visual conflict.
-2. NO STEREOTYPICAL LAZINESS: Do NOT assume all Indonesian stories take place in Jakarta slums, warungs, or motorbikes unless the specific narrative demands it. Represent modern, diverse Indonesian life authentically.
-3. LANGUAGE ACCURACY: Language for dialogue/hook quotes must follow: ${languageInstruction}
-4. STRATEGY ALIGNMENT: ${trendInstruction}
-5. VISUAL INTEGRITY: Ground visual style cleanly in "${visualStyle}".
-6. ${outputLanguageInstruction}
-
-BATCH DIVERSITY & NON-REPETITION MANDATE (CRITICAL):
-- Every idea in this batch MUST have a fundamentally different central conflict, point-of-view, setting, and payoff.
-- DO NOT generate variations of the same incident with only cosmetic changes (e.g. changing names, objects, or locations while keeping the same core story).
-- Each concept must stand on its own as a completely separate creative proposition.
-${historyContext}
-${anglesContext}
-
-FORMAT REQUIREMENT:
-Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
-{
-  "ideas": [
-    {
-      "title": "string",
-      "hook": "string (Detik 0-3 hook text yang spesifik dan tajam)",
-      "premise": "string (premis unik yang berbeda dari ide lainnya)",
-      "synopsis": "string",
-      "storyBeats": ["Beat 1 (Detik 0-3 Hook)...", "Beat 2 (Eskalasi)...", "Beat 3 (Puncak/Klimaks)...", "Beat 4 (Twist/Payoff)..."],
-      "conflict": "string",
-      "ending": "string (payoff / twist)",
+      "ending": "string (payoff / twist / CTA)",
       "suggestedLocation": "string",
       "localizationNotes": "string",
       "creativeRationale": "string"
@@ -301,18 +261,29 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
   ]
 }`;
 
+      const systemPrompt = adminSystemPromptOverride
+        ? `${adminSystemPromptOverride}
+
+--- DYNAMIC CONTEXT (injected per request) ---
+Storyboard Type: ${isProductAd ? 'Product Ad / Commercial' : 'Movie / Drama / Animated Clip'}
+Visual style: ${visualStyle}
+Platform: ${platform}
+Duration: ${duration}
+${outputLanguageInstruction}
+${historyContext}${anglesContext}
+FORMAT REQUIREMENT:
+Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects with keys: title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale.`
+        : defaultSystemPromptIdeas;
+
       const userPrompt = `Generate EXACTLY ${count} uniquely distinct video ideas for:
-Category: ${categoryName} (${subcatName || ''})
+Category: ${categoryName}
 Description: ${categoryDescription || ''}
-${effectiveTopic ? `Specific Topic / Focus Angle: ${effectiveTopic}` : 'Specific Topic: General Category Exploration (Explore fresh, varied sub-angles)'}
+Type: ${isProductAd ? `Product Ad / Commercial (Brand: ${productBrandName || 'Standard'})` : 'Movie / Drama / Animated Clip'}
+${effectiveTopic ? `Specific Concept / Idea: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
 Platform: ${platform}
 Target Duration: ${duration}
 Visual Style: ${visualStyle}
-Context Profile: ${contextName}
-Target Market: ${targetMarket}
-Target Audience: ${targetAudience}
-Dialog Language: ${dialogLanguage}
-Trend Approach: ${trendApproach}
+Dialogue Language: ${languageInstruction}
 Entropy Seed: ${creativeEntropy || Date.now()}`;
 
       const { content, modelUsed, usage } = await callOpenAI(
@@ -349,7 +320,7 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         }
       }
 
-      // Backend similarity filter: ensure within-batch distinctness
+      // Ensure distinctness
       const filteredList = [];
       const seenTokens = [];
 
@@ -388,7 +359,6 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
       }
 
       const finalList = filteredList.length > 0 ? filteredList : list;
-
       return res.status(200).json({ success: true, ideas: finalList, modelUsed, usage });
     }
 

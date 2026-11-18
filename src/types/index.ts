@@ -20,10 +20,17 @@ export type EnvironmentType =
 
 export type VisualStyle =
   | 'cinematic_realistic'
+  | 'anime_ghibli'
   | '3d_animation'
+  | '2d_cartoon'
   | '2d_animation'
-  | 'stickman'
   | 'anime'
+  | 'claymation'
+  | '3d_product_commercial'
+  | 'vintage_35mm'
+  | 'neon_music_video'
+  | 'documentary_realism'
+  | 'stickman'
   | 'stylized'
   | 'surreal_fantasy'
   | 'minimalist_faceless';
@@ -164,6 +171,7 @@ export interface ContentIdea {
   localizationNotes: string;
   creativeRationale: string;
   trendEvidence?: string;
+  storyboardType?: 'clip' | 'ad';
   categoryId: string;
   subcategoryId?: string;
   saved: boolean;
@@ -183,6 +191,9 @@ export interface IdeaGenerationConfig {
   additionalTheme?: string;
   targetAudience?: string;
   ideaCount: 5 | 10;
+  storyboardType?: 'clip' | 'ad';
+  ideaMode?: 'ai_generate' | 'manual_input';
+  productBrandName?: string;
 }
 
 // ---------------------------------------------------------------------------

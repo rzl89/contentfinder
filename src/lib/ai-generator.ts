@@ -87,6 +87,8 @@ export async function generateContentIdeas(
           targetAudience: config.targetAudience,
           dialogLanguage: config.dialogLanguage || 'indonesian',
           trendApproach: config.trendApproach || 'trend_first',
+          storyboardType: config.storyboardType || 'clip',
+          productBrandName: config.productBrandName || '',
           additionalTheme: config.additionalTheme,
           topic: config.additionalTheme,
           count: targetCount,
