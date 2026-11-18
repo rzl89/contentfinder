@@ -421,7 +421,7 @@ export const PromptDeskPage: React.FC = () => {
         message:
           lockedCount > 0
             ? `Variasi alur baru diterapkan (${lockedCount} adegan terkunci tetap dipertahankan). (-3 Kredit AI)`
-            : 'Variasi 4 adegan baru dan character bible telah dirancang ulang. (-3 Kredit AI)',
+            : 'Variasi 9 adegan storyboard dan character bible telah dirancang ulang. (-3 Kredit AI)',
       });
       setSelectedSceneIndex(0);
     } catch (err: any) {
@@ -502,13 +502,17 @@ export const PromptDeskPage: React.FC = () => {
   };
 
   const masterImageJson: StoryboardImagePromptJSON = currentProject
-    ? (typeof currentProject.masterStoryboardImagePrompt === 'object' && currentProject.masterStoryboardImagePrompt
+    ? (typeof currentProject.masterStoryboardImagePrompt === 'object' &&
+       currentProject.masterStoryboardImagePrompt &&
+       (currentProject.masterStoryboardImagePrompt as any).panels?.length
         ? (currentProject.masterStoryboardImagePrompt as StoryboardImagePromptJSON)
         : generateStoryboardImageJson(currentProject))
     : ({} as any);
 
   const masterVideoJson: StoryboardVideoPromptJSON = currentProject
-    ? (typeof currentProject.masterStoryboardVideoPrompt === 'object' && currentProject.masterStoryboardVideoPrompt
+    ? (typeof currentProject.masterStoryboardVideoPrompt === 'object' &&
+       currentProject.masterStoryboardVideoPrompt &&
+       (currentProject.masterStoryboardVideoPrompt as any).timeline?.length
         ? (currentProject.masterStoryboardVideoPrompt as StoryboardVideoPromptJSON)
         : generateStoryboardVideoJson(currentProject, masterImageJson))
     : ({} as any);
@@ -631,7 +635,7 @@ export const PromptDeskPage: React.FC = () => {
             loading={isRegeneratingStoryboard}
             icon={<RotateCw className="w-3.5 h-3.5 text-amber-400" />}
             onClick={handleRegenerateStoryboard}
-            title="Generate ulang seluruh 4 adegan dengan ide saat ini (-3 Kredit AI)"
+            title="Generate ulang seluruh 9 adegan dengan ide saat ini (-3 Kredit AI)"
             className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
           >
             Buat Ulang Storyboard (3 Kredit)

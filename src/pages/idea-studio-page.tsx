@@ -25,7 +25,6 @@ import type {
   VisualStyle,
   ContextProfilePreset,
   DialogLanguage,
-  TrendApproach,
 } from '@/types';
 import {
   Sparkles,
@@ -791,7 +790,7 @@ ${idea.localizationNotes}`;
                       loading={developingIdeaId === idea.id}
                       icon={<ArrowRight className="w-4 h-4 text-black" />}
                       onClick={() => handleDevelopIdea(idea)}
-                      title={t('Susun 4 adegan storyboard, character bible, dan world bible (-3 Kredit AI)', 'Generate 4 storyboard scenes, character bible, and world bible (-3 AI Credits)')}
+                      title={t('Susun 9 adegan storyboard 9-panel, character bible, dan world bible (-3 Kredit AI)', 'Generate 9 storyboard scenes 9-panel, character bible, and world bible (-3 AI Credits)')}
                     >
                       {t('Kembangkan ke Storyboard (3 Kredit)', 'Develop to Storyboard (3 Credits)')}
                     </Button>
