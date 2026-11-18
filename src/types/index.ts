@@ -45,6 +45,12 @@ export type Platform =
   | 'custom';
 
 export type DurationRange =
+  | '5s'
+  | '10s'
+  | '15s'
+  | '30s'
+  | '60s'
+  | '90s'
   | '10-15s'
   | '15-30s'
   | '30-60s'

@@ -79,13 +79,11 @@ export const IdeaStudioPage: React.FC = () => {
 
   const [selectedSubcatId, setSelectedSubcatId] = useState<string>('');
   const [platform, setPlatform] = useState<Platform>('tiktok');
-  const [duration, setDuration] = useState<DurationRange>('30-60s');
+  const [duration, setDuration] = useState<DurationRange>('15s');
   const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic_realistic');
   const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>('indonesian');
-  const [trendApproach, setTrendApproach] = useState<TrendApproach>('trend_first');
   const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
-  const [targetAudience, setTargetAudience] = useState('Audiens muda & kreator konten digital');
   const [ideaCount, setIdeaCount] = useState<5 | 10>(5);
 
   // Result state
@@ -184,7 +182,7 @@ ${idea.localizationNotes}`;
       return;
     }
 
-    const inputWords = `${additionalTheme.trim()} ${targetAudience.trim()}`.split(/\s+/).filter(Boolean).length;
+    const inputWords = additionalTheme.trim().split(/\s+/).filter(Boolean).length;
     const baseCost = ideaCount === 10 ? 2 : 1;
     const creditCalculation = calculateActionCredits('generate_ideas', inputWords);
     const ideaCreditsCost = creditCalculation.isExtended ? baseCost + creditCalculation.extraCredits : baseCost;
@@ -214,9 +212,9 @@ ${idea.localizationNotes}`;
         visualStyle,
         contextProfile: CONTEXT_PRESETS[contextPreset],
         dialogLanguage,
-        trendApproach,
+        trendApproach: 'trend_first',
         additionalTheme: additionalTheme.trim(),
-        targetAudience: targetAudience.trim(),
+        targetAudience: 'Audiens umum & kreator konten digital',
         ideaCount,
       });
 
@@ -584,10 +582,10 @@ ${idea.localizationNotes}`;
         </h3>
 
         <BentoTile className="p-6 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Subcategory */}
             <Select
-              label="Subkategori"
+              label="Subkategori Konten"
               value={selectedSubcatId || activeCategory.subcategories[0]?.id}
               onChange={(e) => setSelectedSubcatId(e.target.value)}
               options={activeCategory.subcategories.map((s) => ({
@@ -596,30 +594,19 @@ ${idea.localizationNotes}`;
               }))}
             />
 
-            {/* Target Platform */}
+            {/* Target Duration in Seconds */}
             <Select
-              label="Target Platform"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value as Platform)}
-              options={[
-                { value: 'tiktok', label: 'TikTok (9:16 Vertical)' },
-                { value: 'instagram_reels', label: 'Instagram Reels (9:16)' },
-                { value: 'youtube_shorts', label: 'YouTube Shorts (9:16)' },
-                { value: 'facebook_reels', label: 'Facebook Reels' },
-                { value: 'multi_platform', label: 'Multi-Platform Universal' },
-              ]}
-            />
-
-            {/* Target Duration */}
-            <Select
-              label="Target Durasi"
+              label="Durasi Video (Detik)"
               value={duration}
               onChange={(e) => setDuration(e.target.value as DurationRange)}
               options={[
-                { value: '10-15s', label: '10–15 Detik (Ultra Fast Hook)' },
-                { value: '15-30s', label: '15–30 Detik (Standard Viral)' },
-                { value: '30-60s', label: '30–60 Detik (Deep Narrative)' },
-                { value: '1-3min', label: '1–3 Menit (Mini Story / Series)' },
+                { value: '5s', label: '5 Detik (Ultra Micro Hook)' },
+                { value: '10s', label: '10 Detik (Google Flow & Storyboard Master)' },
+                { value: '15s', label: '15 Detik (TikTok & Reels Standar Viral)' },
+                { value: '30s', label: '30 Detik (Story Hook & Eskalasi)' },
+                { value: '60s', label: '60 Detik (Alur Cerita Mendalam)' },
+                { value: '90s', label: '90 Detik (Mini Movie / Drama)' },
+                { value: '1-3min', label: '1–3 Menit (Story Series Panjang)' },
               ]}
             />
 
@@ -640,18 +627,17 @@ ${idea.localizationNotes}`;
               ]}
             />
 
-            {/* Context Profile */}
+            {/* Target Platform */}
             <Select
-              label="Context Engine Profile"
-              value={contextPreset}
-              onChange={(e) => setContextPreset(e.target.value as ContextProfilePreset)}
+              label="Target Platform"
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value as Platform)}
               options={[
-                { value: 'indonesia_natural', label: 'Indonesia Natural (Default)' },
-                { value: 'indonesia_urban', label: 'Indonesia Urban (Kota Modern)' },
-                { value: 'indonesia_rural', label: 'Indonesia Rural (Alam & Asri)' },
-                { value: 'global_neutral', label: 'Global Neutral (Universal)' },
-                { value: 'southeast_asia', label: 'Southeast Asia (ASEAN)' },
-                { value: 'fantasy_custom', label: 'Fantasy / Custom World' },
+                { value: 'tiktok', label: 'TikTok (9:16 Vertical)' },
+                { value: 'instagram_reels', label: 'Instagram Reels (9:16)' },
+                { value: 'youtube_shorts', label: 'YouTube Shorts (9:16)' },
+                { value: 'facebook_reels', label: 'Facebook Reels' },
+                { value: 'multi_platform', label: 'Multi-Platform Universal' },
               ]}
             />
 
@@ -670,19 +656,6 @@ ${idea.localizationNotes}`;
               ]}
             />
 
-            {/* Trend Approach */}
-            <Select
-              label="Pendekatan Tren"
-              value={trendApproach}
-              onChange={(e) => setTrendApproach(e.target.value as TrendApproach)}
-              options={[
-                { value: 'trend_first', label: 'Trend-First (Adaptasi Pola Terverifikasi)' },
-                { value: 'topic_first', label: 'Topic-First (Fokus Substansi Subjek)' },
-                { value: 'evergreen', label: 'Evergreen (Daya Tahan Jangka Panjang)' },
-                { value: 'hybrid', label: 'Hybrid (Pola Tren + Pesan Bermakna)' },
-              ]}
-            />
-
             {/* Idea Count */}
             <Select
               label="Jumlah Ide yang Dihasilkan"
@@ -695,18 +668,12 @@ ${idea.localizationNotes}`;
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div className="pt-2">
             <Input
-              label="Tema Tambahan / Kata Kunci Khusus (Opsional)"
-              placeholder="Contoh: kopi senja, rahasia arsip tua, artificial intelligence..."
+              label="Ide Cerita, Tema, atau Kata Kunci (Opsional)"
+              placeholder="Contoh: Stickman menemukan portal rahasia di dalam lukisan kuno, misteri kedai kopi senja, rahasia teknologi AI..."
               value={additionalTheme}
               onChange={(e) => setAdditionalTheme(e.target.value)}
-            />
-            <Input
-              label="Target Audiens"
-              placeholder="Contoh: Gen-Z pekerja kantoran, pecinta sejarah, penonton curious..."
-              value={targetAudience}
-              onChange={(e) => setTargetAudience(e.target.value)}
             />
           </div>
 
