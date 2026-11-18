@@ -257,6 +257,106 @@ export interface Scene {
 }
 
 // ---------------------------------------------------------------------------
+// Storyboard Master Prompt Types (FlowStoryboard-Pro)
+// ---------------------------------------------------------------------------
+
+export interface StoryboardPanelItem {
+  panel: number;
+  beat: string;
+  shot_type: string;
+  camera: string;
+  description: string;
+}
+
+export interface StoryboardOnScreenPlacement {
+  panel?: number;
+  appears_at?: string;
+  text: string;
+  style?: string;
+  animation?: string;
+}
+
+export interface StoryboardIngredientRef {
+  id: string;
+  description: string;
+  used_in_panels?: number[];
+}
+
+export interface StoryboardImagePromptJSON {
+  task: string;
+  style: string;
+  aspect_ratio: string;
+  grid_layout: {
+    total_panels: number;
+    rows: number;
+    columns: number;
+    reading_order: string;
+    panel_borders: string;
+    panel_numbers: string;
+  };
+  global_consistency: {
+    anchor_description: string;
+    color_palette: string;
+    lighting: string;
+    environment: string;
+  };
+  on_screen_text: {
+    rule: string;
+    placements: StoryboardOnScreenPlacement[];
+  };
+  ingredients_references: StoryboardIngredientRef[];
+  panels: StoryboardPanelItem[];
+  negative_prompt: string;
+}
+
+export interface StoryboardTimelineEntry {
+  frame_ref: string;
+  time: string;
+  action: string;
+  camera_move: string;
+  motion_intensity: string;
+  transition_to_next: string;
+  audio: string;
+}
+
+export interface StoryboardVideoPromptJSON {
+  task: string;
+  source_image: string;
+  style: string;
+  aspect_ratio: string;
+  duration_seconds: number;
+  ingredients_references: string[];
+  on_screen_text: {
+    rule: string;
+    placements: StoryboardOnScreenPlacement[];
+  };
+  timeline: StoryboardTimelineEntry[];
+  audio_design: {
+    music_mood: string;
+    sfx_layers: string;
+    voiceover: {
+      coverage_rule: string;
+      voice_match_rule: string;
+      lines: Array<{ time: string; line: string }>;
+      total_word_limit: string;
+    };
+    dialogue_for_cinematic?: string;
+  };
+  consistency_lock: string;
+  negative_prompt: string;
+}
+
+export interface StoryboardValidationReport {
+  timingTotal10s: boolean;
+  anchorConsistent: boolean;
+  ingredientRefsMatch: boolean;
+  styleAspectIdentical: boolean;
+  onScreenTextRuleCompliant: boolean;
+  voiceoverRuleCompliant: boolean;
+  timestamp: string;
+}
+
+// ---------------------------------------------------------------------------
 // Model Capabilities
 // ---------------------------------------------------------------------------
 
@@ -315,6 +415,10 @@ export interface Project {
   scenes: Scene[];
   qcResult?: QCResult;
   targetModel?: string;
+  masterStoryboardImagePrompt?: StoryboardImagePromptJSON | string;
+  masterStoryboardVideoPrompt?: StoryboardVideoPromptJSON | string;
+  storyboardPlanSummary?: string[];
+  storyboardValidationReport?: StoryboardValidationReport;
   status: 'draft' | 'in_progress' | 'completed';
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601

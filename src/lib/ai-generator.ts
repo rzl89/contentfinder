@@ -6,7 +6,16 @@ import type {
   Scene,
   DurationRange,
   VisualStyle,
+  StoryboardImagePromptJSON,
+  StoryboardVideoPromptJSON,
+  StoryboardValidationReport,
+  Project,
 } from '@/types';
+import {
+  generateStoryboardImageJson,
+  generateStoryboardVideoJson,
+  validateStoryboardPackage,
+} from '@/lib/prompt-compiler';
 import { getCategoryById } from '@/context-engine';
 import { useAdminStore } from '@/stores/admin-store';
 import { useLanguageStore } from '@/stores/language-store';
@@ -231,15 +240,20 @@ export async function generateContentIdeas(
  */
 export async function developStoryFromIdea(
   idea: ContentIdea,
-  targetSceneCount: number = 4,
+  targetSceneCount: number = 9,
   targetModel: string = 'universal-neutral',
   dialogLanguage: string = 'indonesian'
 ): Promise<{
   characters: CharacterBible[];
   worldBible: WorldBible;
   scenes: Scene[];
+  imagePromptJson: StoryboardImagePromptJSON;
+  videoPromptJson: StoryboardVideoPromptJSON;
+  planSummary: string[];
+  validationReport: StoryboardValidationReport;
 }> {
   const projectId = `proj_${Date.now()}`;
+  const effectiveCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
 
   // 1. Try calling the secure backend proxy
   try {
@@ -255,7 +269,7 @@ export async function developStoryFromIdea(
           model: admin?.defaultModel || 'gpt-6-luna',
           temperature: admin?.temperature || 0.7,
           idea,
-          targetSceneCount,
+          targetSceneCount: effectiveCount,
           targetModel,
           dialogLanguage,
           uiLanguage: currentLang,
@@ -300,7 +314,7 @@ export async function developStoryFromIdea(
           moodAndTone: wb.moodAndTone || 'Cinematic, suspenseful, authentic',
           colorPalette: Array.isArray(wb.colorPalette)
             ? wb.colorPalette
-            : ['#0A0A0E', '#F59E0B', '#27272A'],
+            : ['#0A0A0E', '#F59E0B', '#27272A', '#E4E4E7'],
         };
 
         const scenes: Scene[] = rawScenes.map((s: any, idx: number): Scene => ({
@@ -342,11 +356,70 @@ export async function developStoryFromIdea(
           locked: false,
         }));
 
+        // Mock project representation to compute or validate FlowStoryboard package
+        const mockProject: Project = {
+          id: projectId,
+          userId: 'owner',
+          name: idea.title,
+          categoryId: idea.categoryId,
+          contextProfile: {
+            id: 'profile',
+            name: 'Indonesia Natural',
+            targetMarket: 'Indonesia',
+            environment: 'urban',
+            visualStyle: idea.visualStyle,
+            dialogLanguage: 'indonesian',
+            captionLanguage: 'id',
+            promptLanguage: 'en',
+            localization: {
+              region: 'Indonesia',
+              culturalNotes: [],
+              namingConvention: 'indonesian_common',
+              currency: 'IDR',
+              typicalLandscapes: [],
+            },
+            preset: 'indonesia_natural',
+          },
+          selectedIdea: idea,
+          characters: [character],
+          worldBible,
+          scenes,
+          status: 'draft',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        const imagePromptJson: StoryboardImagePromptJSON =
+          pkg.imagePromptJson && Array.isArray(pkg.imagePromptJson.panels)
+            ? pkg.imagePromptJson
+            : generateStoryboardImageJson(mockProject);
+
+        const videoPromptJson: StoryboardVideoPromptJSON =
+          pkg.videoPromptJson && Array.isArray(pkg.videoPromptJson.timeline)
+            ? pkg.videoPromptJson
+            : generateStoryboardVideoJson(mockProject, imagePromptJson);
+
+        const validationReport: StoryboardValidationReport =
+          pkg.validationReport || validateStoryboardPackage(imagePromptJson, videoPromptJson);
+
+        const planSummary: string[] = Array.isArray(pkg.planSummary)
+          ? pkg.planSummary
+          : [
+              `Visual Style: ${idea.visualStyle.replace(/_/g, ' ')} | Aspect Ratio: 16:9`,
+              `Narrative Arc: 9-Panel cinematic contact sheet with high-retention hook`,
+              `Typography: Minimal premium typography (max 3 placements)`,
+              `Audio & VO: 10.0s total runtime, ~50% VO coverage (max 15 words total)`,
+            ];
+
         if (scenes.length > 0) {
           return {
             characters: [character],
             worldBible,
             scenes,
+            imagePromptJson,
+            videoPromptJson,
+            planSummary,
+            validationReport,
           };
         }
       }
@@ -398,27 +471,33 @@ export async function developStoryFromIdea(
     colorPalette: ['#0A0A0E', '#F59E0B', '#27272A', '#E4E4E7'],
   };
 
-  const scenes: Scene[] = [];
   const beats = [
-    { title: 'The Sudden Hook', purpose: 'Menghentikan scroll penonton dalam 2 detik pertama' },
-    { title: 'The Exploration', purpose: 'Menunjukkan detail dan kompleksitas situasi' },
+    { title: 'Opening Hook (0-2s)', purpose: 'Menghentikan scroll penonton dalam 2 detik pertama' },
+    { title: 'The Problem Context', purpose: 'Menunjukkan detail dan kompleksitas situasi' },
+    { title: 'The Subject Reveal', purpose: 'Pengungkapan elemen kunci dalam cerita' },
+    { title: 'Core Interaction', purpose: 'Karakter berinteraksi dengan fokus cerita' },
+    { title: 'Escalation & Mystery', purpose: 'Meningkatkan taruhan dan ketegangan' },
+    { title: 'Key Action & Turning Point', purpose: 'Aksi dinamis menuju titik balik' },
     { title: 'The Climax Moment', purpose: 'Puncak ketegangan visual dan interaksi karakter' },
     { title: 'The Payoff / Twist', purpose: 'Resolusi akhir yang memuaskan dan berkesan' },
-    { title: 'The Lingering Aftermath', purpose: 'Meninggalkan kesan mendalam dan dorongan interaksi' },
-    { title: 'Bonus Epilogue', purpose: 'Penutup opsional dengan implikasi masa depan' },
+    { title: 'End Card & Lingering Payoff', purpose: 'Meninggalkan kesan mendalam dan dorongan interaksi' },
   ];
 
-  // Fallback dialogue pool — setiap scene ada dialog, nada sesuai karakter Rian yang tenang & analitis
   const fallbackDialogues = [
     'Tunggu... ini bukan tempat yang seharusnya.',
     'Ada yang aneh di sini. Aku perlu waktu sebentar.',
     'Ini bukan kebetulan. Tidak mungkin.',
-    'Aku sudah melihat ini sebelumnya — tapi di tempat yang berbeda.',
+    'Ada petunjuk lain di balik ini semua.',
+    'Semuanya mengarah pada satu kesimpulan.',
+    'Aku sudah melihat ini sebelumnya — di waktu berbeda.',
     'Semuanya berubah mulai detik ini.',
     'Jadi ini yang sebenarnya terjadi selama ini.',
+    'Kebenarannya baru saja dimulai.',
   ];
 
-  for (let s = 1; s <= targetSceneCount; s++) {
+  const scenes: Scene[] = [];
+
+  for (let s = 1; s <= effectiveCount; s++) {
     const beat = beats[(s - 1) % beats.length];
 
     scenes.push({
@@ -427,19 +506,19 @@ export async function developStoryFromIdea(
       sceneNumber: s,
       beatTitle: `Scene ${s}: ${beat.title}`,
       purpose: beat.purpose,
-      summary: `Rian berada di lokasi adegan ke-${s}. ${idea.storyBeats[(s - 1) % idea.storyBeats.length] || 'Peristiwa penting berlangsung dengan intensitas sinematik.'}`,
+      summary: `Rian berada di lokasi adegan ke-${s}. ${idea.storyBeats?.[(s - 1) % (idea.storyBeats?.length || 1)] || 'Peristiwa penting berlangsung dengan intensitas sinematik.'}`,
       location: {
         environmentType: 'urban',
-        description: `Modern architectural interior with wide floor-to-ceiling glass windows overlooking ambient landscape`,
+        description: 'Modern architectural interior with wide floor-to-ceiling glass windows overlooking ambient landscape',
         timeOfDay: s % 2 === 1 ? 'Golden hour evening light' : 'Twilight dusk ambient lighting',
         weather: 'Clear atmosphere with soft ambient dust particles',
       },
-      characterActions: `Rian inspects the surroundings carefully, turning his head towards camera with focused expression.`,
+      characterActions: 'Rian inspects the surroundings carefully, turning his head towards camera with focused expression.',
       props: ['Smartphone with illuminated screen', 'Leather notebook'],
       dialogue: fallbackDialogues[(s - 1) % fallbackDialogues.length],
       narration: s === 2 ? 'Setiap detik membawa petunjuk baru yang tak terduga.' : undefined,
       camera: {
-        shot: s === 1 ? 'Medium Close-Up' : s === 2 ? 'Tracking Wide Shot' : 'Slow Push-in Close-Up',
+        shot: s === 1 ? 'Medium Close-Up' : s === 7 ? 'Hero Close-Up' : 'Tracking Shot',
         angle: 'Eye-level cinematic angle',
         movement: s === 1 ? 'Static tripod with subtle breathing motion' : 'Smooth motorized gimbal tracking',
         framing: 'Rule of thirds, strong subject separation from background',
@@ -456,9 +535,54 @@ export async function developStoryFromIdea(
     });
   }
 
+  const fallbackProject: Project = {
+    id: projectId,
+    userId: 'owner',
+    name: idea.title,
+    categoryId: idea.categoryId,
+    contextProfile: {
+      id: 'profile',
+      name: 'Indonesia Natural',
+      targetMarket: 'Indonesia',
+      environment: 'urban',
+      visualStyle: idea.visualStyle,
+      dialogLanguage: 'indonesian',
+      captionLanguage: 'id',
+      promptLanguage: 'en',
+      localization: {
+        region: 'Indonesia',
+        culturalNotes: [],
+        namingConvention: 'indonesian_common',
+        currency: 'IDR',
+        typicalLandscapes: [],
+      },
+      preset: 'indonesia_natural',
+    },
+    selectedIdea: idea,
+    characters,
+    worldBible,
+    scenes,
+    status: 'draft',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const imagePromptJson = generateStoryboardImageJson(fallbackProject);
+  const videoPromptJson = generateStoryboardVideoJson(fallbackProject, imagePromptJson);
+  const validationReport = validateStoryboardPackage(imagePromptJson, videoPromptJson);
+
   return {
     characters,
     worldBible,
     scenes,
+    imagePromptJson,
+    videoPromptJson,
+    planSummary: [
+      `Visual Style: ${idea.visualStyle.replace(/_/g, ' ')} | Aspect Ratio: 16:9`,
+      `Narrative Arc: 9-Panel cinematic contact sheet with high-retention hook`,
+      `Typography: Minimal premium typography (max 3 placements)`,
+      `Audio & VO: 10.0s total runtime, ~50% VO coverage (max 15 words total)`,
+    ],
+    validationReport,
   };
 }

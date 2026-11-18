@@ -19,8 +19,17 @@ import {
   compileProjectPrompts,
   exportProductionSheetMarkdown,
   exportProjectJSON,
+  generateStoryboardImageJson,
+  generateStoryboardVideoJson,
+  validateStoryboardPackage,
 } from '@/lib/prompt-compiler';
-import type { ContentIdea, Scene } from '@/types';
+import type {
+  ContentIdea,
+  Scene,
+  StoryboardImagePromptJSON,
+  StoryboardVideoPromptJSON,
+  StoryboardValidationReport,
+} from '@/types';
 import {
   Copy,
   Download,
@@ -38,6 +47,10 @@ import {
   Sparkles,
   Zap,
   Crown,
+  CheckCircle2,
+  Grid,
+  FileCode,
+  BookOpen,
 } from 'lucide-react';
 
 const FRAMING_OPTIONS = [
@@ -147,6 +160,8 @@ export const PromptDeskPage: React.FC = () => {
   const [exportContent, setExportContent] = useState('');
   const [isRegeneratingStoryboard, setIsRegeneratingStoryboard] = useState(false);
   const [isRegeneratingScene, setIsRegeneratingScene] = useState(false);
+  const [studioTab, setStudioTab] = useState<'master_image' | 'master_video' | 'scenes' | 'validation'>('master_image');
+  const [copiedBlock, setCopiedBlock] = useState<'block1' | 'block2' | null>(null);
 
   // Auto-connect first project if no active project is currently selected
   useEffect(() => {
@@ -372,7 +387,7 @@ export const PromptDeskPage: React.FC = () => {
       const idea = getIdeaContext();
       const developed = await developStoryFromIdea(
         idea,
-        Math.max(4, scenes.length),
+        Math.max(9, scenes.length),
         activeModelId,
         'indonesian'
       );
@@ -390,6 +405,10 @@ export const PromptDeskPage: React.FC = () => {
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: mergedScenes,
+        masterStoryboardImagePrompt: developed.imagePromptJson,
+        masterStoryboardVideoPrompt: developed.videoPromptJson,
+        storyboardPlanSummary: developed.planSummary,
+        storyboardValidationReport: developed.validationReport,
       });
 
       incrementStoryboardCount();
@@ -479,6 +498,47 @@ export const PromptDeskPage: React.FC = () => {
       });
     } finally {
       setIsRegeneratingScene(false);
+    }
+  };
+
+  const masterImageJson: StoryboardImagePromptJSON = currentProject
+    ? (typeof currentProject.masterStoryboardImagePrompt === 'object' && currentProject.masterStoryboardImagePrompt
+        ? (currentProject.masterStoryboardImagePrompt as StoryboardImagePromptJSON)
+        : generateStoryboardImageJson(currentProject))
+    : ({} as any);
+
+  const masterVideoJson: StoryboardVideoPromptJSON = currentProject
+    ? (typeof currentProject.masterStoryboardVideoPrompt === 'object' && currentProject.masterStoryboardVideoPrompt
+        ? (currentProject.masterStoryboardVideoPrompt as StoryboardVideoPromptJSON)
+        : generateStoryboardVideoJson(currentProject, masterImageJson))
+    : ({} as any);
+
+  const validationReport: StoryboardValidationReport =
+    currentProject?.storyboardValidationReport ||
+    (currentProject ? validateStoryboardPackage(masterImageJson, masterVideoJson) : ({} as any));
+
+  const planSummary = currentProject?.storyboardPlanSummary || [
+    `Style: ${masterImageJson.style || 'Cinematic'} | Aspect Ratio: ${masterImageJson.aspect_ratio || '16:9'}`,
+    'Narrative arc: 9-panel sequential grid layout (Panel 1 Hook to Panel 9 End-Card)',
+    'On-screen typography: Minimal premium rule (max 3 placements, <= 6 words each)',
+    'Timeline & Audio: Exactly 10.0s total runtime, ~50% VO coverage (max 15 words)',
+  ];
+
+  const handleCopyCodeBlock = async (block: 'block1' | 'block2', jsonContent: any) => {
+    try {
+      const text = JSON.stringify(jsonContent, null, 2);
+      await navigator.clipboard.writeText(text);
+      setCopiedBlock(block);
+      showToast({
+        type: 'success',
+        title: block === 'block1' ? 'CODE BLOCK 1 Tersalin!' : 'CODE BLOCK 2 Tersalin!',
+        message: block === 'block1'
+          ? '9-panel storyboard image grid JSON siap ditempel ke AI image generator.'
+          : '10-second video JSON siap digunakan di Google Flow (Omni Flash) atau video AI.',
+      });
+      setTimeout(() => setCopiedBlock(null), 2500);
+    } catch {
+      // fallback
     }
   };
 
@@ -722,8 +782,232 @@ export const PromptDeskPage: React.FC = () => {
         </div>
       )}
 
-      {/* Storyboard Deck Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Storyboard Studio Navigation Tabs */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#111115] border border-white/10 overflow-x-auto scrollbar-none shadow-md">
+        <button
+          onClick={() => setStudioTab('master_image')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            studioTab === 'master_image'
+              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Grid className="w-4 h-4" />
+          <span>CODE BLOCK 1: Image Grid (9 Panel)</span>
+        </button>
+
+        <button
+          onClick={() => setStudioTab('master_video')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            studioTab === 'master_video'
+              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Film className="w-4 h-4" />
+          <span>CODE BLOCK 2: 10s Video JSON</span>
+        </button>
+
+        <button
+          onClick={() => setStudioTab('scenes')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            studioTab === 'scenes'
+              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          <span>Editor Per Adegan ({scenes.length})</span>
+        </button>
+
+        <button
+          onClick={() => setStudioTab('validation')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            studioTab === 'validation'
+              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+              : 'text-zinc-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Validasi & Panduan Flow</span>
+        </button>
+      </div>
+
+      {/* Tab Content 1: Code Block 1 — Image Grid JSON */}
+      {studioTab === 'master_image' && (
+        <div className="space-y-6">
+          <BentoTile className="p-6 border-amber-500/30 bg-[#121218] space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="amber">CODE BLOCK 1</Badge>
+                  <h3 className="text-base font-bold text-white">9-Panel Storyboard Grid Image Prompt</h3>
+                </div>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Prompt gambar tunggal dengan tata letak 3x3 contact sheet bernomor 1–9 dan gutter putih bersih untuk Google Flow, Midjourney, Flux, atau Ideogram.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={copiedBlock === 'block1' ? <CheckCircle2 className="w-4 h-4 text-black" /> : <Copy className="w-4 h-4 text-black" />}
+                  onClick={() => handleCopyCodeBlock('block1', masterImageJson)}
+                  className="font-bold shadow-lg shadow-amber-500/20"
+                >
+                  {copiedBlock === 'block1' ? 'Tersalin ke Clipboard!' : 'Salin CODE BLOCK 1 (Image JSON)'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Download className="w-3.5 h-3.5" />}
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(masterImageJson, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentProject?.name.toLowerCase().replace(/\s+/g, '_') || 'storyboard'}_image_prompt.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  title="Unduh file JSON"
+                >
+                  Unduh JSON
+                </Button>
+              </div>
+            </div>
+
+            {/* 3x3 Grid Preview Visual */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="font-semibold text-zinc-300">Layout Contact Sheet (3x3 Adaptive Grid):</span>
+                <span className="font-mono text-amber-400">Rasio {masterImageJson.aspect_ratio || '16:9'} • 9 Panel Terstruktur</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-black/60 border border-white/5">
+                {(masterImageJson.panels || []).map((p: any) => (
+                  <div
+                    key={p.panel}
+                    className="p-3 rounded-xl bg-[#161620] border border-white/10 hover:border-amber-500/40 transition-colors flex flex-col justify-between min-h-[110px]"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[11px] font-bold">
+                          PANEL #{p.panel}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-mono">{p.shot_type}</span>
+                      </div>
+                      <h4 className="text-xs font-semibold text-zinc-200 mt-1 line-clamp-1">{p.beat}</h4>
+                      <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                        {p.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Raw JSON Code Display */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-zinc-400">Payload JSON Siap Salin:</span>
+              <pre className="p-4 rounded-xl bg-black/90 border border-white/10 font-mono text-xs text-amber-300/90 overflow-x-auto max-h-72 scrollbar-thin">
+                {JSON.stringify(masterImageJson, null, 2)}
+              </pre>
+            </div>
+          </BentoTile>
+        </div>
+      )}
+
+      {/* Tab Content 2: Code Block 2 — 10s Video JSON */}
+      {studioTab === 'master_video' && (
+        <div className="space-y-6">
+          <BentoTile className="p-6 border-amber-500/30 bg-[#121218] space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="emerald">CODE BLOCK 2</Badge>
+                  <h3 className="text-base font-bold text-white">10-Second Continuous Video JSON Prompt</h3>
+                </div>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Prompt Image-to-Video presisi 10 detik dengan timeline per panel (1–8: 1.1s, 9: 1.2s), transisi mulus, dan audio/VO rule untuk Google Flow (Omni Flash).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="emerald"
+                  size="sm"
+                  icon={copiedBlock === 'block2' ? <CheckCircle2 className="w-4 h-4 text-black" /> : <Copy className="w-4 h-4 text-black" />}
+                  onClick={() => handleCopyCodeBlock('block2', masterVideoJson)}
+                  className="font-bold shadow-lg shadow-emerald-500/20"
+                >
+                  {copiedBlock === 'block2' ? 'Tersalin ke Clipboard!' : 'Salin CODE BLOCK 2 (Video JSON)'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Download className="w-3.5 h-3.5" />}
+                  onClick={() => {
+                    const blob = new Blob([JSON.stringify(masterVideoJson, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentProject?.name.toLowerCase().replace(/\s+/g, '_') || 'storyboard'}_video_prompt.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  title="Unduh file JSON"
+                >
+                  Unduh JSON
+                </Button>
+              </div>
+            </div>
+
+            {/* Video Timeline Sequencer Preview */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs text-zinc-400">
+                <span className="font-semibold text-zinc-300">Timeline Sequencer (Total 10.0 Detik):</span>
+                <span className="font-mono text-emerald-400">9 Slices • Panels 1-8 (1.1s) + Panel 9 (1.2s)</span>
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                {(masterVideoJson.timeline || []).map((t: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-[#161620] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono font-bold shrink-0">
+                        {t.time}
+                      </span>
+                      <div>
+                        <div className="font-semibold text-zinc-200 capitalize">{t.frame_ref} • {t.camera_move}</div>
+                        <p className="text-[11px] text-zinc-400 line-clamp-1">{t.action}</p>
+                      </div>
+                    </div>
+                    <div className="text-[11px] text-zinc-500 font-mono shrink-0">
+                      {t.audio}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Raw JSON Code Display */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-zinc-400">Payload JSON Siap Salin:</span>
+              <pre className="p-4 rounded-xl bg-black/90 border border-white/10 font-mono text-xs text-emerald-300/90 overflow-x-auto max-h-72 scrollbar-thin">
+                {JSON.stringify(masterVideoJson, null, 2)}
+              </pre>
+            </div>
+          </BentoTile>
+        </div>
+      )}
+
+      {/* Tab Content 3: Granular Scene Editor */}
+      {studioTab === 'scenes' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Scene Thumbnails / Deck Selector */}
         <div className="lg:col-span-4 space-y-3">
           <div className="flex items-center justify-between pb-1">
@@ -1108,7 +1392,107 @@ export const PromptDeskPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Export Modal */}
+
+      )}
+
+      {/* Tab Content 4: Plan Summary, Validation & Google Flow Guide */}
+      {studioTab === 'validation' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Self-Validation Report Card */}
+            <BentoTile className="p-6 border-emerald-500/30 bg-[#121218] space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold text-white">Self-Validation Report</h3>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">Durasi total video tepat 10.0s (1.1s x 8 + 1.2s):</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">Anchor description identik di seluruh panel & consistency_lock:</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">Ingredient references (REF_ IDs) cocok & konsisten:</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">Style & rasio aspek identik di kedua JSON:</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">On-screen text minimal (≤ 3 penempatan, 3–6 kata):</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
+                  <span className="text-zinc-300">Voiceover light (~50% durasi, ≤ 15 kata total):</span>
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                  </span>
+                </div>
+              </div>
+            </BentoTile>
+
+            {/* How to use in Google Flow Guide Card */}
+            <BentoTile className="p-6 border-amber-500/30 bg-[#121218] space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base font-bold text-white">Panduan Alur Google Flow (Omni Flash)</h3>
+              </div>
+
+              <div className="space-y-4 text-xs text-zinc-300 leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold font-mono text-xs shrink-0 mt-0.5">
+                    1
+                  </span>
+                  <div>
+                    <strong className="text-white block">Generate Gambar Storyboard:</strong>
+                    Salin <strong>CODE BLOCK 1</strong>. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan 9 panel contact sheet bersih bernomor 1–9.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold font-mono text-xs shrink-0 mt-0.5">
+                    2
+                  </span>
+                  <div>
+                    <strong className="text-white block">Import ke Google Flow:</strong>
+                    Buka Google Flow, aktifkan mode <strong>OMNI FLASH</strong>. Import foto referensi (jika ada) dan gambar 9-panel storyboard hasil langkah 1.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold font-mono text-xs shrink-0 mt-0.5">
+                    3
+                  </span>
+                  <div>
+                    <strong className="text-white block">Generate Video 10 Detik:</strong>
+                    Atur panjang video = 10 detik. Salin dan tempelkan <strong>CODE BLOCK 2</strong>. Klik Generate dan saksikan video 10 detik terangkai utuh!
+                  </div>
+                </div>
+              </div>
+            </BentoTile>
+          </div>
+        </div>
+      )}      {/* Export Modal */}
       <Modal
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}

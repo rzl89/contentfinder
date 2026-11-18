@@ -273,7 +273,7 @@ ${idea.localizationNotes}`;
 
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
       const targetModel = proj?.targetModel || 'universal-neutral';
-      const developed = await developStoryFromIdea(idea, 4, targetModel, dialogLanguage);
+      const developed = await developStoryFromIdea(idea, 9, targetModel, dialogLanguage);
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
       useProjectStore.getState().updateCurrentProject({
@@ -283,6 +283,10 @@ ${idea.localizationNotes}`;
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
+        masterStoryboardImagePrompt: developed.imagePromptJson,
+        masterStoryboardVideoPrompt: developed.videoPromptJson,
+        storyboardPlanSummary: developed.planSummary,
+        storyboardValidationReport: developed.validationReport,
       });
 
       // 4. Increment usage counter & deduct credits with audit metadata
@@ -295,7 +299,7 @@ ${idea.localizationNotes}`;
       showToast({
         type: 'success',
         title: 'Storyboard Siap di Production Desk!',
-        message: `Karakter, World Bible, dan 4 adegan telah disusun lengkap. (-${storyboardCost} Kredit AI)`,
+        message: `9-Panel Storyboard Grid, Video Prompt, dan Karakter telah siap diproduksi. (-${storyboardCost} Kredit AI)`,
       });
 
       // 5. Navigate to Prompt Desk

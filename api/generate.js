@@ -361,12 +361,14 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
     if (action === 'develop_story') {
       const {
         idea,
-        targetSceneCount = 4,
+        targetSceneCount = 9,
         targetModel = 'universal-neutral',
         dialogLanguage = 'indonesian',
         temperature = 0.7,
         uiLanguage = 'id',
       } = payload || {};
+
+      const effectiveSceneCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
 
       const languageInstruction =
         dialogLanguage === 'javanese'
@@ -384,48 +386,52 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
           ? 'All descriptions, role, appearance, clothing, personality, voiceStyle, world description, and scene summaries MUST be generated in natural, fluent ENGLISH.'
           : 'Deskripsi karakter, role, penampilan, pakaian, kepribadian, gaya bicara, deskripsi dunia, dan ringkasan scene harus ditulis dalam Bahasa Indonesia yang alami dan modern.';
 
-      const systemPrompt = `You are Fixprom AI powered by ${requestedModel}, a Hollywood-grade visual director & prompt engineer specializing in video AI models (${targetModel}).
-Transform this video idea into a fully articulated production package with 1 character bible, 1 world bible, and ${targetSceneCount} storyboard scenes.
+      const systemPrompt = `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
+Your job: convert ANY user idea into a complete production package containing:
+1. Character Bible and World Bible
+2. Exactly ${effectiveSceneCount} storyboard scenes (covering the full 9-panel narrative arc)
+3. CODE BLOCK 1 — 9-panel storyboard grid IMAGE JSON prompt
+4. CODE BLOCK 2 — 10-second continuous VIDEO JSON prompt
+5. Plan Summary (3-5 bullets) and Self-Validation Report.
 
-CRITICAL ANTI-SLOP & PRODUCTION STANDARDS:
-1. IMAGE PROMPTS (English):
-   - Photorealistic cinema optics: specify lens focal length (e.g. 35mm anamorphic, 50mm f/1.8), lighting setup (e.g. volumetric golden hour, soft key with gentle rim), and color grading.
-   - NO AI SLOP: Ban plastic Barbie skin, excessive CGI bloom, distorted fingers, and floating artifacts.
-2. VIDEO PROMPTS (English):
-   - Explicit camera motion verbs: pan, tilt, push in, orbit, slow tracking shot.
-   - Subject kinematics: natural physical momentum, inertia, hair/clothing movement.
-   - Vendor model alignment (${targetModel}):
-     * If Kling: Prefix prompt with "[Camera: <movement>]".
-     * If Google Veo: Emphasize optical hyper-realism and 4K textures.
-     * If Runway Gen-3: Emphasize fluid momentum and continuous motion vectors.
-     * If Luma: Emphasize smooth tracking and realistic weight.
-3. CONTINUITY ANCHORS:
-   - Detail at least 3 immutable physical anchors for the character (exact clothing color/material, accessory, hairstyle) so they do NOT mutate across scenes.
-4. VOICE & DIALOGUE (MANDATORY — every scene MUST have a dialogue line):
-   - Language: ${languageInstruction}.
-   - Every single scene must include a "dialogue" field with an authentic spoken line in ${languageInstruction} that fits the character's personality and the scene beat.
-   - The character's voiceStyle must describe how they sound and speak (e.g. "Bicara pelan tapi tegas, nada rendah tenang — tidak pernah panik"), and all dialogue lines must reflect that voiceStyle consistently.
-   - Dialogue must be natural, grounded, and plot-relevant — not generic filler.
-   - Scene 1 (hook): a short punchy line that stops the scroll.
-   - Middle scenes: conversational or reactive lines showing character depth.
-   - Final scene: memorable closing line fitting the story resolution.
-5. PRIMARY LANGUAGE CONTEXT:
-   - ${storyOutputLangInstruction}
+CRITICAL RULES (FOLLOW STRICTLY):
+1. ZERO IMAGE RENDERING: You are a text-based prompt engineer. Do NOT draw or generate images yourself. Output pure JSON.
+2. GLOBAL ANCHOR CONSISTENCY:
+   - Define ONE exact detailed anchor_description for the main protagonist (colors, shape, clothing materials, facial features, accessories).
+   - This exact same anchor string must be repeated in every panel description of imagePromptJson and in consistency_lock of videoPromptJson.
+3. ON-SCREEN TEXT = MINIMAL AND PREMIUM:
+   - Maximum 3 placements across all 9 panels (optional hook at Panel 1, 1-3 feature/spec callouts at Panel 5, Brand/Title Tagline at Panel 9). Short 3-6 words each.
+4. TIMELINE AND VOICEOVER:
+   - Panels 1-8 each exactly 1.1s, panel 9 exactly 1.2s -> total 10.0 seconds.
+   - Voiceover: Light background narration (~50% runtime coverage, max 15 words total across video in 2 short lines). Voice gender/age matches character.
+5. VENDOR ALIGNMENT (${targetModel}):
+   - If Kling: prefix video prompt with [Camera: <movement>].
+   - If Veo 2 / Google Flow: focus on optical realism and 4K textures.
+   - If Runway Gen-3 / Luma: specify fluid motion vectors and smooth tracking.
+6. SCENE DIALOGUE:
+   - Every scene must include a natural spoken dialogue in ${languageInstruction}.
+7. ${storyOutputLangInstruction}
 
-Respond ONLY with a valid JSON object matching:
+Respond ONLY with a valid JSON object matching this structure:
 {
+  "planSummary": [
+    "Style and Aspect Ratio: ...",
+    "Narrative arc and beat structure: ...",
+    "On-screen typography plan (max 3 placements): ...",
+    "Audio and 50% VO coverage plan: ..."
+  ],
   "character": {
     "name": "string",
     "role": "string",
     "appearance": "string",
     "clothing": "string",
     "personality": "string",
-    "voiceStyle": "string (e.g. Nada hangat, bicara mengalir dengan humor ringan. Tidak pernah berteriak.)",
-    "consistencyAnchors": ["anchor1 (e.g. navy corduroy jacket)", "anchor2", "anchor3"]
+    "voiceStyle": "string",
+    "consistencyAnchors": ["anchor1", "anchor2", "anchor3"]
   },
   "worldBible": {
     "name": "string",
-    "environmentType": "urban | suburban | rural | natural | indoor | fantasy",
+    "environmentType": "urban | suburban | rural | natural | indoor | fantasy | mixed",
     "description": "string",
     "timeOfDay": "string",
     "weather": "string",
@@ -437,8 +443,8 @@ Respond ONLY with a valid JSON object matching:
   "scenes": [
     {
       "sceneNumber": 1,
-      "beatTitle": "Hook / Pembuka",
-      "purpose": "Capture viewer attention in first 3 seconds",
+      "beatTitle": "string",
+      "purpose": "string",
       "summary": "string",
       "location": {
         "environmentType": "urban",
@@ -448,20 +454,103 @@ Respond ONLY with a valid JSON object matching:
       },
       "characterActions": "string",
       "camera": {
-        "shot": "Close-up / Medium Shot / Wide Shot",
-        "angle": "Eye-level / Low angle / High angle",
-        "movement": "Slow push in / Tracking right / Static / Crane down",
-        "framing": "Rule of thirds / Center framed"
+        "shot": "string",
+        "angle": "string",
+        "movement": "string",
+        "framing": "string"
       },
-      "lighting": "string (e.g. Warm afternoon sunlight with soft shadow falloff)",
-      "dialogue": "WAJIB diisi � kalimat dialog dalam bahasa yang ditentukan, natural dan sesuai kepribadian karakter serta beat adegan ini",
+      "lighting": "string",
+      "dialogue": "string in ${languageInstruction}",
       "narration": "string",
       "continuityAnchors": ["string"],
-      "imagePrompt": "string (in descriptive English with camera, lens, lighting)",
-      "videoPrompt": "string (in descriptive English with kinematics and camera movement)",
-      "negativePrompt": "blurry, oversaturated, plastic skin, deformed hands, extra fingers, mutated limbs, text artifacts, watermark, low quality, glitch"
+      "imagePrompt": "string in English",
+      "videoPrompt": "string in English",
+      "negativePrompt": "string"
     }
-  ]
+  ],
+  "imagePromptJson": {
+    "task": "9-panel storyboard grid, single image",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "grid_layout": {
+      "total_panels": 9,
+      "rows": 3,
+      "columns": 3,
+      "reading_order": "left to right, top to bottom, panels numbered 1-9",
+      "panel_borders": "thin clean white gutters separating every panel",
+      "panel_numbers": "small clear number badge in top-left corner of each panel"
+    },
+    "global_consistency": {
+      "anchor_description": "ONE exact detailed string reused across all panels",
+      "color_palette": "string",
+      "lighting": "string",
+      "environment": "string"
+    },
+    "on_screen_text": {
+      "rule": "MINIMAL premium typography — maximum 3 text placements across all 9 panels",
+      "placements": [
+        { "panel": 1, "text": "short hook (3-5 words)", "style": "tiny clean sans-serif, bottom corner" },
+        { "panel": 5, "text": "feature callouts (3-5 words)", "style": "tiny elegant label chips" },
+        { "panel": 9, "text": "Title — Tagline", "style": "clean end-card typography with logo" }
+      ]
+    },
+    "ingredients_references": [
+      { "id": "REF_CHARACTER_01", "description": "exact anchor description", "used_in_panels": [1,2,3,4,5,6,7,8,9] }
+    ],
+    "panels": [
+      { "panel": 1, "beat": "string", "shot_type": "string", "camera": "string", "description": "must include anchor_description" }
+    ],
+    "negative_prompt": "no more than 9 panels, no missing panels, no merged panels, no watermark, no text other than the specified on_screen_text placements, no long paragraphs of text, no misspelled brand names, no blurry panels, no inconsistent product design, no distorted characters"
+  },
+  "videoPromptJson": {
+    "task": "image-to-video, single continuous 10-second video built from the 9-panel storyboard grid, panels become sequential scenes",
+    "source_image": "the generated 9-panel storyboard grid",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "duration_seconds": 10,
+    "ingredients_references": ["REF_CHARACTER_01"],
+    "on_screen_text": {
+      "rule": "same minimal placements as the image JSON; each text animates in only during its panel time slot",
+      "placements": [
+        { "appears_at": "0.0s-1.1s", "text": "hook text", "animation": "soft fade-in, hold, fade-out" },
+        { "appears_at": "8.8s-10.0s", "text": "Title — Tagline", "animation": "clean end-card reveal" }
+      ]
+    },
+    "timeline": [
+      {
+        "frame_ref": "panel 1",
+        "time": "0.0s-1.1s",
+        "action": "string",
+        "camera_move": "string",
+        "motion_intensity": "low | medium | high",
+        "transition_to_next": "hard cut | smooth morph",
+        "audio": "SFX: ... | VO: ..."
+      }
+    ],
+    "audio_design": {
+      "music_mood": "string",
+      "sfx_layers": "string",
+      "voiceover": {
+        "coverage_rule": "LIGHT background narration — voiceover covers only ~50% of the runtime (about 5 seconds of speech out of 10). Music + SFX carry the remaining half. Never wall-to-wall talking.",
+        "voice_match_rule": "voice MUST match the on-screen character",
+        "lines": [
+          { "time": "1.1s-3.3s", "line": "short line 1 (max 6-8 words)" },
+          { "time": "6.6s-8.8s", "line": "short line 2 (max 6-8 words)" }
+        ],
+        "total_word_limit": "maximum 15 spoken words across the whole video"
+      }
+    },
+    "consistency_lock": "repeat the EXACT anchor_description",
+    "negative_prompt": "no morphing product shape, no style drift, no new panels appearing, no extra limbs, no watermark, no text artifacts beyond specified on_screen_text, no camera shake unless requested, no voiceover covering the full duration"
+  },
+  "validationReport": {
+    "timingTotal10s": true,
+    "anchorConsistent": true,
+    "ingredientRefsMatch": true,
+    "styleAspectIdentical": true,
+    "onScreenTextRuleCompliant": true,
+    "voiceoverRuleCompliant": true
+  }
 }`;
 
       const userPrompt = `Develop complete production package for:
