@@ -234,6 +234,7 @@ ${idea.localizationNotes}`;
         storyboardType,
         ideaMode,
         productBrandName: productBrandName.trim(),
+        targetModel,
       });
 
       setIdeas(generated);

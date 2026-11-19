@@ -96,6 +96,7 @@ export async function generateContentIdeas(
           assignedAngles: assignedAngles.map((a) => `${a.name} (${a.angleDescription})`),
           creativeEntropy: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           uiLanguage: currentLang,
+          targetModel: config.targetModel || 'universal-neutral',
         },
       }),
     });

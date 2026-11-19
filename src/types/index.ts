@@ -194,6 +194,8 @@ export interface IdeaGenerationConfig {
   storyboardType?: 'clip' | 'ad';
   ideaMode?: 'ai_generate' | 'manual_input';
   productBrandName?: string;
+  /** Target AI video engine — propagates vendor format rules to backend prompt */
+  targetModel?: string;
 }
 
 // ---------------------------------------------------------------------------

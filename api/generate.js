@@ -390,6 +390,23 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
           ? 'All descriptions, role, appearance, clothing, personality, voiceStyle, world description, and scene summaries MUST be generated in natural, fluent ENGLISH.'
           : 'Deskripsi karakter, role, penampilan, pakaian, kepribadian, gaya bicara, deskripsi dunia, dan ringkasan scene harus ditulis dalam Bahasa Indonesia yang alami dan modern.';
 
+      // Vendor alignment block — always injected regardless of system prompt source
+      const vendorAlignmentBlock = `
+--- VENDOR ALIGNMENT (MANDATORY — do NOT omit) ---
+Target AI video model for prompt formatting: ${targetModel}
+Apply these format rules strictly in every scene's videoPrompt field:
+- If Kling (kling-1-5): prefix video prompt with [Camera: <movement>] and add multi-angle tags.
+- If Veo 2 / Google Flow (google-veo-2): focus on optical realism, clean 9-panel contact sheet layout, and 4K textures.
+- If Runway Gen-3 (runway-gen3-alpha): start video prompt with [Camera Movement / Framing]: followed by scene and fluid motion vectors.
+- If Luma Ray 2 (luma-dream-machine): specify dynamic camera motion paths and continuous momentum.
+- If MiniMax Hailuo (minimax-hailuo): focus on authentic human micro-expressions and natural physical dynamics.
+- If OpenAI Sora (openai-sora): describe 3D spatial consistency, depth interaction, and environmental physics.
+- If Pika (pika-2-0): append camera motion parameters: -camera <move> -motion 2 -fps 24.
+- If PixVerse (pixverse-v3): focus on character consistency lock and 4K UHD cinematic clarity.
+- If Tencent Hunyuan (tencent-hunyuan): use rich, expressive visual descriptions and temporal stability.
+- If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
+Respond ONLY with valid JSON matching the schema provided.`;
+
       // Use admin-defined system prompt override if set; otherwise use built-in FlowStoryboard-Pro prompt
       const systemPrompt = adminSystemPromptOverride
         ? `${adminSystemPromptOverride}
@@ -399,7 +416,7 @@ Target scene count: ${effectiveSceneCount}
 Dialogue language: ${languageInstruction}
 Output language: ${storyOutputLangInstruction}
 Target AI video model: ${targetModel}
-Respond ONLY with valid JSON matching the full schema provided.`
+${vendorAlignmentBlock}`
         : `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
 Your job: convert ANY user idea into a complete production package containing:
 1. Character Bible and World Bible

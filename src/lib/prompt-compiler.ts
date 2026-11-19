@@ -214,7 +214,22 @@ export function exportProductionSheetMarkdown(project: Project): string {
     lines.push(s.imagePrompt);
     lines.push(`\`\`\``);
     lines.push('');
-    lines.push(`**🎥 Video Prompt (${model.displayName}):**`);
+    lines.push(`**🎥 Video Prompt — Format: ${model.displayName} (${model.provider}):**`);
+    if (model.modelId !== 'universal-neutral') {
+      const formatHint: Record<string, string> = {
+        'kling-1-5': '→ Paste langsung ke Kling AI · Prefix [Camera: ...] sudah diformat',
+        'google-veo-2': '→ Paste ke Google Flow / Veo 2 · Optimized untuk 4K optical realism',
+        'runway-gen3-alpha': '→ Paste ke Runway Gen-3 Alpha · Format [Camera Movement / Framing]: sudah disiapkan',
+        'luma-dream-machine': '→ Paste ke Luma Ray 2 · Camera motion paths sudah diformat',
+        'minimax-hailuo': '→ Paste ke MiniMax Hailuo Video-01 · Micro-expression focus aktif',
+        'openai-sora': '→ Paste ke OpenAI Sora · 3D spatial consistency sudah diformat',
+        'pika-2-0': '→ Paste ke Pika 2.0 · Parameter -camera -motion -fps sudah diformat',
+        'pixverse-v3': '→ Paste ke PixVerse V3 Pro · Character consistency lock aktif',
+        'tencent-hunyuan': '→ Paste ke Tencent Hunyuan Video · Rich descriptive format aktif',
+      };
+      const hint = formatHint[model.modelId];
+      if (hint) lines.push(`> ℹ️ ${hint}`);
+    }
     lines.push(`\`\`\``);
     lines.push(s.videoPrompt);
     lines.push(`\`\`\``);
