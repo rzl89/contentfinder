@@ -96,6 +96,10 @@ interface AdminState {
   fetchDuitkuConfig: () => Promise<DuitkuConfig>;
   saveDuitkuConfig: (config: Partial<DuitkuConfig>) => Promise<void>;
 
+  // System Prompt Cloud Sync
+  fetchSystemPrompt: () => Promise<string>;
+  saveSystemPrompt: (prompt: string) => Promise<void>;
+
   // Real-time synchronization
   initRealtimeSync: () => () => void;
 }
@@ -564,10 +568,46 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     notifyAdminSync('duitku_config');
   },
 
+  fetchSystemPrompt: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'system_prompt_override')
+        .maybeSingle();
+
+      if (!error && data && data.value && typeof data.value.prompt === 'string') {
+        const prompt = data.value.prompt;
+        get().updateSettings({ systemPromptOverride: prompt });
+        return prompt;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch system_prompt_override from Supabase', e);
+    }
+    return get().settings.systemPromptOverride || '';
+  },
+
+  saveSystemPrompt: async (prompt: string) => {
+    get().updateSettings({ systemPromptOverride: prompt });
+
+    try {
+      await supabase.from('system_settings').upsert({
+        key: 'system_prompt_override',
+        value: { prompt },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to persist system_prompt_override to Supabase', e);
+    }
+
+    notifyAdminSync('system_prompt_override');
+  },
+
   initRealtimeSync: () => {
     // 1. Initial fetch from remote Supabase
     void get().fetchPaymentMethods();
     void get().fetchDuitkuConfig();
+    void get().fetchSystemPrompt();
 
     // 2. Multi-tab BroadcastChannel listener
     const bc = getBroadcastChannel();
@@ -578,9 +618,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           void get().fetchPaymentMethods();
         } else if (data.key === 'duitku_config') {
           void get().fetchDuitkuConfig();
+        } else if (data.key === 'system_prompt_override') {
+          void get().fetchSystemPrompt();
         } else {
           void get().fetchPaymentMethods();
           void get().fetchDuitkuConfig();
+          void get().fetchSystemPrompt();
         }
       }
     };
@@ -614,9 +657,16 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             } else {
               void get().fetchDuitkuConfig();
             }
+          } else if (rec?.key === 'system_prompt_override') {
+            if (rec.value && typeof rec.value.prompt === 'string') {
+              get().updateSettings({ systemPromptOverride: rec.value.prompt });
+            } else {
+              void get().fetchSystemPrompt();
+            }
           } else {
             void get().fetchPaymentMethods();
             void get().fetchDuitkuConfig();
+            void get().fetchSystemPrompt();
           }
         }
       )

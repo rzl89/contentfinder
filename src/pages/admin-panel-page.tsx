@@ -92,6 +92,7 @@ export const AdminPanelPage: React.FC = () => {
     resetPaymentMethodsToDefault,
     fetchDuitkuConfig,
     saveDuitkuConfig,
+    saveSystemPrompt,
   } = useAdminStore();
 
   const { projects } = useProjectStore();
@@ -280,14 +281,24 @@ export const AdminPanelPage: React.FC = () => {
     showToast({ type: 'info', title: 'Logged Out', message: 'Sesi admin telah diakhiri.' });
   };
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
     const cleanSettings = {
       ...localSettings,
       adminWhatsApp: (localSettings.adminWhatsApp?.trim().replace(/\D/g, '') || '6285217975733').replace(/^0/, '62'),
     };
     updateSettings(cleanSettings);
     setLocalSettings(cleanSettings);
-    showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan telah disimpan.' });
+
+    // Persist system prompt to Supabase cloud sync & broadcast to all clients
+    if (typeof cleanSettings.systemPromptOverride === 'string') {
+      try {
+        await saveSystemPrompt(cleanSettings.systemPromptOverride);
+      } catch (e) {
+        console.warn('Failed cloud sync for system prompt', e);
+      }
+    }
+
+    showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan konfigurasi LLM & System Prompt telah disimpan ke cloud dan lokal.' });
   };
 
   // Sync payment methods & Duitku config from Supabase on mount
