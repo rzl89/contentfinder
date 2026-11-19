@@ -6,6 +6,7 @@ import {
   getLocalizedCategories,
   CONTEXT_PRESETS,
 } from '@/context-engine';
+import { MODEL_CAPABILITIES } from '@/lib/model-catalog';
 import {
   BentoTile,
   Button,
@@ -96,6 +97,9 @@ export const IdeaStudioPage: React.FC = () => {
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>(() => savedStudioPrefs?.defaultDialogLanguage || 'indonesian');
   const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
   const [ideaCount, setIdeaCount] = useState<5 | 10>(5);
+  const [targetModel, setTargetModel] = useState<string>(
+    () => currentProject?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral'
+  );
 
   // Result state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -284,13 +288,14 @@ ${idea.localizationNotes}`;
       }
 
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
-      const targetModel = proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(idea, 9, targetModel, dialogLanguage);
+      const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
+      const developed = await developStoryFromIdea(idea, 9, activeModel, dialogLanguage);
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
       useProjectStore.getState().updateCurrentProject({
         name: idea.title,
         categoryId: idea.categoryId,
+        targetModel: activeModel,
         selectedIdea: idea,
         characters: developed.characters,
         worldBible: developed.worldBible,
@@ -392,12 +397,13 @@ ${idea.localizationNotes}`;
         proj = createProject(generatedTitle, activeCategory.id, contextPreset);
       }
 
-      const targetModel = proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(manualIdea, 9, targetModel, dialogLanguage);
+      const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
+      const developed = await developStoryFromIdea(manualIdea, 9, activeModel, dialogLanguage);
 
       useProjectStore.getState().updateCurrentProject({
         name: generatedTitle,
         categoryId: activeCategory.id,
+        targetModel: activeModel,
         selectedIdea: manualIdea,
         characters: developed.characters,
         worldBible: developed.worldBible,
@@ -791,9 +797,11 @@ ${idea.localizationNotes}`;
                 { value: 'none', label: 'Tanpa Dialog (Ambient SFX / Musik)' },
               ]}
             />
+          </div>
 
-            {/* 7. Pilihan Jumlah Ide (hanya tampil jika mode ai_generate) */}
-            {ideaMode === 'ai_generate' && (
+          {/* Baris ke-3: Grid 2 Kolom Seimbang [Jumlah Ide yang Dihasilkan] & [Target Model AI] */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {ideaMode === 'ai_generate' ? (
               <Select
                 label="Jumlah Ide yang Dihasilkan"
                 value={ideaCount.toString()}
@@ -803,7 +811,29 @@ ${idea.localizationNotes}`;
                   { value: '10', label: '10 Pilihan Ide Lengkap' },
                 ]}
               />
+            ) : (
+              <div className="p-3.5 rounded-xl bg-black/30 border border-white/5 flex items-center gap-2.5 text-xs text-zinc-400">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Mode Buat Sendiri aktif: Langsung menyusun 9 panel visual storyboard.</span>
+              </div>
             )}
+
+            <Select
+              label="Target Model AI (Format Prompt Video)"
+              value={targetModel}
+              onChange={(e) => setTargetModel(e.target.value)}
+              options={MODEL_CAPABILITIES.map((m) => ({
+                value: m.modelId,
+                label: m.modelId === 'universal-neutral' ? `${m.displayName} • Default` : m.displayName,
+              }))}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-zinc-500 pt-0.5">
+            <Info className="w-3.5 h-3.5 text-amber-400/80 shrink-0" />
+            <span>
+              Format prompt, parameter kamera, dan metadata adegan otomatis disesuaikan dengan engine yang dipilih.
+            </span>
           </div>
 
           {/* Kolom Opsional Khusus Product Ad */}
