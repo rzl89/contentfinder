@@ -191,7 +191,7 @@ export interface IdeaGenerationConfig {
   trendApproach: TrendApproach;
   additionalTheme?: string;
   targetAudience?: string;
-  ideaCount: 5 | 10;
+  ideaCount: number;
   storyboardType?: 'clip' | 'ad';
   ideaMode?: 'ai_generate' | 'manual_input';
   productBrandName?: string;

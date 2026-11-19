@@ -102,7 +102,7 @@ export const IdeaStudioPage: React.FC = () => {
   const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>(() => savedStudioPrefs?.defaultDialogLanguage || 'indonesian');
   const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
-  const [ideaCount, setIdeaCount] = useState<5 | 10>(5);
+  const [ideaCount, setIdeaCount] = useState<number>(5);
   const [targetModel, setTargetModel] = useState<string>(
     () => currentProject?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral'
   );
@@ -336,7 +336,7 @@ ${idea.localizationNotes}`;
     }
 
     const inputWords = additionalTheme.trim().split(/\s+/).filter(Boolean).length;
-    const baseCost = ideaCount === 10 ? 2 : 1;
+    const baseCost = 1;
     const creditCalculation = calculateActionCredits('generate_ideas', inputWords);
     const ideaCreditsCost = creditCalculation.isExtended ? baseCost + creditCalculation.extraCredits : baseCost;
 
@@ -966,10 +966,13 @@ ${idea.localizationNotes}`;
               <Select
                 label="Jumlah Ide yang Dihasilkan"
                 value={ideaCount.toString()}
-                onChange={(e) => setIdeaCount(Number(e.target.value) as 5 | 10)}
+                onChange={(e) => setIdeaCount(Number(e.target.value))}
                 options={[
-                  { value: '5', label: '3–5 Pilihan Ide Terkurasi (Standar Dokumen)' },
-                  { value: '10', label: '10 Pilihan Ide Lengkap' },
+                  { value: '1', label: '1 Ide Spesifik (Cepat & Fokus)' },
+                  { value: '2', label: '2 Pilihan Ide (Perbandingan A/B)' },
+                  { value: '3', label: '3 Pilihan Ide Terkurasi' },
+                  { value: '4', label: '4 Pilihan Ide Variatif' },
+                  { value: '5', label: '5 Pilihan Ide Lengkap (Standar)' },
                 ]}
               />
             ) : (
@@ -1138,7 +1141,7 @@ ${idea.localizationNotes}`;
               <div className="inline-flex items-center gap-2 text-[11px] text-amber-300 font-mono bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
                 <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
                 <span>
-                  Biaya aksi: <strong>{ideaMode === 'manual_input' ? '3 Kredit AI' : ideaCount === 10 ? '2 Kredit AI' : '1 Kredit AI'}</strong> • Saldo Anda: <strong>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</strong>
+                  Biaya aksi: <strong>{ideaMode === 'manual_input' ? '3 Kredit AI' : '1 Kredit AI'}</strong> • Saldo Anda: <strong>{subscription.creditsBalance ?? (subscription.tier === 'pro' ? 350 : 20)} Kredit</strong>
                 </span>
               </div>
             </div>
@@ -1164,8 +1167,8 @@ ${idea.localizationNotes}`;
                 className="w-full sm:w-auto font-bold shadow-lg shadow-amber-500/20"
               >
                 {t(
-                  `Hasilkan ${ideaCount} Ide Sekarang (${ideaCount === 10 ? '2' : '1'} Kredit)`,
-                  `Generate ${ideaCount} Ideas Now (${ideaCount === 10 ? '2' : '1'} Credits)`
+                  `Hasilkan ${ideaCount} Ide Sekarang (1 Kredit)`,
+                  `Generate ${ideaCount} Ideas Now (1 Credit)`
                 )}
               </Button>
             )}
