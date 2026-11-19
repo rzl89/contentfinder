@@ -87,33 +87,36 @@ export function compileScenePrompt(
   }
 
   // Model-specific syntax formatting (Strict vendor syntax adherence)
-  if (targetModelId === 'kling-1-5') {
+  if (targetModelId === 'kling-1-5' || targetModelId === 'kling-2-1') {
     // Kling format: prefers explicit camera direction prefix
     compiledVideoPrompt = `[Camera: ${scene.camera.movement}] ${compiledVideoPrompt}`;
-  } else if (targetModelId === 'luma-dream-machine') {
+  } else if (targetModelId === 'luma-dream-machine' || targetModelId === 'luma-ray2-flash') {
     // Luma format: movement speed & cinematic clarity
     compiledVideoPrompt = `${compiledVideoPrompt} Smooth tracking shot, photorealistic rendering, accurate momentum.`;
-  } else if (targetModelId === 'google-veo-2') {
-    // Veo 2 format: high-fidelity prompt
+  } else if (targetModelId === 'google-veo-2' || targetModelId === 'google-veo-3') {
+    // Veo format: high-fidelity prompt
     compiledVideoPrompt = `High-definition cinematic capture: ${compiledVideoPrompt}`;
-  } else if (targetModelId === 'runway-gen3' || targetModelId === 'runway-gen3-alpha') {
-    // Runway Gen-3 format: continuous motion vectors and cinematic physical momentum
+  } else if (targetModelId === 'runway-gen3' || targetModelId === 'runway-gen3-alpha' || targetModelId === 'runway-gen4-turbo') {
+    // Runway format: continuous motion vectors and cinematic physical momentum
     compiledVideoPrompt = `${compiledVideoPrompt} Photorealistic motion, continuous dynamic vector, 4k master.`;
-  } else if (targetModelId === 'minimax-hailuo') {
-    // MiniMax Hailuo format: focus on physics realism and camera dynamics
+  } else if (targetModelId === 'minimax-hailuo' || targetModelId === 'minimax-video-01-live') {
+    // MiniMax format: focus on physics realism and camera dynamics
     compiledVideoPrompt = `${compiledVideoPrompt} Photorealistic motion, natural physics momentum, cinema textures.`;
-  } else if (targetModelId === 'openai-sora') {
+  } else if (targetModelId === 'openai-sora' || targetModelId === 'openai-sora-turbo') {
     // Sora format: detailed physical simulation & cinematography
     compiledVideoPrompt = `Cinematic video shot. ${compiledVideoPrompt} Fluid dynamics, accurate physical momentum, 8k render.`;
-  } else if (targetModelId === 'pika-2-0') {
+  } else if (targetModelId === 'pika-2-0' || targetModelId === 'pika-2-2') {
     // Pika format: camera motion parameter emphasis & focal lock
     compiledVideoPrompt = `${compiledVideoPrompt} -camera ${scene.camera.movement.toLowerCase()} -motion 2 -fps 24`;
-  } else if (targetModelId === 'pixverse-v3') {
+  } else if (targetModelId === 'pixverse-v3' || targetModelId === 'pixverse-v4') {
     // PixVerse format: character consistency engine & 4K cinematic clarity
     compiledVideoPrompt = `${compiledVideoPrompt} High character consistency, 4K UHD, smooth cinematic frame transition.`;
-  } else if (targetModelId === 'tencent-hunyuan') {
+  } else if (targetModelId === 'tencent-hunyuan' || targetModelId === 'hunyuan-turbo') {
     // Hunyuan format: rich descriptive text-to-video details
     compiledVideoPrompt = `Cinematic video: ${compiledVideoPrompt}. Realistic rendering, accurate temporal motion, rich texture details.`;
+  } else if (targetModelId === 'wan-2-1') {
+    // Wan format: Alibaba Wan 2.1 cinematic prompt structure
+    compiledVideoPrompt = `Cinematic motion shot: ${compiledVideoPrompt}. High visual consistency, master cinematography, realistic physics.`;
   }
 
   return {
@@ -201,6 +204,16 @@ export function exportProductionSheetMarkdown(project: Project): string {
     lines.push('');
   }
 
+  if (project.productReferenceImages && project.productReferenceImages.length > 0) {
+    lines.push(`## 📸 PRODUCT REFERENCE (IMAGE-TO-VIDEO & MIDJOURNEY CREF)`);
+    project.productReferenceImages.forEach((imgUrl, i) => {
+      lines.push(`- **Referensi #${i + 1}:** ${imgUrl.startsWith('data:') ? '[Base64 Local Image Attached]' : imgUrl}`);
+    });
+    lines.push(`- **Midjourney Parameter:** \`--cref ${project.productReferenceImages.find(u => !u.startsWith('data:')) || '[URL_GAMBAR]'} --cw 100\``);
+    lines.push(`- **I2V Video Guidance:** Gunakan gambar produk sebagai First Frame / Start Image untuk mengunci logo dan bentuk fisik produk.`);
+    lines.push('');
+  }
+
   lines.push(`## 🎬 SCENE-BY-SCENE STORYBOARD & PROMPTS`);
   lines.push(`Total Scenes: ${compiledScenes.length}`);
   lines.push('');
@@ -218,14 +231,24 @@ export function exportProductionSheetMarkdown(project: Project): string {
     if (model.modelId !== 'universal-neutral') {
       const formatHint: Record<string, string> = {
         'kling-1-5': '→ Paste langsung ke Kling AI · Prefix [Camera: ...] sudah diformat',
+        'kling-2-1': '→ Paste langsung ke Kling 2.1 Pro · Prefix [Camera: ...] & face-ref ready',
         'google-veo-2': '→ Paste ke Google Flow / Veo 2 · Optimized untuk 4K optical realism',
+        'google-veo-3': '→ Paste ke Google Flow / Veo 3 · Native dialogue, sfx & 4K cinematic capture',
         'runway-gen3-alpha': '→ Paste ke Runway Gen-3 Alpha · Format [Camera Movement / Framing]: sudah disiapkan',
+        'runway-gen4-turbo': '→ Paste ke Runway Gen-4 Turbo · Format continuous motion vectors aktif',
         'luma-dream-machine': '→ Paste ke Luma Ray 2 · Camera motion paths sudah diformat',
+        'luma-ray2-flash': '→ Paste ke Luma Ray 2 Flash · Fast camera tracking paths aktif',
         'minimax-hailuo': '→ Paste ke MiniMax Hailuo Video-01 · Micro-expression focus aktif',
+        'minimax-video-01-live': '→ Paste ke MiniMax Video-01-Live · Subject & live expression focus aktif',
         'openai-sora': '→ Paste ke OpenAI Sora · 3D spatial consistency sudah diformat',
+        'openai-sora-turbo': '→ Paste ke OpenAI Sora Turbo · Foley sound & 3D spatial consistency aktif',
         'pika-2-0': '→ Paste ke Pika 2.0 · Parameter -camera -motion -fps sudah diformat',
+        'pika-2-2': '→ Paste ke Pika 2.2 · Parameter -camera -motion -fps & Pikaffects aktif',
         'pixverse-v3': '→ Paste ke PixVerse V3 Pro · Character consistency lock aktif',
+        'pixverse-v4': '→ Paste ke PixVerse V4 Pro · 4K UHD & style-ref character lock aktif',
         'tencent-hunyuan': '→ Paste ke Tencent Hunyuan Video · Rich descriptive format aktif',
+        'hunyuan-turbo': '→ Paste ke Hunyuan Video Turbo · High temporal motion consistency aktif',
+        'wan-2-1': '→ Paste ke Alibaba Wan 2.1 · Master visual consistency & text-to-audio format aktif',
       };
       const hint = formatHint[model.modelId];
       if (hint) lines.push(`> ℹ️ ${hint}`);

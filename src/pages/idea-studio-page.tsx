@@ -7,12 +7,14 @@ import {
   CONTEXT_PRESETS,
 } from '@/context-engine';
 import { MODEL_CAPABILITIES } from '@/lib/model-catalog';
+import { VISUAL_STYLES, getVisualStyleById } from '@/lib/visual-styles-catalog';
 import {
   BentoTile,
   Button,
   Badge,
   Input,
   Select,
+  Modal,
 } from '@/components/ui';
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
@@ -44,6 +46,10 @@ import {
   Zap,
   ShieldCheck,
   Crown,
+  Camera,
+  Upload,
+  X,
+  ExternalLink,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
@@ -175,6 +181,62 @@ export const IdeaStudioPage: React.FC = () => {
       const current = raw ? JSON.parse(raw) : {};
       localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify({ ...current, defaultDialogLanguage: l }));
     } catch {}
+  };
+
+  // Visual gallery modal state
+  const [isVisualGalleryOpen, setIsVisualGalleryOpen] = useState(false);
+
+  // Product Reference Images state (for Affiliate & Product Commercials)
+  const [productRefImages, setProductRefImages] = useState<string[]>(
+    () => currentProject?.productReferenceImages || []
+  );
+  const [inputImageUrl, setInputImageUrl] = useState('');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast({ type: 'warning', title: 'Ukuran Terlalu Besar', message: 'Maksimal ukuran foto adalah 5MB.' });
+      return;
+    }
+
+    if (productRefImages.length >= 3) {
+      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi produk.' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        const next = [...productRefImages, reader.result];
+        setProductRefImages(next);
+        showToast({ type: 'success', title: 'Foto Ditambahkan', message: `Foto produk #${next.length} berhasil diunggah.` });
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleAddImageUrl = () => {
+    const clean = inputImageUrl.trim();
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+      showToast({ type: 'warning', title: 'URL Tidak Valid', message: 'Masukkan tautan gambar yang diawali http:// atau https://' });
+      return;
+    }
+    if (productRefImages.length >= 3) {
+      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi produk.' });
+      return;
+    }
+    const next = [...productRefImages, clean];
+    setProductRefImages(next);
+    setInputImageUrl('');
+    showToast({ type: 'success', title: 'Tautan Ditambahkan', message: `URL referensi #${next.length} berhasil disimpan.` });
+  };
+
+  const handleRemoveProductImage = (index: number) => {
+    const next = productRefImages.filter((_, i) => i !== index);
+    setProductRefImages(next);
   };
 
   // Result state
@@ -311,6 +373,7 @@ ${idea.localizationNotes}`;
         ideaMode,
         productBrandName: productBrandName.trim(),
         targetModel,
+        productReferenceImages: productRefImages,
       });
 
       setIdeas(generated);
@@ -374,6 +437,7 @@ ${idea.localizationNotes}`;
         categoryId: idea.categoryId,
         targetModel: activeModel,
         selectedIdea: idea,
+        productReferenceImages: productRefImages,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -482,6 +546,7 @@ ${idea.localizationNotes}`;
         categoryId: activeCategory.id,
         targetModel: activeModel,
         selectedIdea: manualIdea,
+        productReferenceImages: productRefImages,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -807,28 +872,47 @@ ${idea.localizationNotes}`;
               ]}
             />
 
-            {/* 3. Gaya Visual (10 Gaya FlowStoryboard-Pro Master) */}
-            <Select
-              label="Gaya Visual"
-              value={visualStyle}
-              onChange={(e) => handleVisualStyleChange(e.target.value as VisualStyle)}
-              options={[
-                { value: 'cinematic_realistic', label: '01 — Ultra Photorealistic Cinematic' },
-                { value: 'anime_ghibli', label: '02 — Studio Ghibli Anime' },
-                { value: '3d_animation', label: '03 — 3D Cartoon Animation' },
-                { value: '2d_cartoon', label: '04 — 2D Cartoon (Flat colors, bold outlines)' },
-                { value: 'anime', label: '05 — Modern Anime (Shonen style)' },
-                { value: 'claymation', label: '06 — Stop-motion / Claymation' },
-                { value: '3d_product_commercial', label: '07 — Glossy 3D Product Commercial (Studio look)' },
-                { value: 'vintage_35mm', label: '08 — Vintage Retro 35mm Film' },
-                { value: 'neon_music_video', label: '09 — Neon Stylized Music-Video Look' },
-                { value: 'documentary_realism', label: '10 — Documentary Realism' },
-                { value: 'stickman', label: 'Stickman Minimalist Animation (Viral Spec)' },
-                { value: 'stylized', label: 'Stylized Pixar / 3D Character' },
-                { value: 'surreal_fantasy', label: 'Surreal / Fantasy Ethereal' },
-                { value: 'minimalist_faceless', label: 'Minimalist Faceless Aesthetic' },
-              ]}
-            />
+            {/* 3. Gaya Visual dengan Preview Thumbnail & Galeri Contoh */}
+            <div className="space-y-1.5">
+              <Select
+                label="Gaya Visual"
+                value={visualStyle}
+                onChange={(e) => handleVisualStyleChange(e.target.value as VisualStyle)}
+                options={VISUAL_STYLES.map((v) => ({
+                  value: v.id,
+                  label: v.name,
+                }))}
+              />
+              {(() => {
+                const cur = getVisualStyleById(visualStyle);
+                return (
+                  <div className="flex items-center gap-2 p-1.5 rounded-lg bg-black/40 border border-white/10 text-xs">
+                    <img
+                      src={cur.sampleImageUrl}
+                      alt={cur.name}
+                      className="w-10 h-10 rounded-md object-cover border border-white/10 shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-[11px] font-semibold text-zinc-200 truncate">
+                          {cur.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsVisualGalleryOpen(true)}
+                          className="text-[10px] text-amber-400 hover:text-amber-300 hover:underline shrink-0 font-medium"
+                        >
+                          Lihat Contoh 🖼️
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 line-clamp-1 mt-0.5 leading-tight">
+                        {cur.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
 
             {/* 4. Target Platform / Aspek Rasio */}
             <Select
@@ -922,6 +1006,110 @@ ${idea.localizationNotes}`;
                 value={productBrandName}
                 onChange={(e) => setProductBrandName(e.target.value)}
               />
+            </div>
+          )}
+
+          {/* Kolom Khusus Product Ad & Affiliate: Gambar Referensi Produk */}
+          {(storyboardType === 'ad' ||
+            activeCategory.id.includes('affiliate') ||
+            activeCategory.id.includes('product') ||
+            activeCategory.name.toLowerCase().includes('iklan') ||
+            activeCategory.name.toLowerCase().includes('affiliate')) && (
+            <div className="p-4 rounded-xl bg-black/40 border border-amber-500/25 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-semibold text-zinc-100">
+                    Gambar Referensi Produk (Khusus Iklan & Affiliate)
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    I2V Mode & Midjourney --cref
+                  </span>
+                </div>
+                <span className="text-[11px] text-zinc-400">
+                  Maksimal 3 foto referensi ({productRefImages.length}/3 terpasang)
+                </span>
+              </div>
+
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Unggah foto kemasan asli produk atau masukkan URL gambar langsung. AI akan menyusun prompt Image-to-Video (I2V) dan tag Midjourney <code className="text-amber-300 font-mono text-[10px]">--cref</code> untuk mengunci keaslian bentuk fisik produk.
+              </p>
+
+              {/* Dua Metode Input: File Upload & Input URL */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                {/* 1. Upload File */}
+                <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
+                  <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
+                    <Upload className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Upload File Gambar (JPG / PNG / WebP)</span>
+                  </span>
+                  <label className="flex flex-col items-center justify-center p-3 border border-dashed border-white/15 rounded-lg hover:border-amber-500/50 hover:bg-amber-500/5 cursor-pointer transition-all text-center">
+                    <span className="text-[11px] text-zinc-300 font-medium">Pilih file foto produk dari perangkat</span>
+                    <span className="text-[10px] text-zinc-500 mt-0.5">Maks 5MB per file</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={productRefImages.length >= 3}
+                    />
+                  </label>
+                </div>
+
+                {/* 2. Masukkan URL Gambar Langsung */}
+                <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
+                  <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Input URL Gambar Langsung</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="https://... foto produk Shopee / CDN"
+                        value={inputImageUrl}
+                        onChange={(e) => setInputImageUrl(e.target.value)}
+                        disabled={productRefImages.length >= 3}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleAddImageUrl}
+                      disabled={!inputImageUrl.trim() || productRefImages.length >= 3}
+                      className="shrink-0"
+                    >
+                      Tambah
+                    </Button>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 block">Tautan gambar katalog online atau marketplace</span>
+                </div>
+              </div>
+
+              {/* Preview Attached Images */}
+              {productRefImages.length > 0 && (
+                <div className="space-y-1.5 pt-2">
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Foto Referensi Terlampir:</span>
+                  <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                    {productRefImages.map((imgUrl, idx) => (
+                      <div key={idx} className="relative group w-20 h-20 rounded-lg overflow-hidden border border-amber-500/40 shrink-0 bg-black">
+                        <img src={imgUrl} alt={`Ref ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveProductImage(idx)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-black/80 text-red-400 hover:text-red-300 transition-colors shadow"
+                          title="Hapus foto ini"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <span className="absolute bottom-0 inset-x-0 bg-black/80 text-[9px] text-center text-amber-300 font-mono py-0.5">
+                          Ref #{idx + 1}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1139,6 +1327,67 @@ ${idea.localizationNotes}`;
           </div>
         </section>
       )}
+
+      {/* Modal Galeri Referensi Gaya Visual AI */}
+      <Modal
+        isOpen={isVisualGalleryOpen}
+        onClose={() => setIsVisualGalleryOpen(false)}
+        title="Galeri Referensi Gaya Visual AI"
+        subtitle="14 pilihan estetika visual untuk storyboard video Anda. Klik salah satu untuk memilih langsung."
+        maxWidth="2xl"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[70vh] overflow-y-auto p-1 pr-2">
+          {VISUAL_STYLES.map((style) => {
+            const isSelected = visualStyle === style.id;
+            return (
+              <div
+                key={style.id}
+                onClick={() => {
+                  handleVisualStyleChange(style.id as VisualStyle);
+                  setIsVisualGalleryOpen(false);
+                }}
+                className={`group p-3 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-amber-500/15 border-amber-500/60 shadow-lg shadow-amber-500/15 ring-1 ring-amber-500/40'
+                    : 'bg-[#111115] border-white/10 hover:border-white/25 hover:bg-[#16161c]'
+                }`}
+              >
+                <div className="space-y-2">
+                  <div className="relative aspect-video rounded-lg overflow-hidden border border-white/10 bg-black">
+                    <img
+                      src={style.sampleImageUrl}
+                      alt={style.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                    <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[9px] font-mono font-medium bg-black/80 text-amber-300 border border-white/10">
+                      {style.category}
+                    </span>
+                    {isSelected && (
+                      <span className="absolute top-1.5 right-1.5 p-1 rounded-full bg-amber-500 text-black">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-zinc-100 line-clamp-1">{style.name}</h5>
+                    <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
+                      {style.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="pt-2 mt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
+                  <span className="text-zinc-500 font-mono truncate max-w-[130px]">
+                    {style.promptKeywords.split(',')[0]}
+                  </span>
+                  <span className={`font-semibold ${isSelected ? 'text-amber-400' : 'text-zinc-400 group-hover:text-zinc-200'}`}>
+                    {isSelected ? 'Terpilih ✓' : 'Pilih Gaya'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
   );
 };

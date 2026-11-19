@@ -97,6 +97,7 @@ export async function generateContentIdeas(
           creativeEntropy: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           uiLanguage: currentLang,
           targetModel: config.targetModel || 'universal-neutral',
+          productReferenceImages: config.productReferenceImages || [],
         },
       }),
     });
@@ -126,6 +127,7 @@ export async function generateContentIdeas(
             : undefined,
           categoryId: category.id,
           subcategoryId: subcat?.id,
+          productReferenceImages: config.productReferenceImages,
           saved: false,
           createdAt: new Date().toISOString(),
         }));
@@ -278,6 +280,7 @@ export async function developStoryFromIdea(
           targetModel,
           dialogLanguage,
           uiLanguage: currentLang,
+          productReferenceImages: idea?.productReferenceImages || [],
         },
       }),
     });

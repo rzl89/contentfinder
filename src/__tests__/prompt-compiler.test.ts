@@ -77,6 +77,9 @@ describe('Prompt Compiler & Exporter', () => {
   it('should inject model-specific verified formatting for Kling', () => {
     const compiledKling = compileScenePrompt(sampleScene, 'kling-1-5', sampleProject.characters);
     expect(compiledKling.videoPrompt).toContain('[Camera: Slow push-in]');
+
+    const compiledKling21 = compileScenePrompt(sampleScene, 'kling-2-1', sampleProject.characters);
+    expect(compiledKling21.videoPrompt).toContain('[Camera: Slow push-in]');
   });
 
   it('should generate a complete Markdown production sheet', () => {

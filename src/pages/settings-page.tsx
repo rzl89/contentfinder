@@ -223,24 +223,26 @@ export const SettingsPage: React.FC = () => {
               <span>Format Prompt Otomatis Fixprom untuk Model Ini:</span>
             </span>
             <p className="text-zinc-300 text-[11px] leading-relaxed">
-              {activeModelId === 'kling-1-5' &&
-                'Prompt video akan otomatis diawali dengan format tag pergerakan kamera [Camera: <movement>] dan parameter multi-angle referensi karakter.'}
-              {activeModelId === 'google-veo-2' &&
-                'Prompt visual dioptimalkan untuk tekstur optik fotorealistik 4K, contact sheet 9-panel dengan gutter putih bersih, dan timeline 10.0 detik.'}
-              {activeModelId === 'runway-gen3-alpha' &&
-                'Prompt video dioptimalkan untuk motion vectors kontinu, fluid camera paths, dan instruksi transisi mulus.'}
-              {activeModelId === 'luma-dream-machine' &&
+              {(activeModelId === 'kling-1-5' || activeModelId === 'kling-2-1') &&
+                'Prompt video akan otomatis diawali dengan format tag pergerakan kamera [Camera: <movement>] dan parameter multi-angle referensi karakter/wajah.'}
+              {(activeModelId === 'google-veo-2' || activeModelId === 'google-veo-3') &&
+                'Prompt visual dioptimalkan untuk tekstur optik fotorealistik 4K, contact sheet 9-panel dengan gutter putih bersih, dan sinkronisasi audio native.'}
+              {(activeModelId === 'runway-gen3-alpha' || activeModelId === 'runway-gen4-turbo') &&
+                'Prompt video dioptimalkan untuk motion vectors kontinu, fluid camera paths, continuous dynamic vectors, dan transisi mulus.'}
+              {(activeModelId === 'luma-dream-machine' || activeModelId === 'luma-ray2-flash') &&
                 'Prompt video diformat dengan dynamic camera motion controls dan instruksi pencahayaan volumetrik yang koheren.'}
-              {activeModelId === 'minimax-hailuo' &&
-                'Prompt visual difokuskan pada detail ekspresi mikro wajah manusia dan pergerakan sinematik natural 6 detik.'}
-              {activeModelId === 'openai-sora' &&
-                'Prompt video mencakup instruksi fisika spasial 3D dunia nyata, kontinuitas objek multi-frame, dan sound design layer.'}
-              {activeModelId === 'pika-2-0' &&
-                'Prompt video dioptimalkan untuk timing dinamis, efek kamera terfokus, dan sinkronisasi audio native.'}
-              {activeModelId === 'pixverse-v3' &&
-                'Prompt visual disesuaikan untuk konsistensi karakter multi-scene dan rendering visual beresolusi tinggi.'}
-              {activeModelId === 'tencent-hunyuan' &&
-                'Prompt video disusun secara deskriptif mendalam dengan struktur narasi visual kaya detail.'}
+              {(activeModelId === 'minimax-hailuo' || activeModelId === 'minimax-video-01-live') &&
+                'Prompt visual difokuskan pada detail ekspresi mikro wajah manusia, subjek hidup, dan pergerakan sinematik natural.'}
+              {(activeModelId === 'openai-sora' || activeModelId === 'openai-sora-turbo') &&
+                'Prompt video mencakup instruksi fisika spasial 3D dunia nyata, kontinuitas objek multi-frame, dan sound design layer Foley.'}
+              {(activeModelId === 'pika-2-0' || activeModelId === 'pika-2-2') &&
+                'Prompt video dioptimalkan untuk timing dinamis, efek kamera terfokus -camera -motion -fps, dan Pikaffects.'}
+              {(activeModelId === 'pixverse-v3' || activeModelId === 'pixverse-v4') &&
+                'Prompt visual disesuaikan untuk konsistensi karakter multi-scene, 4K UHD, dan referensi gaya visual.'}
+              {(activeModelId === 'tencent-hunyuan' || activeModelId === 'hunyuan-turbo') &&
+                'Prompt video disusun secara deskriptif mendalam dengan struktur narasi visual kaya detail temporal.'}
+              {activeModelId === 'wan-2-1' &&
+                'Prompt video dioptimalkan untuk Alibaba Wan 2.1 dengan master cinematography, konsistensi visual tinggi, dan text-to-audio format.'}
               {activeModelId === 'universal-neutral' &&
                 'Prompt disusun dengan bahasa sinematografi universal berstandar studio (Shot, Angle, Movement, Lighting, Color Palette) yang dapat digunakan pada generator AI video manapun.'}
             </p>

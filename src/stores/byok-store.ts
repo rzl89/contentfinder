@@ -23,63 +23,70 @@ const SESSION_VAULT_PREFIX = 'tf_vault_ephemeral_';
 const DEFAULT_PROVIDERS: ProviderCredential[] = [
   {
     id: 'cred-veo',
-    provider: 'Google Veo 2 (Gemini / Vertex AI)',
+    provider: 'Google Veo 3 (Vertex AI)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-kling',
-    provider: 'Kling 1.5 & 2.0 Pro',
+    provider: 'Kling 2.1 Pro (Kuaishou)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-runway',
-    provider: 'Runway Gen-3 Alpha Turbo',
+    provider: 'Runway Gen-4 Turbo',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-luma',
-    provider: 'Luma Ray 2 / Dream Machine',
+    provider: 'Luma Ray 2 Flash (Dream Machine)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-minimax',
-    provider: 'MiniMax Hailuo Video-01',
+    provider: 'MiniMax Video-01-Live (Hailuo)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-sora',
-    provider: 'OpenAI Sora Video',
+    provider: 'OpenAI Sora Turbo',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-pika',
-    provider: 'Pika 2.0 / 2.1',
+    provider: 'Pika 2.2 (Pikaffects)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-pixverse',
-    provider: 'PixVerse V3 Pro',
+    provider: 'PixVerse V4 Pro',
+    maskedKey: 'Belum dikonfigurasi',
+    status: 'unconfigured',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'cred-wan',
+    provider: 'Wan 2.1 Video (Alibaba)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
   },
   {
     id: 'cred-hunyuan',
-    provider: 'Tencent Hunyuan Video',
+    provider: 'Hunyuan Video Turbo (Tencent)',
     maskedKey: 'Belum dikonfigurasi',
     status: 'unconfigured',
     createdAt: new Date().toISOString(),
@@ -123,11 +130,11 @@ export const useByokStore = create<ByokState>((set, get) => ({
     const next = get().credentials.map((c) =>
       c.provider.toLowerCase().includes(provider.toLowerCase())
         ? {
-            ...c,
-            maskedKey,
-            status: 'active' as const,
-            lastUsedAt: new Date().toISOString(),
-          }
+          ...c,
+          maskedKey,
+          status: 'active' as const,
+          lastUsedAt: new Date().toISOString(),
+        }
         : c
     );
 
@@ -152,11 +159,11 @@ export const useByokStore = create<ByokState>((set, get) => ({
     const next = get().credentials.map((c) =>
       c.provider.toLowerCase().includes(provider.toLowerCase())
         ? {
-            ...c,
-            maskedKey: 'Belum dikonfigurasi',
-            status: 'unconfigured' as const,
-            lastUsedAt: undefined,
-          }
+          ...c,
+          maskedKey: 'Belum dikonfigurasi',
+          status: 'unconfigured' as const,
+          lastUsedAt: undefined,
+        }
         : c
     );
 
@@ -202,12 +209,12 @@ export const useByokStore = create<ByokState>((set, get) => ({
     const nextJobs = get().jobs.map((j) =>
       j.id === jobId
         ? {
-            ...j,
-            status,
-            outputUrl: outputUrl || j.outputUrl,
-            error: error || j.error,
-            updatedAt: new Date().toISOString(),
-          }
+          ...j,
+          status,
+          outputUrl: outputUrl || j.outputUrl,
+          error: error || j.error,
+          updatedAt: new Date().toISOString(),
+        }
         : j
     );
     set({ jobs: nextJobs });

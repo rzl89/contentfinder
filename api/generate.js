@@ -181,6 +181,7 @@ export default async function handler(req, res) {
         trendApproach = 'trend_first',
         storyboardType = 'clip',
         productBrandName = '',
+        productReferenceImages = [],
         additionalTheme,
         topic,
         count = 5,
@@ -370,6 +371,7 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         dialogLanguage = 'indonesian',
         temperature = 0.7,
         uiLanguage = 'id',
+        productReferenceImages = idea?.productReferenceImages || [],
       } = payload || {};
 
       const effectiveSceneCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
@@ -405,6 +407,12 @@ Apply these format rules strictly in every scene's videoPrompt field:
 - If PixVerse (pixverse-v3): focus on character consistency lock and 4K UHD cinematic clarity.
 - If Tencent Hunyuan (tencent-hunyuan): use rich, expressive visual descriptions and temporal stability.
 - If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
+${productReferenceImages && productReferenceImages.length > 0 ? `
+PRODUCT REFERENCE ATTACHMENT (Mode: Image-to-Video / Element Reference):
+- Reference images provided (${productReferenceImages.length} image(s)).
+- In imagePromptJson: include reference instruction or Midjourney tag "--cref <URL> --cw 100".
+- In videoPromptJson: specify "[I2V Mode: Use product reference as starting frame]" and focus camera motion and lighting around the physical product.
+- In worldBible props: explicitly anchor the product physical traits (branding, packaging, color palette).` : ''}
 Respond ONLY with valid JSON matching the schema provided.`;
 
       // Use admin-defined system prompt override if set; otherwise use built-in FlowStoryboard-Pro prompt

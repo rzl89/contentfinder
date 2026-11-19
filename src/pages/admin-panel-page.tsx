@@ -839,13 +839,124 @@ export const AdminPanelPage: React.FC = () => {
                 <span>Model reasoning (gpt-6-luna, o1, o3) tidak mendukung parameter temperature. Sistem akan otomatis mengabaikan temperature untuk model tersebut.</span>
               </div>
 
-              <div>
-                <Input
-                  label="System Prompt Override (opsional)"
-                  value={localSettings.systemPromptOverride}
-                  onChange={(e) => setLocalSettings({ ...localSettings, systemPromptOverride: e.target.value })}
-                  placeholder="Override sistem prompt default AI... (kosongkan untuk default)"
-                />
+              {/* System Prompt Override & Viewer */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-200 block">
+                      System Prompt AI (Master Instruction)
+                    </label>
+                    <p className="text-[11px] text-zinc-400">
+                      Tinjau prompt default bawaan sistem di bawah atau modifikasi bagian tertentu sesuai kebutuhan studio Anda.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                      localSettings.systemPromptOverride.trim()
+                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                        : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                    }`}>
+                      {localSettings.systemPromptOverride.trim() ? '● Custom Override Aktif' : '✓ Default Sistem Aktif'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Preset Prompt Loader Buttons */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const masterPrompt = `You are FlowStoryboard-Pro — Fixprom's cinematic storyboard engine. You are a veteran commercial director with 10+ years crafting AI-ready production packages for TikTok, Instagram Reels, YouTube Shorts, and Google Flow (Veo).
+
+CORE MANDATE:
+Convert any user idea into a complete, production-ready storyboard package. Every output must be internally consistent: the character looks the same in Scene 1 as in Scene 9. The world must feel coherent. The story must move.
+
+CRITICAL RULES (FOLLOW STRICTLY):
+1. ZERO IMAGE RENDERING: You are a text-based prompt engineer. Do NOT draw or generate images yourself. Output pure JSON.
+2. GLOBAL ANCHOR CONSISTENCY:
+   - Define ONE exact detailed anchor_description for the main protagonist (colors, shape, clothing materials, facial features, accessories).
+   - This exact same anchor string must be repeated in every panel description of imagePromptJson and in consistency_lock of videoPromptJson.
+3. ON-SCREEN TEXT = MINIMAL AND PREMIUM:
+   - Maximum 3 placements across all 9 panels (optional hook at Panel 1, 1-3 feature/spec callouts at Panel 5, Brand/Title Tagline at Panel 9). Short 3-6 words each.
+4. TIMELINE AND VOICEOVER:
+   - Panels 1-8 each exactly 1.1s, panel 9 exactly 1.2s -> total 10.0 seconds.
+   - Voiceover: Light background narration (~50% runtime coverage, max 15 words total across video in 2 short lines). Voice gender/age matches character.
+5. SCENE DIALOGUE:
+   - Every scene must include a natural spoken dialogue matching the requested language.
+6. FORMAT:
+   - Respond ONLY with valid JSON matching the schema provided. No markdown wrappers. No prose outside the JSON.`;
+                      setLocalSettings({ ...localSettings, systemPromptOverride: masterPrompt });
+                      showToast({ type: 'info', title: 'Prompt Dimuat', message: 'Master FlowStoryboard-Pro default berhasil ditampilkan di kolom input. Silakan edit bagian yang Anda inginkan.' });
+                    }}
+                    className="px-2.5 py-1 text-xs rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>📋 Tampilkan Master Default</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const universalPrompt = `You are Fixprom AI — an elite short-form content strategist and cinematic prompt engineer. Your sole job is to produce high-retention, creatively distinct, and production-ready video content ideas and storyboard packages for Indonesian and global digital creators.
+
+IDENTITY & TONE:
+- You are a senior creative director, not a generic chatbot.
+- Write with the confidence of someone who has directed 500+ viral short-form videos.
+- Never use AI clichés: no "Pernahkah kamu...", "Bayangkan jika...", "Unlock", "Delve", "Seamlessly".
+- Every hook must start mid-action, mid-conflict, or mid-dialogue — never with a rhetorical question.
+
+AUTHENTICITY RULES (STRICT):
+1. Represent Indonesia authentically: modern cities, suburbs, campuses, contemporary coffee shops, creative studios — not poverty stereotypes or cultural caricatures.
+2. Characters must feel real: specific jobs, specific ages, specific speech patterns. No generic "pemuda" or "wanita karier" without defining details.
+3. Locations must be specific: "rooftop café in Kemang with blue neon sign" beats "a café in Jakarta".
+4. Conflict must be concrete: a real obstacle, a real decision, a real consequence — not vague "perjuangan hidup".
+
+DIVERSITY MANDATE:
+- Every idea in a batch must have a different core conflict, POV character, setting, and payoff.
+- Reject any idea that is a cosmetic variation of another (same beat, different name).
+- Rotate emotional registers: tension, comedy, wonder, nostalgia, absurdity — never all the same mood.
+
+VISUAL PRECISION:
+- Every imagePrompt and videoPrompt must be written in English, cinematic, and technically precise.
+- Include: subject description, lighting type, camera angle, lens characteristic, color grading.
+- Reference real cinematography language: "warm golden hour key light", "35mm shallow depth of field", "slow push-in", "desaturated cyan shadows".
+
+FORMAT:
+- Respond ONLY with valid JSON matching the exact schema provided.`;
+                      setLocalSettings({ ...localSettings, systemPromptOverride: universalPrompt });
+                      showToast({ type: 'info', title: 'Prompt Dimuat', message: 'Versi Universal berhasil dimuat di editor.' });
+                    }}
+                    className="px-2.5 py-1 text-xs rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition-colors flex items-center gap-1.5"
+                  >
+                    <span>⚡ Tampilkan Versi Universal</span>
+                  </button>
+
+                  {localSettings.systemPromptOverride.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocalSettings({ ...localSettings, systemPromptOverride: '' });
+                        showToast({ type: 'info', title: 'Reset Selesai', message: 'System prompt override dikosongkan. Sistem kembali menggunakan default bawaan.' });
+                      }}
+                      className="px-2.5 py-1 text-xs rounded-lg bg-red-950/40 hover:bg-red-900/50 text-red-300 border border-red-500/20 transition-colors"
+                    >
+                      <span>✕ Kosongkan (Gunakan Default)</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Multiline Editor */}
+                <div className="relative">
+                  <textarea
+                    rows={12}
+                    value={localSettings.systemPromptOverride}
+                    onChange={(e) => setLocalSettings({ ...localSettings, systemPromptOverride: e.target.value })}
+                    placeholder="Kolom ini kosong = Sistem menggunakan System Prompt Bawaan (FlowStoryboard-Pro). Klik tombol 'Tampilkan Master Default' di atas untuk melihat dan memodifikasi naskah prompt aslinya..."
+                    className="w-full rounded-xl bg-black/60 border border-white/10 focus:border-amber-500/50 p-3.5 text-xs font-mono text-zinc-200 leading-relaxed outline-none transition-all resize-y shadow-inner scrollbar-thin"
+                  />
+                  <div className="absolute bottom-3 right-3 text-[10px] font-mono text-zinc-500 bg-black/80 px-2 py-0.5 rounded border border-white/5 pointer-events-none">
+                    {localSettings.systemPromptOverride.length} karakter
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end">

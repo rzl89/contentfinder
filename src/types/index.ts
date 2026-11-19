@@ -175,6 +175,7 @@ export interface ContentIdea {
   categoryId: string;
   subcategoryId?: string;
   saved: boolean;
+  productReferenceImages?: string[];
   createdAt: string; // ISO-8601
 }
 
@@ -196,6 +197,8 @@ export interface IdeaGenerationConfig {
   productBrandName?: string;
   /** Target AI video engine — propagates vendor format rules to backend prompt */
   targetModel?: string;
+  /** Product reference images (URLs or base64 data URLs) for Affiliate & Commercial Ads */
+  productReferenceImages?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -434,6 +437,7 @@ export interface Project {
   scenes: Scene[];
   qcResult?: QCResult;
   targetModel?: string;
+  productReferenceImages?: string[];
   masterStoryboardImagePrompt?: StoryboardImagePromptJSON | string;
   masterStoryboardVideoPrompt?: StoryboardVideoPromptJSON | string;
   storyboardPlanSummary?: string[];

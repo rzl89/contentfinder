@@ -681,6 +681,50 @@ export const PromptDeskPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Product Reference Images Strip (if attached to current project) */}
+      {currentProject?.productReferenceImages && currentProject.productReferenceImages.length > 0 && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#14141c] to-[#14141c] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+              <Camera className="w-4 h-4 text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-300">
+                  Referensi Produk Aktif ({currentProject.productReferenceImages.length} Foto)
+                </span>
+                <Badge variant="amber">I2V &amp; Midjourney --cref</Badge>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Gambar ini digunakan sebagai referensi fisik produk untuk kontinuitas visual di semua adegan iklan/affiliate.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {currentProject.productReferenceImages.map((imgUrl, idx) => (
+              <div key={idx} className="relative group">
+                <img
+                  src={imgUrl}
+                  alt={`Referensi Produk ${idx + 1}`}
+                  className="w-12 h-12 object-cover rounded-lg border border-amber-500/40 hover:scale-105 transition-all shadow-md cursor-pointer"
+                  onClick={() => window.open(imgUrl, '_blank')}
+                  title="Klik untuk membuka gambar"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleCopyText(imgUrl, `URL Foto Produk ${idx + 1}`)}
+                  className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-mono transition-opacity"
+                  title="Salin URL / cref"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Model Selector & Capability Inspector Bar */}
       <BentoTile className="p-4 bg-[#14141c] border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">

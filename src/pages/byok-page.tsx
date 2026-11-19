@@ -65,8 +65,8 @@ export const ByokPage: React.FC = () => {
             </p>
             <p className="text-xs text-zinc-400 leading-relaxed pt-1">
               {t(
-                'Hubungkan API Key Anda sendiri ke 9 engine AI Video terverifikasi (Google Veo 2, Kling 2.0, Runway Gen-3, Luma Ray 2, MiniMax Hailuo, Sora, Pika, PixVerse, Hunyuan). Terenkripsi dengan standar AES-256-GCM.',
-                'Connect your personal API keys to 9 verified AI video engines (Google Veo 2, Kling 2.0, Runway Gen-3, Luma Ray 2, MiniMax Hailuo, Sora, Pika, PixVerse, Hunyuan). Encrypted with AES-256-GCM.'
+                'Hubungkan API Key Anda sendiri ke 10 engine AI Video terverifikasi generasi terbaru (Google Veo 3, Kling 2.1, Runway Gen-4, Luma Ray 2 Flash, MiniMax Live, Sora Turbo, Pika 2.2, PixVerse V4, Wan 2.1, Hunyuan Turbo). Terenkripsi dengan standar AES-256-GCM.',
+                'Connect your personal API keys to 10 verified latest-gen AI video engines (Google Veo 3, Kling 2.1, Runway Gen-4, Luma Ray 2 Flash, MiniMax Live, Sora Turbo, Pika 2.2, PixVerse V4, Wan 2.1, Hunyuan Turbo). Encrypted with AES-256-GCM.'
               )}
             </p>
           </div>
@@ -74,15 +74,16 @@ export const ByokPage: React.FC = () => {
           {/* Provider chips / locked items */}
           <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-left space-y-2.5 max-h-56 overflow-y-auto">
             {[
-              'Google Veo 2 (Gemini / Vertex AI)',
-              'Kling 1.5 & 2.0 Pro',
-              'Runway Gen-3 Alpha Turbo',
-              'Luma Ray 2 / Dream Machine',
-              'MiniMax Hailuo Video-01',
-              'OpenAI Sora Video',
-              'Pika 2.0 / 2.1',
-              'PixVerse V3 Pro',
-              'Tencent Hunyuan Video',
+              'Google Veo 3 (Vertex AI)',
+              'Kling 2.1 Pro (Kuaishou)',
+              'Runway Gen-4 Turbo',
+              'Luma Ray 2 Flash (Dream Machine)',
+              'MiniMax Video-01-Live (Hailuo)',
+              'OpenAI Sora Turbo',
+              'Pika 2.2 (Pikaffects)',
+              'PixVerse V4 Pro',
+              'Wan 2.1 Video (Alibaba)',
+              'Hunyuan Video Turbo (Tencent)',
             ].map((provider) => (
               <div key={provider} className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">{provider}</span>
@@ -173,7 +174,7 @@ export const ByokPage: React.FC = () => {
               BYOK (Bring Your Own Key) Video Connectors
             </h2>
             <p className="text-xs text-zinc-400">
-              Integrasi langsung opsional ke 9 engine AI Video terverifikasi (Google Veo 2, Kling, Runway, Luma, MiniMax, Sora, Pika, PixVerse, Hunyuan) menggunakan kunci API Anda sendiri.
+              Integrasi langsung opsional ke 10 engine AI Video terverifikasi generasi terbaru (Google Veo 3, Kling 2.1, Runway Gen-4, Luma Ray 2, MiniMax Live, Sora Turbo, Pika 2.2, PixVerse V4, Wan 2.1, Hunyuan Turbo) menggunakan kunci API Anda sendiri.
             </p>
           </div>
         </div>
