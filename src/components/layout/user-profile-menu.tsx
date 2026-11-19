@@ -334,7 +334,7 @@ export const UserProfileMenu: React.FC = () => {
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/5 transition-colors text-left"
             >
               <Settings className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <span>{t('Pengaturan & Konteks', 'Settings & Context')}</span>
+              <span>{t('Pengaturan Model AI', 'AI Model Settings')}</span>
             </button>
           </div>
 

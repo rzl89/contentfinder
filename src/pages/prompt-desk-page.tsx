@@ -729,7 +729,7 @@ export const PromptDeskPage: React.FC = () => {
 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
             <span className="font-medium text-[11px]">
-              Status: Terverifikasi Aktif (Nov 2026) ⚡
+              Format Prompt Sesuai Dokumentasi Vendor ⚡
             </span>
           </div>
 

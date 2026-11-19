@@ -76,15 +76,24 @@ export const IdeaStudioPage: React.FC = () => {
     return 'time-travel';
   });
 
+  const savedStudioPrefs = (() => {
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const [ideaMode, setIdeaMode] = useState<'ai_generate' | 'manual_input'>('ai_generate');
   const [storyboardType, setStoryboardType] = useState<'clip' | 'ad'>('clip');
   const [productBrandName, setProductBrandName] = useState<string>('');
   const [selectedSubcatId, setSelectedSubcatId] = useState<string>('');
-  const [platform, setPlatform] = useState<Platform>('tiktok');
-  const [duration, setDuration] = useState<DurationRange>('10s');
-  const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic_realistic');
+  const [platform, setPlatform] = useState<Platform>(() => savedStudioPrefs?.defaultPlatform || 'tiktok');
+  const [duration, setDuration] = useState<DurationRange>(() => savedStudioPrefs?.defaultDuration || '10s');
+  const [visualStyle, setVisualStyle] = useState<VisualStyle>(() => savedStudioPrefs?.defaultVisualStyle || 'cinematic_realistic');
   const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
-  const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>('indonesian');
+  const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>(() => savedStudioPrefs?.defaultDialogLanguage || 'indonesian');
   const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
   const [ideaCount, setIdeaCount] = useState<5 | 10>(5);
 
@@ -275,7 +284,7 @@ ${idea.localizationNotes}`;
       }
 
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
-      const targetModel = proj?.targetModel || 'universal-neutral';
+      const targetModel = proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
       const developed = await developStoryFromIdea(idea, 9, targetModel, dialogLanguage);
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
@@ -383,7 +392,7 @@ ${idea.localizationNotes}`;
         proj = createProject(generatedTitle, activeCategory.id, contextPreset);
       }
 
-      const targetModel = proj?.targetModel || 'universal-neutral';
+      const targetModel = proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
       const developed = await developStoryFromIdea(manualIdea, 9, targetModel, dialogLanguage);
 
       useProjectStore.getState().updateCurrentProject({

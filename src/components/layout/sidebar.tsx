@@ -79,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
     },
     {
       to: '/settings',
-      label: t('Pengaturan & Konteks', 'Settings & Context'),
+      label: t('Pengaturan Model AI', 'AI Model Settings'),
       icon: <Settings className="w-4 h-4" />,
     },
   ];
