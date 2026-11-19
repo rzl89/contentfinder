@@ -280,6 +280,7 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
 Category: ${categoryName}
 Description: ${categoryDescription || ''}
 Type: ${isProductAd ? `Product Ad / Commercial (Brand: ${productBrandName || 'Standard'})` : 'Movie / Drama / Animated Clip'}
+${productReferenceImages && productReferenceImages.length > 0 ? `Product Reference: ${productReferenceImages.length} image(s) provided. Structure every concept around hero product demonstration, physical unboxing/use-case, high-converting problem-to-solution arc, and visual proof.` : ''}
 ${effectiveTopic ? `Specific Concept / Idea: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
 Platform: ${platform}
 Target Duration: ${duration}
@@ -375,6 +376,8 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
       } = payload || {};
 
       const effectiveSceneCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
+      const httpRefUrls = (productReferenceImages || []).filter((u) => typeof u === 'string' && u.startsWith('http'));
+      const sampleCrefUrl = httpRefUrls.length > 0 ? httpRefUrls[0] : '[URL_GAMBAR_PRODUK]';
 
       const languageInstruction =
         dialogLanguage === 'javanese'
@@ -408,9 +411,13 @@ Apply these format rules strictly in every scene's videoPrompt field:
 - If Tencent Hunyuan (tencent-hunyuan): use rich, expressive visual descriptions and temporal stability.
 - If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
 ${productReferenceImages && productReferenceImages.length > 0 ? `
-PRODUCT REFERENCE ATTACHMENT (Mode: Image-to-Video / Element Reference):
+PRODUCT REFERENCE ATTACHMENT (Mode: Image-to-Video & Midjourney --cref):
 - Reference images provided (${productReferenceImages.length} image(s)).
-- In imagePromptJson: include reference instruction or Midjourney tag "--cref <URL> --cw 100".
+- In individual scene prompts ("scenes"):
+  * For scenes showcasing the hero product: describe the exact physical product appearance, packaging, material textures, and studio lighting highlights.
+  * In imagePrompt: Append Midjourney product continuity parameter: "--cref ${sampleCrefUrl} --cw 100".
+  * In videoPrompt: Add prefix "[I2V Mode: Use product reference as starting frame]" with camera movement highlighting the product.
+- In imagePromptJson: include reference instruction or Midjourney tag "--cref ${sampleCrefUrl} --cw 100".
 - In videoPromptJson: specify "[I2V Mode: Use product reference as starting frame]" and focus camera motion and lighting around the physical product.
 - In worldBible props: explicitly anchor the product physical traits (branding, packaging, color palette).` : ''}
 Respond ONLY with valid JSON matching the schema provided.`;

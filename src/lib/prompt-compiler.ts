@@ -42,7 +42,8 @@ export function compileScenePrompt(
   scene: Scene,
   targetModelId: string = 'universal-neutral',
   characters: CharacterBible[] = [],
-  _worldBible?: WorldBible
+  _worldBible?: WorldBible,
+  productReferenceImages?: string[]
 ): CompiledScenePrompts {
   const model = getModelCapability(targetModelId);
 
@@ -119,11 +120,25 @@ export function compileScenePrompt(
     compiledVideoPrompt = `Cinematic motion shot: ${compiledVideoPrompt}. High visual consistency, master cinematography, realistic physics.`;
   }
 
+  let finalImagePrompt = scene.imagePrompt || compiledImagePrompt;
+  let finalVideoPrompt = scene.videoPrompt || compiledVideoPrompt;
+
+  // Append product reference continuity tags for affiliate & commercial ads
+  if (productReferenceImages && productReferenceImages.length > 0) {
+    const httpUrl = productReferenceImages.find((u) => typeof u === 'string' && u.startsWith('http'));
+    if (httpUrl && !finalImagePrompt.includes('--cref')) {
+      finalImagePrompt = `${finalImagePrompt} --cref ${httpUrl} --cw 100`;
+    }
+    if (!finalVideoPrompt.includes('[I2V Mode')) {
+      finalVideoPrompt = `[I2V Mode: First frame = product reference] ${finalVideoPrompt}`;
+    }
+  }
+
   return {
     sceneNumber: scene.sceneNumber,
     beatTitle: scene.beatTitle,
-    imagePrompt: scene.imagePrompt || compiledImagePrompt,
-    videoPrompt: scene.videoPrompt || compiledVideoPrompt,
+    imagePrompt: finalImagePrompt,
+    videoPrompt: finalVideoPrompt,
     negativePrompt:
       scene.negativePrompt ||
       'blurry, plastic skin, oversaturated, deformed hands, extra fingers, mutated limbs, text artifacts, watermark, low quality, glitch',
@@ -145,7 +160,13 @@ export function compileProjectPrompts(
 ): CompiledScenePrompts[] {
   const modelId = targetModelId || project.targetModel || 'universal-neutral';
   return project.scenes.map((scene) =>
-    compileScenePrompt(scene, modelId, project.characters, project.worldBible)
+    compileScenePrompt(
+      scene,
+      modelId,
+      project.characters,
+      project.worldBible,
+      project.productReferenceImages
+    )
   );
 }
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   compileScenePrompt,
+  compileProjectPrompts,
   exportProductionSheetMarkdown,
   exportProjectJSON,
 } from '../lib/prompt-compiler';
@@ -100,5 +101,18 @@ describe('Prompt Compiler & Exporter', () => {
     expect(parsed.name).toBe('Nusantara Relic Chronicles');
     expect(parsed.credentials).toBeUndefined();
     expect(parsed.apiKey).toBeUndefined();
+  });
+
+  it('should inject product reference image continuity tags into prompts', () => {
+    const projectWithRefs = {
+      ...sampleProject,
+      productReferenceImages: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30'],
+    };
+    const compiled = compileProjectPrompts(projectWithRefs);
+    expect(compiled[0].imagePrompt).toContain('--cref https://images.unsplash.com/photo-1523275335684-37898b6baf30 --cw 100');
+    expect(compiled[0].videoPrompt).toContain('[I2V Mode: First frame = product reference]');
+
+    const sheet = exportProductionSheetMarkdown(projectWithRefs);
+    expect(sheet).toContain('PRODUCT REFERENCE (IMAGE-TO-VIDEO & MIDJOURNEY CREF)');
   });
 });
