@@ -14,3 +14,8 @@ Rules applied:
 - Honest, grounded human copy with concrete numbers and facts.
 - Clean high-contrast UI crafted with intention, avoiding generic AI templates.
 <!-- antislop:end -->
+
+## Decision & Confirmation Protocol
+- Jangan memberikan pertanyaan konfirmasi di setiap akhir sesi/perintah secara rutin.
+- Ajukan konfirmasi hanya jika terdapat keputusan penting, berisiko tinggi, atau ambigu yang memerlukan arahan pengguna (dalam format pilihan terstruktur/klik).
+- Untuk keputusan teknis yang rasional, aman, dan berisiko rendah: putuskan dan eksekusi langsung secara mandiri.
