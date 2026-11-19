@@ -105,6 +105,15 @@ export function compileScenePrompt(
   } else if (targetModelId === 'openai-sora') {
     // Sora format: detailed physical simulation & cinematography
     compiledVideoPrompt = `Cinematic video shot. ${compiledVideoPrompt} Fluid dynamics, accurate physical momentum, 8k render.`;
+  } else if (targetModelId === 'pika-2-0') {
+    // Pika format: camera motion parameter emphasis & focal lock
+    compiledVideoPrompt = `${compiledVideoPrompt} -camera ${scene.camera.movement.toLowerCase()} -motion 2 -fps 24`;
+  } else if (targetModelId === 'pixverse-v3') {
+    // PixVerse format: character consistency engine & 4K cinematic clarity
+    compiledVideoPrompt = `${compiledVideoPrompt} High character consistency, 4K UHD, smooth cinematic frame transition.`;
+  } else if (targetModelId === 'tencent-hunyuan') {
+    // Hunyuan format: rich descriptive text-to-video details
+    compiledVideoPrompt = `Cinematic video: ${compiledVideoPrompt}. Realistic rendering, accurate temporal motion, rich texture details.`;
   }
 
   return {

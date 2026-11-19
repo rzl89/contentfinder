@@ -419,9 +419,16 @@ CRITICAL RULES (FOLLOW STRICTLY):
    - Panels 1-8 each exactly 1.1s, panel 9 exactly 1.2s -> total 10.0 seconds.
    - Voiceover: Light background narration (~50% runtime coverage, max 15 words total across video in 2 short lines). Voice gender/age matches character.
 5. VENDOR ALIGNMENT (${targetModel}):
-   - If Kling: prefix video prompt with [Camera: <movement>].
-   - If Veo 2 / Google Flow: focus on optical realism and 4K textures.
-   - If Runway Gen-3 / Luma: specify fluid motion vectors and smooth tracking.
+   - If Kling: prefix video prompt with [Camera: <movement>] and multi-angle tags.
+   - If Veo 2 / Google Flow: focus on optical realism, clean 9-panel contact sheet layout, and 4K textures.
+   - If Runway Gen-3: start video prompt with [Camera Movement / Framing]: followed by scene and fluid motion vectors.
+   - If Luma Ray 2: specify dynamic camera motion paths and continuous momentum.
+   - If MiniMax Hailuo: focus on authentic human micro-expressions and natural physical dynamics.
+   - If OpenAI Sora: describe 3D spatial consistency, depth interaction, and environmental physics.
+   - If Pika: specify camera movement parameters and focal lock.
+   - If PixVerse: focus on character consistency lock and 4K UHD cinematic clarity.
+   - If Tencent Hunyuan: use rich, expressive visual descriptions and temporal stability.
+   - If Universal: use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
 6. SCENE DIALOGUE:
    - Every scene must include a natural spoken dialogue in ${languageInstruction}.
 7. ${storyOutputLangInstruction}
