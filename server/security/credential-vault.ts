@@ -39,6 +39,10 @@ export const ALLOWED_PROVIDER_ORIGINS: Record<string, string[]> = {
   kling: ['https://api.klingai.com/v1/'],
   runway: ['https://api.dev.runwayml.com/v1/'],
   luma: ['https://api.lumalabs.ai/dream-machine/v1/'],
+  minimax: ['https://api.minimax.chat/v1/'],
+  pika: ['https://api.pika.art/v1/'],
+  pixverse: ['https://app.pixverse.ai/api/v1/'],
+  tencent_hunyuan: ['https://hunyuan.tencentcloudapi.com/'],
 };
 
 /**

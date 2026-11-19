@@ -65,19 +65,24 @@ export const ByokPage: React.FC = () => {
             </p>
             <p className="text-xs text-zinc-400 leading-relaxed pt-1">
               {t(
-                'Hubungkan API Key Anda sendiri ke Google Veo 2, Kling 1.5/2.0, Runway Gen-3, dan Luma Ray 2. Terenkripsi langsung di browser dengan standar AES-256-GCM.',
-                'Connect your personal API keys to Google Veo 2, Kling 1.5/2.0, Runway Gen-3, and Luma Ray 2. Encrypted client-side with military-grade AES-256-GCM.'
+                'Hubungkan API Key Anda sendiri ke 9 engine AI Video terverifikasi (Google Veo 2, Kling 2.0, Runway Gen-3, Luma Ray 2, MiniMax Hailuo, Sora, Pika, PixVerse, Hunyuan). Terenkripsi dengan standar AES-256-GCM.',
+                'Connect your personal API keys to 9 verified AI video engines (Google Veo 2, Kling 2.0, Runway Gen-3, Luma Ray 2, MiniMax Hailuo, Sora, Pika, PixVerse, Hunyuan). Encrypted with AES-256-GCM.'
               )}
             </p>
           </div>
 
           {/* Provider chips / locked items */}
-          <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-left space-y-2.5">
+          <div className="p-4 rounded-xl bg-black/40 border border-white/5 text-left space-y-2.5 max-h-56 overflow-y-auto">
             {[
-              'Google Veo 2 (Gemini API)',
+              'Google Veo 2 (Gemini / Vertex AI)',
               'Kling 1.5 & 2.0 Pro',
-              'Runway Gen-3 Alpha',
-              'Luma Dream Machine Ray 2',
+              'Runway Gen-3 Alpha Turbo',
+              'Luma Ray 2 / Dream Machine',
+              'MiniMax Hailuo Video-01',
+              'OpenAI Sora Video',
+              'Pika 2.0 / 2.1',
+              'PixVerse V3 Pro',
+              'Tencent Hunyuan Video',
             ].map((provider) => (
               <div key={provider} className="flex items-center justify-between text-xs">
                 <span className="text-zinc-400">{provider}</span>
@@ -168,7 +173,7 @@ export const ByokPage: React.FC = () => {
               BYOK (Bring Your Own Key) Video Connectors
             </h2>
             <p className="text-xs text-zinc-400">
-              Integrasi langsung opsional ke Google Veo, Kling, Runway, dan Luma menggunakan kunci API Anda sendiri.
+              Integrasi langsung opsional ke 9 engine AI Video terverifikasi (Google Veo 2, Kling, Runway, Luma, MiniMax, Sora, Pika, PixVerse, Hunyuan) menggunakan kunci API Anda sendiri.
             </p>
           </div>
         </div>
@@ -182,7 +187,7 @@ export const ByokPage: React.FC = () => {
                 Nol Biaya Kredit Video
               </span>
               <p className="text-zinc-400 leading-relaxed text-[11px]">
-                Fixprom adalah studio ide dan prompt independen. Biaya generasi video dibebankan langsung oleh vendor (Google, Runway, Kling, Luma) ke akun API Anda sendiri. Kami tidak menjual kredit video.
+                Fixprom adalah studio ide dan prompt independen. Biaya generasi video dibebankan langsung oleh vendor resmi ke akun API Anda sendiri. Kami tidak menjual kredit video.
               </p>
             </div>
           </div>

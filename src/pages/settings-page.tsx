@@ -73,6 +73,7 @@ export const SettingsPage: React.FC = () => {
 
     try {
       localStorage.setItem(STUDIO_PREFS_KEY, JSON.stringify(prefs));
+      window.dispatchEvent(new CustomEvent('fixprom:studio-prefs-updated', { detail: prefs }));
     } catch (e) {
       console.warn('Could not save studio prefs to localStorage', e);
     }
@@ -271,7 +272,7 @@ export const SettingsPage: React.FC = () => {
                 { value: '2d_cartoon', label: '04 — 2D Cartoon (Flat colors, bold outlines)' },
                 { value: 'anime', label: '05 — Modern Anime (Shonen style)' },
                 { value: 'claymation', label: '06 — Stop-motion / Claymation' },
-                { value: '3d_product_commercial', label: '07 — Glossy 3D Product Commercial' },
+                { value: '3d_product_commercial', label: '07 — Glossy 3D Product Commercial (Studio look)' },
                 { value: 'vintage_35mm', label: '08 — Vintage Retro 35mm Film' },
                 { value: 'neon_music_video', label: '09 — Neon Stylized Music-Video Look' },
                 { value: 'documentary_realism', label: '10 — Documentary Realism' },
@@ -288,11 +289,11 @@ export const SettingsPage: React.FC = () => {
               value={defaultPlatform}
               onChange={(e) => setDefaultPlatform(e.target.value as Platform)}
               options={[
-                { value: 'tiktok', label: 'TikTok / Reels / Shorts (9:16 Vertical)' },
-                { value: 'multi_platform', label: 'YouTube / Widescreen (16:9 Landscape)' },
-                { value: 'facebook_reels', label: 'Square Feed (1:1)' },
+                { value: 'tiktok', label: 'TikTok (9:16 Vertical)' },
                 { value: 'instagram_reels', label: 'Instagram Reels (9:16)' },
                 { value: 'youtube_shorts', label: 'YouTube Shorts (9:16)' },
+                { value: 'multi_platform', label: 'YouTube / Widescreen (16:9 Landscape)' },
+                { value: 'facebook_reels', label: 'Facebook / Feed Square (1:1)' },
               ]}
             />
 
@@ -323,7 +324,7 @@ export const SettingsPage: React.FC = () => {
                 { value: 'javanese', label: 'Bahasa Jawa' },
                 { value: 'sundanese', label: 'Bahasa Sunda' },
                 { value: 'mixed', label: 'Campuran / Code-switching' },
-                { value: 'none', label: 'Tanpa Dialog (Ambient SFX / Musik Saja)' },
+                { value: 'none', label: 'Tanpa Dialog (Ambient SFX / Musik)' },
               ]}
             />
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import {
   CONTENT_CATEGORIES,
@@ -100,6 +100,82 @@ export const IdeaStudioPage: React.FC = () => {
   const [targetModel, setTargetModel] = useState<string>(
     () => currentProject?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral'
   );
+
+  // Two-way reactive sync: listen to settings updates from Settings page or external events
+  useEffect(() => {
+    const handlePrefsUpdated = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) {
+        if (detail.defaultModelId) setTargetModel(detail.defaultModelId);
+        if (detail.defaultVisualStyle) setVisualStyle(detail.defaultVisualStyle);
+        if (detail.defaultPlatform) setPlatform(detail.defaultPlatform);
+        if (detail.defaultDuration) setDuration(detail.defaultDuration);
+        if (detail.defaultDialogLanguage) setDialogLanguage(detail.defaultDialogLanguage);
+      }
+    };
+    window.addEventListener('fixprom:studio-prefs-updated', handlePrefsUpdated);
+    return () => {
+      window.removeEventListener('fixprom:studio-prefs-updated', handlePrefsUpdated);
+    };
+  }, []);
+
+  // Sync when currentProject changes
+  useEffect(() => {
+    if (currentProject?.targetModel) {
+      setTargetModel(currentProject.targetModel);
+    }
+  }, [currentProject?.id, currentProject?.targetModel]);
+
+  // Instant Two-Way Handlers: automatically save parameter modifications to project & studio prefs
+  const handleTargetModelChange = (newModelId: string) => {
+    setTargetModel(newModelId);
+    useProjectStore.getState().updateCurrentProject({ targetModel: newModelId });
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      const current = raw ? JSON.parse(raw) : {};
+      const updated = { ...current, defaultModelId: newModelId };
+      localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('fixprom:studio-prefs-updated', { detail: updated }));
+    } catch (e) {
+      console.warn('Could not auto-save target model preference', e);
+    }
+  };
+
+  const handleVisualStyleChange = (style: VisualStyle) => {
+    setVisualStyle(style);
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      const current = raw ? JSON.parse(raw) : {};
+      localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify({ ...current, defaultVisualStyle: style }));
+    } catch {}
+  };
+
+  const handlePlatformChange = (p: Platform) => {
+    setPlatform(p);
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      const current = raw ? JSON.parse(raw) : {};
+      localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify({ ...current, defaultPlatform: p }));
+    } catch {}
+  };
+
+  const handleDurationChange = (d: DurationRange) => {
+    setDuration(d);
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      const current = raw ? JSON.parse(raw) : {};
+      localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify({ ...current, defaultDuration: d }));
+    } catch {}
+  };
+
+  const handleDialogLanguageChange = (l: DialogLanguage) => {
+    setDialogLanguage(l);
+    try {
+      const raw = localStorage.getItem('fixprom_user_studio_prefs');
+      const current = raw ? JSON.parse(raw) : {};
+      localStorage.setItem('fixprom_user_studio_prefs', JSON.stringify({ ...current, defaultDialogLanguage: l }));
+    } catch {}
+  };
 
   // Result state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -735,7 +811,7 @@ ${idea.localizationNotes}`;
             <Select
               label="Gaya Visual"
               value={visualStyle}
-              onChange={(e) => setVisualStyle(e.target.value as VisualStyle)}
+              onChange={(e) => handleVisualStyleChange(e.target.value as VisualStyle)}
               options={[
                 { value: 'cinematic_realistic', label: '01 — Ultra Photorealistic Cinematic' },
                 { value: 'anime_ghibli', label: '02 — Studio Ghibli Anime' },
@@ -758,7 +834,7 @@ ${idea.localizationNotes}`;
             <Select
               label="Target Platform"
               value={platform}
-              onChange={(e) => setPlatform(e.target.value as Platform)}
+              onChange={(e) => handlePlatformChange(e.target.value as Platform)}
               options={[
                 { value: 'tiktok', label: 'TikTok (9:16 Vertical)' },
                 { value: 'instagram_reels', label: 'Instagram Reels (9:16)' },
@@ -772,7 +848,7 @@ ${idea.localizationNotes}`;
             <Select
               label="Durasi Video (Detik)"
               value={duration}
-              onChange={(e) => setDuration(e.target.value as DurationRange)}
+              onChange={(e) => handleDurationChange(e.target.value as DurationRange)}
               options={[
                 { value: '10s', label: '10 Detik (Google Flow & Storyboard Master)' },
                 { value: '5s', label: '5 Detik (Ultra Micro Hook)' },
@@ -788,7 +864,7 @@ ${idea.localizationNotes}`;
             <Select
               label="Bahasa Dialog & Narasi"
               value={dialogLanguage}
-              onChange={(e) => setDialogLanguage(e.target.value as DialogLanguage)}
+              onChange={(e) => handleDialogLanguageChange(e.target.value as DialogLanguage)}
               options={[
                 { value: 'indonesian', label: 'Bahasa Indonesia (Natural Santai)' },
                 { value: 'english', label: 'English' },
@@ -822,7 +898,7 @@ ${idea.localizationNotes}`;
             <Select
               label="Target Model AI (Format Prompt Video)"
               value={targetModel}
-              onChange={(e) => setTargetModel(e.target.value)}
+              onChange={(e) => handleTargetModelChange(e.target.value)}
               options={MODEL_CAPABILITIES.map((m) => ({
                 value: m.modelId,
                 label: m.modelId === 'universal-neutral' ? `${m.displayName} • Default` : m.displayName,
