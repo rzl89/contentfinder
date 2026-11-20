@@ -163,6 +163,13 @@ export const PromptDeskPage: React.FC = () => {
   const [studioTab, setStudioTab] = useState<'master_image' | 'master_video' | 'scenes' | 'validation'>('master_image');
   const [copiedBlock, setCopiedBlock] = useState<'block1' | 'block2' | null>(null);
 
+  // Sync activeModelId when currentProject changes
+  useEffect(() => {
+    if (currentProject?.targetModel && currentProject.targetModel !== activeModelId) {
+      setActiveModelId(currentProject.targetModel);
+    }
+  }, [currentProject?.targetModel]);
+
   // Auto-connect first project if no active project is currently selected
   useEffect(() => {
     if (!currentProject && projects.length > 0) {
@@ -340,8 +347,16 @@ export const PromptDeskPage: React.FC = () => {
 
   const getIdeaContext = (): ContentIdea => {
     if (currentProject?.selectedIdea) {
-      return currentProject.selectedIdea;
+      return {
+        ...currentProject.selectedIdea,
+        platform: currentProject.platform || currentProject.selectedIdea.platform,
+        targetModel: activeModelId || currentProject.targetModel,
+        visualStyle: currentProject.contextProfile?.visualStyle || currentProject.selectedIdea.visualStyle,
+      };
     }
+    const isAd =
+      currentProject?.categoryId === 'affiliate-marketing' ||
+      currentProject?.categoryId === 'product-story';
     return {
       id: `idea_${currentProject?.id || 'proj'}_${Date.now()}`,
       categoryId: currentProject?.categoryId || 'time-travel',
@@ -352,12 +367,18 @@ export const PromptDeskPage: React.FC = () => {
       storyBeats: currentProject?.scenes.map((s) => s.beatTitle) || ['Beat 1', 'Beat 2', 'Beat 3', 'Beat 4'],
       conflict: 'Eskalasi ketegangan dan dilema utama dalam cerita.',
       ending: currentProject?.scenes[currentProject.scenes.length - 1]?.summary || 'Payoff akhir cerita.',
-      estimatedDuration: '30-60s',
-      visualStyle: 'cinematic_realistic',
-      suggestedLocation: currentProject?.scenes[0]?.location?.description || 'Indonesia',
-      localizationNotes: 'Adaptasi kontekstual natural Indonesia.',
+      estimatedDuration: isAd ? '10s' : '15s',
+      visualStyle: currentProject?.contextProfile?.visualStyle || 'cinematic_realistic',
+      platform: currentProject?.platform,
+      targetModel: activeModelId,
+      storyboardType: isAd ? 'ad' : 'clip',
+      suggestedLocation: currentProject?.scenes[0]?.location?.description || 'Latar sinematik',
+      localizationNotes: 'Adaptasi kontekstual natural.',
       creativeRationale: 'Format visual dirancang untuk retensi audiens tinggi.',
       saved: true,
+      creativeFramework: currentProject?.creativeFramework,
+      hookStyle: currentProject?.hookStyle,
+      globalGuidance: currentProject?.globalGuidance,
       createdAt: new Date().toISOString(),
     };
   };
@@ -385,11 +406,27 @@ export const PromptDeskPage: React.FC = () => {
     setIsRegeneratingStoryboard(true);
     try {
       const idea = getIdeaContext();
+      const isAd =
+        currentProject.categoryId === 'affiliate-marketing' ||
+        currentProject.categoryId === 'product-story' ||
+        idea.storyboardType === 'ad';
+      const targetSceneCount = isAd ? 9 : 8;
       const developed = await developStoryFromIdea(
         idea,
-        Math.max(9, scenes.length),
+        targetSceneCount,
         activeModelId,
-        'indonesian'
+        currentProject.contextProfile?.dialogLanguage || 'indonesian',
+        {
+          platform: currentProject.platform || idea.platform,
+          visualStyle: currentProject.contextProfile?.visualStyle || idea.visualStyle,
+          duration: idea.estimatedDuration,
+          storyboardType: idea.storyboardType,
+          productBrandName: idea.productBrandName,
+          targetModel: activeModelId,
+          creativeFramework: currentProject.creativeFramework || idea.creativeFramework,
+          hookStyle: currentProject.hookStyle || idea.hookStyle,
+          globalGuidance: currentProject.globalGuidance || idea.globalGuidance,
+        }
       );
 
       // If user locked certain scenes, preserve them!
@@ -460,11 +497,27 @@ export const PromptDeskPage: React.FC = () => {
     setIsRegeneratingScene(true);
     try {
       const idea = getIdeaContext();
+      const isAd =
+        currentProject.categoryId === 'affiliate-marketing' ||
+        currentProject.categoryId === 'product-story' ||
+        idea.storyboardType === 'ad';
+      const targetSceneCount = isAd ? 9 : 8;
       const developed = await developStoryFromIdea(
         idea,
-        scenes.length,
+        targetSceneCount,
         activeModelId,
-        'indonesian'
+        currentProject.contextProfile?.dialogLanguage || 'indonesian',
+        {
+          platform: currentProject.platform || idea.platform,
+          visualStyle: currentProject.contextProfile?.visualStyle || idea.visualStyle,
+          duration: idea.estimatedDuration,
+          storyboardType: idea.storyboardType,
+          productBrandName: idea.productBrandName,
+          targetModel: activeModelId,
+          creativeFramework: currentProject.creativeFramework || idea.creativeFramework,
+          hookStyle: currentProject.hookStyle || idea.hookStyle,
+          globalGuidance: currentProject.globalGuidance || idea.globalGuidance,
+        }
       );
 
       const candidate = developed.scenes[selectedSceneIndex] || developed.scenes[0];

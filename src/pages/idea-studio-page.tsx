@@ -586,6 +586,11 @@ ${idea.localizationNotes}`;
     }
   };
 
+  const isAdOrAffiliateCategory =
+    activeCategory.id === 'affiliate-marketing' ||
+    activeCategory.id === 'product-story' ||
+    storyboardType === 'ad';
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       {/* Top Hero Banner */}
@@ -952,7 +957,10 @@ ${idea.localizationNotes}`;
             ) : (
               <div className="p-3.5 rounded-xl bg-black/30 border border-white/5 flex items-center gap-2.5 text-xs text-zinc-400">
                 <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Mode Buat Sendiri aktif: Langsung menyusun 9 panel visual storyboard.</span>
+                <span>
+                  Mode Buat Sendiri aktif: Langsung menyusun{' '}
+                  {isAdOrAffiliateCategory ? '9-panel commercial storyboard grid' : '8-panel infographic storyboard'}.
+                </span>
               </div>
             )}
 
@@ -996,7 +1004,7 @@ ${idea.localizationNotes}`;
               }
               placeholder={
                 ideaMode === 'manual_input'
-                  ? 'Tuliskan alur cerita lengkap, adegan demi adegan, atau konsep produk Anda. AI akan langsung menyusun 9-panel visual storyboard...'
+                  ? `Tuliskan alur cerita lengkap, adegan demi adegan, atau konsep produk Anda. AI akan langsung menyusun ${isAdOrAffiliateCategory ? '9-panel commercial storyboard' : '8-panel infographic storyboard'}...`
                   : 'Contoh: Stickman menemukan portal rahasia di lukisan kuno, rahasia teknologi AI, kedai kopi senja...'
               }
               value={additionalTheme}
@@ -1007,7 +1015,7 @@ ${idea.localizationNotes}`;
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
             <div className="space-y-1.5 text-xs">
               <div className="text-zinc-400">
-                Engine: <span className="text-amber-400 font-medium">FlowStoryboard-Pro Master</span>. Prompt teknis visual otomatis bernomor 1–9 siap pakai.
+                Engine: <span className="text-amber-400 font-medium">{isAdOrAffiliateCategory ? 'FlowStoryboard-Pro Master (9-Panel Grid)' : 'AI Playbook Master (8-Panel Infographic)'}</span>. Prompt teknis visual otomatis siap pakai.
               </div>
               <div className="inline-flex items-center gap-2 text-[11px] text-amber-300 font-mono bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
                 <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
@@ -1131,7 +1139,10 @@ ${idea.localizationNotes}`;
                       loading={developingIdeaId === idea.id}
                       icon={<ArrowRight className="w-4 h-4 text-black" />}
                       onClick={() => handleDevelopIdea(idea)}
-                      title={t('Susun 9 adegan storyboard 9-panel, character bible, dan world bible (-3 Kredit AI)', 'Generate 9 storyboard scenes 9-panel, character bible, and world bible (-3 AI Credits)')}
+                      title={t(
+                        `Susun ${isAdOrAffiliateCategory ? '9 adegan commercial grid' : '8 adegan infographic storyboard'}, character bible, dan video prompt (-3 Kredit AI)`,
+                        `Generate ${isAdOrAffiliateCategory ? '9 commercial storyboard scenes' : '8 infographic storyboard scenes'}, character bible, and video prompt (-3 AI Credits)`
+                      )}
                     >
                       {t('Kembangkan ke Storyboard (3 Kredit)', 'Develop to Storyboard (3 Credits)')}
                     </Button>
