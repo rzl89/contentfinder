@@ -144,8 +144,9 @@ export interface ContentCategory {
   /** Visual direction notes for this category. */
   visualGuidance: string;
   visualGuidanceEn?: string;
-  /** Indonesia-specific creative guidance (optional). */
-  indonesiaGuidance?: string;
+  /** Global mixed cultural and architectural guidance. */
+  globalGuidance?: string;
+  globalGuidanceEn?: string;
   suggestedDuration: DurationRange[];
   exampleIdeas: string[];
   exampleIdeasEn?: string[];
@@ -175,6 +176,9 @@ export interface ContentIdea {
   categoryId: string;
   subcategoryId?: string;
   saved: boolean;
+  creativeFramework?: string;
+  hookStyle?: string;
+  globalGuidance?: string;
   productReferenceImages?: string[];
   createdAt: string; // ISO-8601
 }
@@ -196,6 +200,9 @@ export interface IdeaGenerationConfig {
   ideaMode?: 'ai_generate' | 'manual_input';
   productBrandName?: string;
   targetModel?: string;
+  creativeFramework?: string;
+  hookStyle?: string;
+  globalGuidance?: string;
   productReferenceImages?: string[];
 }
 
@@ -435,6 +442,9 @@ export interface Project {
   scenes: Scene[];
   qcResult?: QCResult;
   targetModel?: string;
+  creativeFramework?: string;
+  hookStyle?: string;
+  globalGuidance?: string;
   productReferenceImages?: string[];
   masterStoryboardImagePrompt?: StoryboardImagePromptJSON | string;
   masterStoryboardVideoPrompt?: StoryboardVideoPromptJSON | string;

@@ -97,6 +97,13 @@ export async function generateContentIdeas(
           creativeEntropy: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           uiLanguage: currentLang,
           targetModel: config.targetModel || 'universal-neutral',
+          creativeFramework: config.creativeFramework || category.creativeFramework,
+          hookStyle: config.hookStyle || category.hookStyle,
+          globalGuidance:
+            config.globalGuidance ||
+            (currentLang === 'en'
+              ? category.globalGuidanceEn || category.globalGuidance
+              : category.globalGuidance),
           productReferenceImages: config.productReferenceImages || [],
         },
       }),
@@ -122,6 +129,14 @@ export async function generateContentIdeas(
           suggestedLocation: raw.suggestedLocation || 'Latar natural seimbang',
           localizationNotes: raw.localizationNotes || 'Nuansa Indonesia natural tanpa stereotip',
           creativeRationale: raw.creativeRationale || `Menerapkan framework ${category.name}`,
+          creativeFramework: raw.creativeFramework || config.creativeFramework || category.creativeFramework,
+          hookStyle: raw.hookStyle || config.hookStyle || category.hookStyle,
+          globalGuidance:
+            raw.globalGuidance ||
+            config.globalGuidance ||
+            (currentLang === 'en'
+              ? category.globalGuidanceEn || category.globalGuidance
+              : category.globalGuidance),
           trendEvidence: config.trendApproach === 'trend_first'
             ? 'Format hook tervalidasi dari pola retensi tinggi short-form.'
             : undefined,
@@ -161,6 +176,13 @@ export async function generateContentIdeas(
               suggestedLocation: 'Latar natural seimbang sesuai kebutuhan adegan',
               localizationNotes: 'Dialog santai percakapan harian. Hindari karikatur atau simbol lokal berlebihan.',
               creativeRationale: `Menerapkan framework ${category.name} dengan pendekatan ${angle.name}.`,
+              creativeFramework: config.creativeFramework || category.creativeFramework,
+              hookStyle: config.hookStyle || category.hookStyle,
+              globalGuidance:
+                config.globalGuidance ||
+                (currentLang === 'en'
+                  ? category.globalGuidanceEn || category.globalGuidance
+                  : category.globalGuidance),
               categoryId: category.id,
               subcategoryId: subcatItem.id,
               saved: false,
@@ -281,6 +303,9 @@ export async function developStoryFromIdea(
           dialogLanguage,
           uiLanguage: currentLang,
           productReferenceImages: idea?.productReferenceImages || [],
+          creativeFramework: idea?.creativeFramework,
+          hookStyle: idea?.hookStyle,
+          globalGuidance: idea?.globalGuidance,
         },
       }),
     });

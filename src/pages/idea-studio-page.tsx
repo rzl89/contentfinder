@@ -36,10 +36,8 @@ import {
   Layers,
   Wand2,
   Clock,
-  Compass,
   CheckCircle2,
   Info,
-  Tv,
   Lock,
   Copy,
   Check,
@@ -316,6 +314,9 @@ ${idea.localizationNotes}`;
         ideaMode,
         productBrandName: productBrandName.trim(),
         targetModel,
+        creativeFramework: activeCategory.creativeFramework,
+        hookStyle: activeCategory.hookStyle,
+        globalGuidance: activeCategory.globalGuidance,
       });
 
       setIdeas(generated);
@@ -379,6 +380,9 @@ ${idea.localizationNotes}`;
         categoryId: idea.categoryId,
         targetModel: activeModel,
         selectedIdea: idea,
+        creativeFramework: idea.creativeFramework || activeCategory.creativeFramework,
+        hookStyle: idea.hookStyle || activeCategory.hookStyle,
+        globalGuidance: idea.globalGuidance || activeCategory.globalGuidance,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -471,6 +475,9 @@ ${idea.localizationNotes}`;
         storyboardType,
         categoryId: activeCategory.id,
         saved: true,
+        creativeFramework: activeCategory.creativeFramework,
+        hookStyle: activeCategory.hookStyle,
+        globalGuidance: activeCategory.globalGuidance,
         createdAt: new Date().toISOString(),
       };
 
@@ -487,6 +494,9 @@ ${idea.localizationNotes}`;
         categoryId: activeCategory.id,
         targetModel: activeModel,
         selectedIdea: manualIdea,
+        creativeFramework: activeCategory.creativeFramework,
+        hookStyle: activeCategory.hookStyle,
+        globalGuidance: activeCategory.globalGuidance,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -745,38 +755,6 @@ ${idea.localizationNotes}`;
           <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
             <span>Durasi rekomendasi: {activeCategory.suggestedDuration.join(', ')}</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 text-xs">
-          <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
-            <div className="font-semibold text-amber-300 flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5" />
-              <span>Creative Framework</span>
-            </div>
-            <p className="text-zinc-400 leading-relaxed text-[11px]">
-              {activeCategory.creativeFramework}
-            </p>
-          </div>
-
-          <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
-            <div className="font-semibold text-amber-300 flex items-center gap-1.5">
-              <Tv className="w-3.5 h-3.5" />
-              <span>Hook Style (0-3s)</span>
-            </div>
-            <p className="text-zinc-400 leading-relaxed text-[11px]">
-              {activeCategory.hookStyle}
-            </p>
-          </div>
-
-          <div className="p-3 rounded-lg bg-black/40 border border-white/5 space-y-1">
-            <div className="font-semibold text-emerald-400 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5" />
-              <span>Panduan Konteks Indonesia</span>
-            </div>
-            <p className="text-zinc-400 leading-relaxed text-[11px]">
-              {activeCategory.indonesiaGuidance || 'Universal / adaptif tanpa stereotip berlebihan.'}
-            </p>
           </div>
         </div>
       </BentoTile>

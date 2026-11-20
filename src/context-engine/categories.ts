@@ -69,8 +69,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Gunakan color grading berbeda untuk setiap era: sepia/warm untuk masa lalu, cool-toned untuk masa depan. Transisi waktu menggunakan efek distorsi, flash, atau morphing. Detail kostum & setting harus akurat per era.',
     visualGuidanceEn: 'Distinct color grading per era: sepia/warm for the past, cool/sleek for the future. Time transitions using distortion, light bursts, or smooth morphing.',
-    indonesiaGuidance:
-      'Prioritaskan momen sejarah Indonesia: Majapahit, Sriwijaya, kemerdekaan, era reformasi. Gunakan referensi arsitektur lokal (candi, rumah adat). Sensitivitas terhadap peristiwa sejarah yang masih sensitif.',
+    globalGuidance:
+      'Kombinasikan peristiwa sejarah dunia dan lokal: era Renaisans, Dinasti Ming, era Nusantara kuno (Majapahit/Sriwijaya), hingga revolusi industri London dan New York abad ke-20. Detail arsitektur, pakaian periodik, dan artefak waktu menciptakan kontras waktu autentik.',
+    globalGuidanceEn:
+      'Synthesize pivotal world history and regional heritage: Renaissance ateliers, ancient dynasties, industrial-era capitals, and timeless maritime empires with tactile period attire and architectural precision.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'POV: Kamu pedagang rempah di Pelabuhan Sunda Kelapa tahun 1527, tiba-tiba terlempar ke Jakarta 2024',
@@ -150,7 +152,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Background putih atau solid color sederhana. Garis hitam tebal untuk karakter. Gunakan efek warna hanya untuk emphasis (merah untuk bahaya, biru untuk sedih). Animasi harus smooth dengan timing komedi yang tepat.',
     visualGuidanceEn: 'Clean white or solid background. Bold black outlines for characters. Accent color used sparingly for emphasis (red for hazard, blue for melancholy). Snappy comedic timing.',
-    indonesiaGuidance: undefined,
+    globalGuidance:
+      'Referensi visual universal: komedi slapstick lintas budaya, dinamika fisika kartun modern, ekspresi kinetik tanpa batas geografis. Karakter stickman cocok untuk humor global tanpa batasan bahasa.',
+    globalGuidanceEn:
+      'Universal visual language: cross-cultural slapstick timing, modern kinetic physics, and globally readable physical expressions without language barriers.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'Stickman mencoba semua cara untuk mendapatkan WiFi gratis — semakin absurd tiap percobaan',
@@ -230,8 +235,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Kamera selalu first-person: eye-level, slight shake untuk realisme. Tangan atau bagian tubuh terlihat di frame. Depth of field dangkal untuk fokus pada apa yang "dilihat". Sound design krusial — suara ambient harus mendukung immersion.',
     visualGuidanceEn: 'Authentic camera shake, visible hands/gestures interacting with props, shallow depth of field, spatial ambient sound design.',
-    indonesiaGuidance:
-      'Gunakan setting Indonesia yang familiar: angkot, pasar tradisional, sekolah, kampung. POV profesi lokal (tukang bakso, ojol, guru honorer) sangat relatable.',
+    globalGuidance:
+      'Kombinasikan sudut pandang orang pertama dari lanskap urban global (subway Tokyo, rooftop Manhattan, pasar malam Bangkok) dan suasana lokal yang intim. Tangan berinteraksi langsung dengan objek menciptakan immersi total.',
+    globalGuidanceEn:
+      'Blend first-person POV across global urban landmarks (Tokyo subways, Manhattan rooftops, night bazaars) with intimate local settings. Tactile hand interactions and spatial audio deliver total immersion.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'POV: Kamu driver ojol yang ternyata penumpangnya mantan yang belum move on',
@@ -312,8 +319,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Gaya animasi yang hangat dan friendly — warna cerah, karakter dengan ekspresi berlebihan. Chibi atau semi-realistic style. Panel komik bisa digunakan untuk mempercepat storytelling. Ekspresi wajah adalah kunci utama.',
     visualGuidanceEn: 'Warm, inviting palette, expressive chibi or stylized 2D characters, snappy comedic zooms and visual sound effects.',
-    indonesiaGuidance:
-      'Angkat budaya "anak kos", kebiasaan keluarga Indonesia (ditanya kapan nikah, makan nasi harus pakai lauk), dan kebiasaan digital (scroll TikTok sampai subuh, ghosting di chat).',
+    globalGuidance:
+      'Eksplorasi kecanggungan hidup modern yang dipahami di seluruh dunia: baterai ponsel habis di saat kritis, canggung di lift, panik presentasi online, dan overthinking sebelum tidur. Ekspresi mikro kartun yang universal.',
+    globalGuidanceEn:
+      'Explore universally relatable modern micro-dilemmas: dead battery panic, awkward elevator encounters, video call mishaps, and late-night insomnia overthinking with sharp comedic timing.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'Saat kamu bilang "5 menit lagi" ke ibu tapi sudah lewat 2 jam',
@@ -388,8 +397,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Cinematic framing: close-up untuk emosi, wide shot untuk establishing. Lighting dramatis — kontras tinggi untuk thriller, warm untuk romansa. Gunakan slow-motion di momen puncak emosi. Music scoring sangat penting.',
     visualGuidanceEn: 'Cinematic close-ups, high contrast lighting, dynamic handheld or slow push-in, expressive orchestral or ambient score.',
-    indonesiaGuidance:
-      'Setting sinetron-style tapi dengan kualitas sinematik. Konflik yang resonan di Indonesia: perjodohan, perbedaan kelas sosial, anak rantau, dan dilema antara karir vs keluarga.',
+    globalGuidance:
+      'Dramatisasi konflik interpersonal berlatar kosmopolitan: ruang dewan direksi modern, kafe retro Eropa di tengah hujan, stasiun transit larut malam. Tensi psikologis dibangun melalui pacing dialog tajam.',
+    globalGuidanceEn:
+      'Intense interpersonal drama set in cosmopolitan hubs: sleek executive suites, moody rain-soaked European cafes, late-night transit platforms, and understated domestic conflicts.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Seorang ibu menjual perhiasannya diam-diam untuk biayai kuliah anaknya — twist: anaknya sudah tahu sejak awal',
@@ -470,8 +481,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Split-screen atau before/after untuk menunjukkan perbedaan realitas. Efek visual surreal untuk menunjukkan perubahan dunia. World-building visual yang detail untuk membuat realitas alternatif terasa nyata.',
     visualGuidanceEn: 'Split-screen comparisons, surreal environmental world-building, cinematic scale, high contrast before-and-after aesthetics.',
-    indonesiaGuidance:
-      'Premis yang relevan untuk Indonesia: "Bagaimana jika Majapahit tidak runtuh?", "Bagaimana jika Indonesia punya 4 musim?", "Bagaimana jika semua orang Indonesia bisa teleportasi?"',
+    globalGuidance:
+      'Eksplorasi skenario hipotetis berskala global: bagaimana jika gravitasi Bumi hilang 10 detik, bagaimana jika internet mati permanen, atau bagaimana jika manusia bisa melihat frekuensi suara secara visual.',
+    globalGuidanceEn:
+      'Explore planetary what-if scenarios: temporary loss of gravity, global digital blackouts, or visible soundwaves — combining scientific wonder with cinematic realism.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Bagaimana jika gravitasi bumi tiba-tiba menjadi setengahnya — apa yang terjadi pada kehidupan sehari-hari?',
@@ -548,8 +561,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Transisi harus mulus dan memuaskan — morph, swipe, atau dissolve. Sebelum: pencahayaan flat, tanpa filter. Sesudah: pencahayaan dramatis, warna saturated. Slow-motion di momen reveal. Angle kamera harus konsisten before/after.',
     visualGuidanceEn: 'Seamless morphs, wipes, or particle dissolves. Flat realistic lighting in \'before\' transitioning to dramatic cinematic lighting in \'after\'.',
-    indonesiaGuidance:
-      'Transformasi landmark Indonesia (Monas, Borobudur versi futuristik), transformasi makanan tradisional menjadi fine dining, atau glow-up dengan konteks budaya lokal.',
+    globalGuidance:
+      'Metamorfosis visual futuristik dan lintas era: mobil klasik bertransformasi menjadi hovercraft futuristik, artefak kuno menjadi perangkat kuantum, atau kota tua bermutasi menjadi metropolis neon cyberpunk.',
+    globalGuidanceEn:
+      'Futuristic visual metamorphosis across eras: vintage roadsters morphing into cyberpunk hovercrafts, ancient relics turning into quantum devices via fluid particle transitions.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'Transformasi AI: Bagaimana wajah pahlawan nasional Indonesia akan terlihat jika hidup di tahun 2024',
@@ -623,8 +638,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Depth of field ekstrem untuk efek tilt-shift (miniatur). Partikel debu atau efek atmosfer untuk sense of scale. Lighting harus konsisten antara elemen miniatur/raksasa dan environment asli. Komposisi memanfaatkan leading lines untuk menunjukkan kontras skala.',
     visualGuidanceEn: 'Extreme tilt-shift depth of field for miniature dioramas; volumetric fog, scale dust particles, and low-angle camera perspective for giants.',
-    indonesiaGuidance:
-      'Miniatur dunia di dalam makanan Indonesia (nasi goreng, rendang), dunia kecil di dalam becak, atau kucing raksasa di antara gedung-gedung Jakarta.',
+    globalGuidance:
+      'Eksperimen skala ekstrem: kota metropolitan berukuran maket di atas meja kerja, kucing raksasa bersantai di puncak pencakar langit, atau kapal kargo mini berlayar di dalam baskom air. Proporsi visual yang memukau.',
+    globalGuidanceEn:
+      'Mind-bending macro-micro scale contrasts: bustling miniature metropolises on a study desk, colossal house cats perched on skyscrapers, and miniature ships navigating everyday basins.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'Di dalam sepiring nasi goreng ternyata ada seluruh peradaban miniatur yang hidup',
@@ -698,8 +715,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Warna-warna saturated dan dramatic: emas, ungu, hijau zamrud. Volumetric lighting dan god rays. Desain makhluk harus detail dan konsisten. Environment fantasi dengan elemen arsitektur yang recognizable. Partikel magic dan efek cahaya supernatural.',
     visualGuidanceEn: 'Luminous volumetric rays, deep jewel tones (emerald, gold, obsidian), mystical particulate effects, authentic cultural ornamentation.',
-    indonesiaGuidance:
-      'Angkat makhluk mitologi Nusantara: Garuda, Naga Batak, Leak Bali, Buto Ijo. Gunakan estetika wayang dan batik sebagai elemen desain. Arsitektur candi dan keraton sebagai inspirasi world-building.',
+    globalGuidance:
+      'Perpaduan epik mitologi dunia: dewa Nordik, legenda naga Asia Timur, makhluk mistis hutan hujan tropis, ksatria Arthurian, hingga reruntuhan peradaban Atlantis dengan detail rendering sinematik.',
+    globalGuidanceEn:
+      'Cross-cultural mythic synthesis: Norse deities, Eastern mythical dragons, rainforest folklore spirits, and submerged ancient citadels rendered in high-end cinematic detail.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Garuda Pancasila terbangun dari tidur panjangnya dan terbang melintasi seluruh Indonesia modern',
@@ -773,7 +792,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Close-up ekstrem untuk menunjukkan detail proses. Time-lapse untuk proses panjang. Before/after split-screen di akhir. Warna kontras antara kotor (kusam, coklat) dan bersih (cerah, putih). Pencahayaan merata tanpa shadow keras.',
     visualGuidanceEn: 'Macro close-ups on bristles, peeling rust, high-definition water jets, and side-by-side spotless split screens.',
-    indonesiaGuidance: undefined,
+    globalGuidance:
+      'Restorasi benda-benda ikonik dunia: pedang katana berkarat berusia ratusan tahun, konsol video game retro 90-an, jam saku mekanik Swiss, mobil klasik Eropa, dibersihkan step-by-step dengan audio ASMR renyah.',
+    globalGuidanceEn:
+      'Step-by-step restoration of globally cherished items: centuries-old samurai blades, 90s retro gaming consoles, Swiss timepieces, and power-washed stone terraces with hyper-crisp ASMR audio.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'Restorasi sepatu sneaker putih yang sudah sangat kotor — dari lumpur hingga kembali seperti baru',
@@ -847,8 +869,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Aspect ratio cinematic (21:9 letterbox di dalam 9:16 bisa efektif). Color grading yang kuat dan konsisten per video. Drone shots dan gimbal movements yang smooth. Golden hour dan blue hour lighting. Slow-motion untuk momen-momen kecil yang indah.',
     visualGuidanceEn: 'Anamorphic aspect ratio, subtle slow-motion, golden hour/blue hour lighting, smooth gimbal or drone camera trajectories.',
-    indonesiaGuidance:
-      'Indonesia punya landscape luar biasa: Raja Ampat, Bromo, Labuan Bajo, sawah terasering Bali. Urban aesthetic Jakarta malam hari, gang-gang Yogyakarta, atau pelabuhan tradisional.',
+    globalGuidance:
+      'Lanskap visual menenangkan dari berbagai penjuru bumi: aurora borealis di Islandia, gang basah berhias lampion Tokyo malam hari, perbukitan teh berkabut, hingga sunset dramatis di tebing pantai Mediterania.',
+    globalGuidanceEn:
+      'Tranquil cinematic worldscapes: Icelandic aurora borealis over glacial lakes, glowing lantern-lit Kyoto alleyways, misty highland tea estates, and dramatic Mediterranean cliffside sunsets.',
     suggestedDuration: ['15-30s', '30-60s', '1-3min'],
     exampleIdeas: [
       'Cinematic journey matahari terbit di Gunung Bromo — dari gelap total hingga emas menyala',
@@ -920,8 +944,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Warna primer cerah (bright yellow, sky blue, candy pink) dan pastel lembut. Karakter 3D stylized rounded chibi (gaya Pixar/Disney kartun anak). Pencahayaan terang merata (high-key soft lighting), ekspresi mata besar ekspresif, tanpa elemen tajam atau menakutkan.',
     visualGuidanceEn: 'Saturated primary colors, soft pastel backdrops, rounded chibi 3D characters, high-key warm lighting, friendly expressive eyes.',
-    indonesiaGuidance:
-      'Sentuhan ramah Indonesia: latar rumah asri pekarangan buah tropis, taman bermain nusantara, hewan khas nusantara (kancil, badak bercula satu, burung jalak bali). Dialog berbahasa Indonesia yang santun dan edukatif.',
+    globalGuidance:
+      'Dunia fantasi anak-anak penuh warna dengan nilai moral universal: persahabatan hewan hutan, petualangan roket kartun ke planet permen, dan eksplorasi rasa ingin tahu anak dengan palet warna cerah.',
+    globalGuidanceEn:
+      'Whimsical, colorful worlds with universal developmental lessons: cheerful animal friendships, cartoon space missions, and playful problem-solving designed for family viewing.',
     suggestedDuration: ['15-30s', '30-60s', '1-3min'],
     exampleIdeas: [
       'Si Kancil & Pohon Buah Bersama: Kancil mengajak Monyet membagikan buah rambutan kepada kura-kura yang lapar',
@@ -998,8 +1024,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Infografis animasi yang clean dan modern. Zoom-in/zoom-out untuk menunjukkan skala. Diagram dan visualisasi data yang atraktif. Split-screen untuk perbandingan. Teks overlay untuk angka dan fakta kunci — ukuran besar, font bold.',
     visualGuidanceEn: 'Clean kinetic typography, animated infographic overlays, comparative split-screens, dynamic zoom scale diagrams.',
-    indonesiaGuidance:
-      'Fakta tentang Indonesia yang orang Indonesia sendiri belum tahu: keunikan flora/fauna, sejarah yang jarang diajarkan, fenomena alam khas Indonesia, dan pencapaian Indonesia di dunia.',
+    globalGuidance:
+      'Fakta sains, geografi, dan misteri kosmik dunia: formasi lubang hitam, misteri laut dalam Palung Mariana, evolusi kecerdasan buatan, dan keajaiban biologi manusia dengan infografik 3D sinematik.',
+    globalGuidanceEn:
+      'Global science, deep-sea ecology, and cosmic phenomena: black hole thermodynamics, Mariana Trench mysteries, and cellular biology brought to life with sleek 3D visualization.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Kenapa Indonesia punya 17.000 pulau tapi mayoritas penduduknya tinggal di Jawa? Penjelasan geologis dan historis',
@@ -1073,8 +1101,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Desaturated colors, kontras tinggi dengan shadow dalam. Grain dan noise untuk efek raw/found footage. Camera movement tidak stabil untuk membangun unease. Negative space yang banyak — biarkan penonton membayangkan apa yang ada di kegelapan. Flash frame dan glitch untuk jump scare subtle.',
     visualGuidanceEn: 'Desaturated palettes, deep shadow contrast, vintage film grain, uneasy handheld motion, subtle glitch frames.',
-    indonesiaGuidance:
-      'Indonesia kaya akan urban legend dan cerita horor: Kuntilanak, Pocong, Tuyul, Nyi Roro Kidul. Bisa juga angkat misteri sejarah Indonesia yang belum terpecahkan. Hindari konten yang terlalu gore atau menyinggung kepercayaan.',
+    globalGuidance:
+      'Ketegangan psikologis global: stasiun kereta bawah tanah berhantu, kabin bersalju terpencil, perpustakaan abad pertengahan gelap, hingga legenda urban kota modern dengan pencahayaan chiaroscuro mencekam.',
+    globalGuidanceEn:
+      'Atmospheric global thriller and psychological suspense: abandoned subway tunnels, snowbound isolated chalets, cavernous antique archives, and chilling modern urban legends.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Misteri Pulau Sentinel Utara Indonesia: Mengapa penduduknya menolak semua kontak dengan dunia luar?',
@@ -1151,8 +1181,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Eye-level kamera sejajar hewan untuk POV. Warna warm dan cerah. Slow-motion untuk momen menggemaskan. Focus on ekspresi — mata dan telinga hewan sangat ekspresif. Background blur agar fokus pada hewan.',
     visualGuidanceEn: 'Low camera eye-level matching pet height, warm vibrant hues, snappy comedic zoom-ins on ear twitches or expressive eyes.',
-    indonesiaGuidance:
-      'Kucing (sangat populer di Indonesia), anjing kampung, bebek, ayam kampung — hewan yang familiar. Konteks: kucing warung kopi, kucing masjid, anjing penjaga kampung.',
+    globalGuidance:
+      'Karakter hewan peliharaan dan fauna dunia dengan perspektif humoris: dialog batin kucing apartemen yang sarkastik, petualangan anjing retriever di kota besar, atau tingkah satwa liar dengan narasi komedik.',
+    globalGuidanceEn:
+      'Charismatic pet and wildlife perspectives: dry-humored feline inner thoughts, energetic canine escapades, and touching animal camaraderie that resonates across pet lovers worldwide.',
     suggestedDuration: ['10-15s', '15-30s', '30-60s'],
     exampleIdeas: [
       'POV: Kamu kucing warung kopi yang menilai setiap pelanggan berdasarkan pesanan mereka',
@@ -1227,8 +1259,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Warna cerah dan saturated. Ekspresi wajah/karakter yang exaggerated. Zoom-in cepat ke momen punchline. Meme text: font Impact atau bold sans-serif. Pacing cepat — cut setiap 2-3 detik.',
     visualGuidanceEn: 'Vibrant high-saturation tones, rapid cuts (1.5-3 seconds per cut), sudden zooms into deadpan faces, crisp sound effects.',
-    indonesiaGuidance:
-      'Humor Indonesia: sarkas halus, situasi "mager", drama keluarga yang dilebih-lebihkan, dan budaya "flexing". Referensi: meme lokal, trending topics Twitter/TikTok Indonesia.',
+    globalGuidance:
+      'Pola komedi dan tren meme internet global: humor visual timing cepat, parodi klise film blockbuster, ekspresi konyol tak terduga, dan smash-cut dinamis yang memicu tawa di linimasa media sosial internasional.',
+    globalGuidanceEn:
+      'Fast-paced internet meme tropes: universal slapstick physical comedy, movie trope parodies, expressive smash-cuts, and universally viral relatable punchlines.',
     suggestedDuration: ['10-15s', '15-30s'],
     exampleIdeas: [
       'Ekspektasi vs Realita: Masak mengikuti tutorial chef vs hasilnya yang bikin sedih',
@@ -1302,8 +1336,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Warm tones untuk momen positif, cool/muted untuk momen sedih. Candid-style framing, bukan posed. Close-up tangan yang bersentuhan, ekspresi mata, gestur kecil. Soft lighting untuk momen intim. Montage style untuk menunjukkan perjalanan hubungan.',
     visualGuidanceEn: 'Warm natural lighting, candid framing, medium close-ups on hands, glances, and genuine micro-expressions.',
-    indonesiaGuidance:
-      'Hubungan dalam konteks Indonesia: LDR antar pulau, tradisi lamaran adat, drama WA grup keluarga, overthinking sebelum chat gebetan, dan dinamika anak rantau yang rindu rumah.',
+    globalGuidance:
+      'Dinamika hubungan manusia lintas latar belakang: persahabatan antarbudaya, kencan pertama canggung di kafe metropolitan, kehangatan keluarga multi-generasi, dan momen saling peduli di tengah dunia serba cepat.',
+    globalGuidanceEn:
+      'Authentic human connection: cross-cultural friendships, tender multi-generational family bonds, modern romance complexities, and quiet moments of solidarity in bustling cities.',
     suggestedDuration: ['15-30s', '30-60s', '1-3min'],
     exampleIdeas: [
       'Perjalanan hubungan dari "siapa sih ini?" di DM Instagram sampai "bismillah, temuin orangtua"',
@@ -1377,8 +1413,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Before/after split screen atau side-by-side. Time-lapse untuk menunjukkan proses. Teks overlay untuk day counter dan milestone. Musik yang build-up dari mellow ke triumphant. Raw/unfiltered footage untuk authenticity.',
     visualGuidanceEn: 'Split-screen day-1 vs day-30, dynamic on-screen day counter, tempo-building score shifting from melancholy to triumph.',
-    indonesiaGuidance:
-      'Tantangan yang relevan: belajar bahasa daerah dalam 30 hari, keliling Indonesia dengan budget minimal, transformasi dari anak kampung ke profesional kota.',
+    globalGuidance:
+      'Perjalanan transformasi diri dan tantangan nyata: disiplin workout 30 hari, belajar keahlian baru dari nol, proyek zero-waste, atau petualangan solo melintasi perbatasan dengan visual time-lapse inspiratif.',
+    globalGuidanceEn:
+      'Compelling personal growth journeys: 30-day fitness milestones, learning new creative crafts from scratch, zero-waste lifestyle shifts, and uplifting solo travel transformations.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
       'Tantangan 30 hari: belajar membatik dari nol sampai bisa membuat karya sendiri',
@@ -1452,8 +1490,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Macro close-up untuk detail tekstur. Warm lighting yang membuat makanan terlihat lebih appetizing. Steam dan smoke effects. Overhead shot untuk plating. Slow-motion pour, drizzle, dan cut. Warna dominan warm: oranye, merah, kuning emas.',
     visualGuidanceEn: 'Macro lenses, warm appetizing lighting, overhead flat-lays, slow-motion pours and chops, deep golden tones.',
-    indonesiaGuidance:
-      'Kekayaan kuliner Indonesia: Rendang, Soto, Nasi Goreng, Bakso, Gudeg. Bisa angkat street food culture, warung tradisional, atau fusion makanan Indonesia modern. Cerita ibu-ibu penjual makanan yang legenda di kampung.',
+    globalGuidance:
+      'Seni kuliner sensorik tinggi lintas benua: potongan wagyu yang mendesis di bara api, tarikan keju mozzarella pizza kayu bakar, aroma kari rempah harum, hingga seni plating dessert bintang lima dalam visual makro 4K.',
+    globalGuidanceEn:
+      'Multi-sensory global gastronomy: sizzling wood-fired grills, velvety cheese stretches, aromatic spice grinding, and elegant high-end dessert plating captured in mouth-watering macro 4K.',
     suggestedDuration: ['15-30s', '30-60s'],
     exampleIdeas: [
       'AI membayangkan: bagaimana jika semua 34 provinsi di Indonesia membuat versi Nasi Goreng mereka?',
@@ -1527,8 +1567,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Cinematic quality tinggi — iklan AI harus terlihat lebih baik dari iklan tradisional. Product shot dengan dramatic lighting dan slow-motion. Lifestyle shots: produk digunakan dalam konteks nyata. Color grading yang premium dan consistent.',
     visualGuidanceEn: 'Commercial-grade rim lighting, slow-motion turntable product spins, high-end color grading, tactile close-ups.',
-    indonesiaGuidance:
-      'UMKM dan brand lokal Indonesia: batik, kopi lokal, skincare lokal, makanan khas daerah. Ceritakan craft dan passion di balik produk lokal. Kaitkan dengan kebanggaan "produk Indonesia".',
+    globalGuidance:
+      'Narasi produk komersial berstandar internasional: filosofi pembuatan jam tangan mewah Swiss, kisah keberlanjutan brand fesyen, eksplorasi teknologi smartphone mutakhir, atau perjalanan kopi spesialti dari pegunungan tinggi.',
+    globalGuidanceEn:
+      'World-class product storytelling: bespoke horology craftsmanship, eco-conscious streetwear origins, high-tech engineering reveals, and farm-to-cup specialty coffee journeys with cinematic studio lighting.',
     suggestedDuration: ['15-30s', '30-60s', '1-3min'],
     exampleIdeas: [
       'Cerita: Nenek di Yogyakarta masih membuat batik tulis selama 50 tahun — produk batiknya kini dikirim ke seluruh dunia',
@@ -1600,8 +1642,10 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     visualGuidance:
       'Pencahayaan produk tajam studio (high-contrast punchy lighting). Macro close-up detail bahan dan tekstur. Split screen Before-After dinamis. Sudut pandang tangan interaktif memegang barang. Ruang komposisi bawah bersih untuk tombol keranjang kuning/keranjang oranye.',
     visualGuidanceEn: 'Studio ring-light illumination, macro focus on materials, dynamic before-and-after split screens, clean lower-third space for affiliate shopping cart buttons.',
-    indonesiaGuidance:
-      'Fokus pada ceruk produk laris pasar Indonesia: perabot rumah tangga pintar (home living), skincare/beauty lokal BPOM, fashion harian terjangkau, serta gadget fungsional murah. Gaya tutur santai, ramah, dan jujur khas kreator lokal.',
+    globalGuidance:
+      'Strategi review produk konversi tinggi: uji solusi instan untuk masalah sehari-hari, perbandingan side-by-side sebelum vs sesudah, unboxing taktil berkecepatan tinggi, dan demonstrasi keunggulan produk yang transparan.',
+    globalGuidanceEn:
+      'High-converting product demonstration: instant problem-solving stress tests, crystal-clear before-and-after comparisons, tactile unboxings, and transparent benefit-driven hooks optimized for social commerce.',
     suggestedDuration: ['10-15s', '15-30s', '30-60s'],
     exampleIdeas: [
       'Alat Pel Putar Otomatis: Tes membersihkan tumpahan kopi kental di lantai keramik hanya dalam 5 detik — tanpa tangan kotor!',

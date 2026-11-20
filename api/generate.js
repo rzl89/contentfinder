@@ -189,6 +189,9 @@ export default async function handler(req, res) {
         assignedAngles = [],
         creativeEntropy,
         uiLanguage = 'id',
+        creativeFramework,
+        hookStyle,
+        globalGuidance,
       } = payload || {};
 
       const effectiveTopic = (additionalTheme || topic || '').trim();
@@ -229,9 +232,28 @@ export default async function handler(req, res) {
               .join('\n')}\n`
           : '';
 
+      // Build foundational creative directives block from category data (always injected)
+      const foundationalBlock = [
+        creativeFramework
+          ? `CREATIVE FRAMEWORK (MANDATORY — apply to every idea's beat structure):\n${creativeFramework}`
+          : null,
+        hookStyle
+          ? `HOOK STYLE (0-3s) (MANDATORY — every idea's hook MUST follow this pattern):\n${hookStyle}`
+          : null,
+        globalGuidance
+          ? `GLOBAL CULTURAL & VISUAL REFERENCE (apply as contextual foundation for settings, visual cues, and world-building):\n${globalGuidance}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      const foundationalDirective = foundationalBlock
+        ? `\n\n=== FOUNDATIONAL CREATIVE DIRECTIVES (NON-NEGOTIABLE) ===\n${foundationalBlock}\n=== END DIRECTIVES ===\n`
+        : '';
+
       const defaultSystemPromptIdeas = `You are "FlowStoryboard-Pro", a veteran commercial director & ad-film engineer with 10+ years of hands-on experience crafting TV commercials, cinematic movie/drama clips, and animated spots, now specialized in the Google Flow + Omni Flash (Veo) pipeline.
 Your job: Convert the user's category, theme, and parameters into EXACTLY ${count} production-ready, diverse video concepts for ${isProductAd ? 'Product Commercial / Ad' : 'Movie / Drama / Animated Clip'}.
-
+${foundationalDirective}
 GOLDEN RULES (STRICT):
 1. CRITICAL SYSTEM CONSTRAINT: You are a text-based prompt engineer. Output ONLY valid JSON code blocks.
 2. BEAT STRUCTURE:
@@ -270,7 +292,7 @@ Visual style: ${visualStyle}
 Platform: ${platform}
 Duration: ${duration}
 ${outputLanguageInstruction}
-${historyContext}${anglesContext}
+${historyContext}${anglesContext}${foundationalDirective}
 FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects with keys: title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale.`
         : defaultSystemPromptIdeas;
@@ -370,7 +392,34 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         dialogLanguage = 'indonesian',
         temperature = 0.7,
         uiLanguage = 'id',
+        creativeFramework: storyCreativeFramework,
+        hookStyle: storyHookStyle,
+        globalGuidance: storyGlobalGuidance,
       } = payload || {};
+
+      // Also pull from idea object as fallback
+      const resolvedCreativeFramework = storyCreativeFramework || idea?.creativeFramework;
+      const resolvedHookStyle = storyHookStyle || idea?.hookStyle;
+      const resolvedGlobalGuidance = storyGlobalGuidance || idea?.globalGuidance;
+
+      // Build foundational directives block for story development
+      const storyFoundationalBlock = [
+        resolvedCreativeFramework
+          ? `CREATIVE FRAMEWORK (MANDATORY — apply to the full narrative arc, beat structure, and Scene 1 hook):\n${resolvedCreativeFramework}`
+          : null,
+        resolvedHookStyle
+          ? `HOOK STYLE (0-3s) (MANDATORY — Scene 1 MUST implement this exact hook pattern):\n${resolvedHookStyle}`
+          : null,
+        resolvedGlobalGuidance
+          ? `GLOBAL CULTURAL & VISUAL REFERENCE (apply as the primary foundation for world-building, character setting, and scene environments):\n${resolvedGlobalGuidance}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      const storyFoundationalDirective = storyFoundationalBlock
+        ? `\n\n=== FOUNDATIONAL CREATIVE DIRECTIVES (NON-NEGOTIABLE — apply to ALL scenes) ===\n${storyFoundationalBlock}\n=== END DIRECTIVES ===\n`
+        : '';
 
       const effectiveSceneCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
 
@@ -416,7 +465,7 @@ Target scene count: ${effectiveSceneCount}
 Dialogue language: ${languageInstruction}
 Output language: ${storyOutputLangInstruction}
 Target AI video model: ${targetModel}
-${vendorAlignmentBlock}`
+${vendorAlignmentBlock}${storyFoundationalDirective}`
         : `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
 Your job: convert ANY user idea into a complete production package containing:
 1. Character Bible and World Bible
@@ -424,7 +473,7 @@ Your job: convert ANY user idea into a complete production package containing:
 3. CODE BLOCK 1 — 9-panel storyboard grid IMAGE JSON prompt
 4. CODE BLOCK 2 — 10-second continuous VIDEO JSON prompt
 5. Plan Summary (3-5 bullets) and Self-Validation Report.
-
+${storyFoundationalDirective}
 CRITICAL RULES (FOLLOW STRICTLY):
 1. ZERO IMAGE RENDERING: You are a text-based prompt engineer. Do NOT draw or generate images yourself. Output pure JSON.
 2. GLOBAL ANCHOR CONSISTENCY:
