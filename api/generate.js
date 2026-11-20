@@ -259,7 +259,7 @@ GOLDEN RULES (STRICT):
 2. BEAT STRUCTURE:
 ${isProductAd
   ? '   • ADS (products / e-commerce): 1 Hook -> 2 Problem/Context -> 3 Product Reveal -> 4-5 Feature close-ups -> 6 Benefit demo -> 7 Lifestyle shot -> 8 Result/social proof -> 9 CTA + logo.'
-  : '   • MOVIE / DRAMA / ANIMATED clips: 1 Establishing shot -> 2 Character intro -> 3 Setup -> 4-5 Build-up -> 6 Conflict -> 7-8 Climax -> 9 Resolution / end frame.'}
+  : '   • HOW-TO / VIRAL / STORYTELLING (AI Playbook 8-Shot Arc): 1 Opener (establishing & goal) -> 2 Preparation (tools & setup) -> 3 First Action (visible start) -> 4 Transformation (satisfying moment) -> 5 Progress (improvement) -> 6 Creative Angle (cinematic perspective) -> 7 Final Step (anticipation) -> 8 Final Reveal (finished payoff).'}
 3. DIVERSITY: Every idea in this batch must have a distinct central conflict, setting, visual hook, and payoff.
 4. VISUAL PRECISION: Ground visual tone cleanly in "${visualStyle}".
 5. ${outputLanguageInstruction}
@@ -456,20 +456,24 @@ Apply these format rules strictly in every scene's videoPrompt field:
 - If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
 Respond ONLY with valid JSON matching the schema provided.`;
 
-      // Use admin-defined system prompt override if set; otherwise use built-in FlowStoryboard-Pro prompt
-      const systemPrompt = adminSystemPromptOverride
-        ? `${adminSystemPromptOverride}
+      // Check whether this request is for Advertisement / Affiliate or general How-To / Storytelling
+      const isAdOrAffiliate =
+        payload?.storyboardType === 'ad' ||
+        payload?.isProductAd ||
+        idea?.categoryId === 'affiliate-marketing' ||
+        idea?.categoryId === 'product-story' ||
+        (idea?.subcategoryId && (idea.subcategoryId.startsWith('affiliate-') || idea.subcategoryId.startsWith('product-')));
 
---- DYNAMIC CONTEXT (injected per request) ---
-Target scene count: ${effectiveSceneCount}
-Dialogue language: ${languageInstruction}
-Output language: ${storyOutputLangInstruction}
-Target AI video model: ${targetModel}
-${vendorAlignmentBlock}${storyFoundationalDirective}`
-        : `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting cinematic movie/drama clips and viral spots, specialized in the Google Flow + Omni Flash (Veo) and universal AI video pipeline.
+      const durationRaw = String(payload?.duration || idea?.estimatedDuration || '10s').toLowerCase();
+      const is15s = durationRaw.includes('15');
+      const totalSec = is15s ? 15 : 10;
+      const aiPlaybookEngine = is15s ? 'Seedance' : 'Omni Flesh';
+
+      // Standard FlowStoryboard-Pro (Ad/Commercial 9-Panel) system prompt
+      const flowStoryboardAdPrompt = `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting high-conversion commercials and product ads.
 Your job: convert ANY user idea into a complete production package containing:
 1. Character Bible and World Bible
-2. Exactly ${effectiveSceneCount} storyboard scenes (covering the full 9-panel narrative arc)
+2. Exactly ${effectiveSceneCount} storyboard scenes (covering the full 9-panel commercial arc)
 3. CODE BLOCK 1 — 9-panel storyboard grid IMAGE JSON prompt
 4. CODE BLOCK 2 — 10-second continuous VIDEO JSON prompt
 5. Plan Summary (3-5 bullets) and Self-Validation Report.
@@ -477,7 +481,7 @@ ${storyFoundationalDirective}
 CRITICAL RULES (FOLLOW STRICTLY):
 1. ZERO IMAGE RENDERING: You are a text-based prompt engineer. Do NOT draw or generate images yourself. Output pure JSON.
 2. GLOBAL ANCHOR CONSISTENCY:
-   - Define ONE exact detailed anchor_description for the main protagonist (colors, shape, clothing materials, facial features, accessories).
+   - Define ONE exact detailed anchor_description for the main protagonist or hero product (colors, shape, materials, facial features, accessories).
    - This exact same anchor string must be repeated in every panel description of imagePromptJson and in consistency_lock of videoPromptJson.
 3. ON-SCREEN TEXT = MINIMAL AND PREMIUM:
    - Maximum 3 placements across all 9 panels (optional hook at Panel 1, 1-3 feature/spec callouts at Panel 5, Brand/Title Tagline at Panel 9). Short 3-6 words each.
@@ -497,15 +501,71 @@ CRITICAL RULES (FOLLOW STRICTLY):
    - If Universal: use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
 6. SCENE DIALOGUE:
    - Every scene must include a natural spoken dialogue in ${languageInstruction}.
-7. ${storyOutputLangInstruction}
+7. ${storyOutputLangInstruction}`;
+
+      // AI Playbook (8-Panel Infographic Storyboard & Video) prompt for all other categories
+      const aiPlaybookPrompt = `You are an Elite AI Storyboard Director, Infographic Designer, and Short-Form Video Producer specializing in creating highly engaging educational, DIY, cooking, survival, science, life hacks, repair, gardening, productivity, outdoor skills, and how-to videos optimized for AI image and video generation.
+Your objective: create professional storyboard image prompts and AI video prompts that are cinematic, easy to understand, visually engaging, and optimized for viral short-form content.
+${storyFoundationalDirective}
+STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
+1. LAYOUT & FORMAT:
+   - Create a crisp, clean infographic storyboard poster on a white background with clean black borders and bold modern typography.
+   - Commercial storyboard quality, ultra-detailed, highly organized layout, premium cinematic 3D stylized rendering.
+   - Exactly EIGHT (8) storyboard panels arranged in a clean structured infographic column (1x8) or balanced 2x4 poster.
+   - Total video duration: EXACTLY ${totalSec} SECONDS (${is15s ? 'optimized for Seedance' : 'optimized for Omni Flesh'}).
+2. HEADER:
+   - Must include:
+     • VIDEO TITLE: Clean and bold
+     • TOTAL VIDEO TIME: "${totalSec} Seconds | 8 SHOTS"
+     • Three matching keywords
+     • Legend icons for: ACTION, REACTION, TIME, KEY OBJECT, MAIN CHARACTER.
+3. 8-PANEL NARRATIVE ARC:
+   - Panel 1 — Opener (Wide establishing shot): Introduce the character, environment, goal, and important key object.
+   - Panel 2 — Preparation (Medium shot): Character prepares, reveal necessary tools.
+   - Panel 3 — First Action (Close-up): Process begins, visible progress.
+   - Panel 4 — Transformation (Extreme close-up): Most visually satisfying moment, highlight the transformation.
+   - Panel 5 — Progress (Medium close-up): Continue the process, show clear improvement.
+   - Panel 6 — Creative Camera Angle: Cinematic angle (POV, Overhead, Low Angle, Side Angle, or Reflection).
+   - Panel 7 — Final Step (Close dramatic shot): Almost finished, build anticipation.
+   - Panel 8 — Final Reveal (Wide cinematic shot): Show finished result, natural character reaction, strong satisfying payoff.
+4. METADATA PER PANEL:
+   - Every panel must define: Panel title, camera angle, action, reaction, time hint, key object, emotion, and one short English voice-over sentence (5-12 words).
+   - No speech bubbles or paragraphs inside panels.
+5. CHARACTER & OBJECT CONSISTENCY:
+   - Maintain 100% consistency throughout every panel and video shot (same face, hair, clothing, accessories, body proportions, colors, identity).
+6. VOICE-OVER SCRIPT:
+   - Exactly 8 narration lines (one per panel), 5 to 12 words each. Friendly, educational, natural, easy to understand.
+7. AI VIDEO PROMPT (${aiPlaybookEngine}):
+   - Multi-shot sequence based exactly on the 8 storyboard panels representing ${totalSec} seconds.
+   - Smooth cinematic transitions, realistic object interaction, accurate physics, premium realism, depth of field.
+   - MUST strictly end with this exact sentence:
+     "Maintain perfect visual continuity, accurate object placement, realistic motion, and identical character appearance throughout the entire sequence."
+8. ${storyOutputLangInstruction}`;
+
+      // Choose prompt based on category
+      const activeBasePrompt = isAdOrAffiliate ? flowStoryboardAdPrompt : aiPlaybookPrompt;
+
+      // Use admin-defined system prompt override if set; otherwise use category-specialized prompt
+      const systemPrompt = adminSystemPromptOverride
+        ? `${adminSystemPromptOverride}
+
+--- DYNAMIC CONTEXT (injected per request) ---
+Category Type: ${isAdOrAffiliate ? 'Advertisement & Affiliate Commercial (9-Panel FlowStoryboard)' : 'How-To / Storytelling (8-Panel Infographic AI Playbook)'}
+Target scene count: ${isAdOrAffiliate ? effectiveSceneCount : 8}
+Duration: ${totalSec} Seconds
+Dialogue language: ${languageInstruction}
+Output language: ${storyOutputLangInstruction}
+Target AI video model: ${isAdOrAffiliate ? targetModel : aiPlaybookEngine}
+${vendorAlignmentBlock}${storyFoundationalDirective}`
+        : `${activeBasePrompt}
 
 Respond ONLY with a valid JSON object matching this structure:
 {
   "planSummary": [
     "Style and Aspect Ratio: ...",
     "Narrative arc and beat structure: ...",
-    "On-screen typography plan (max 3 placements): ...",
-    "Audio and 50% VO coverage plan: ..."
+    "On-screen typography plan: ...",
+    "Voice-over plan (8 lines, 5-12 words each): ..."
   ],
   "character": {
     "name": "string",
@@ -528,6 +588,137 @@ Respond ONLY with a valid JSON object matching this structure:
     "rules": ["rule1", "rule2"]
   },
   "scenes": [
+    {
+      "sceneNumber": 1,
+      "beatTitle": "string",
+      "purpose": "string",
+      "summary": "string",
+      "action": "string (specific kinetic action)",
+      "reaction": "string (character reaction)",
+      "timeHint": "string (e.g. 1s or 1.5s)",
+      "keyObject": "string (primary focal tool or prop)",
+      "emotion": "string (e.g. Excited, Focused, Amazed)",
+      "voiceoverLine": "string (5-12 words voiceover line)",
+      "location": {
+        "environmentType": "indoor",
+        "description": "string",
+        "timeOfDay": "string",
+        "weather": "string"
+      },
+      "characterActions": "string",
+      "camera": {
+        "shot": "string",
+        "angle": "string",
+        "movement": "string",
+        "framing": "string"
+      },
+      "lighting": "string",
+      "dialogue": "string",
+      "narration": "string",
+      "continuityAnchors": ["string"],
+      "imagePrompt": "string in English",
+      "videoPrompt": "string in English",
+      "negativePrompt": "string"
+    }
+  ],
+  "imagePromptJson": {
+    "task": "${isAdOrAffiliate ? '9-panel storyboard grid' : '8-panel infographic storyboard poster, single image'}",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "header": {
+      "video_title": "string",
+      "total_video_time": "${totalSec} Seconds | ${isAdOrAffiliate ? '9' : '8'} SHOTS",
+      "keywords": ["keyword1", "keyword2", "keyword3"],
+      "legend_icons": ["ACTION", "REACTION", "TIME", "KEY OBJECT", "MAIN CHARACTER"]
+    },
+    "grid_layout": {
+      "total_panels": ${isAdOrAffiliate ? 9 : 8},
+      "rows": ${isAdOrAffiliate ? 3 : 8},
+      "columns": ${isAdOrAffiliate ? 3 : 1},
+      "reading_order": "top to bottom, vertical sequence",
+      "panel_borders": "clean black borders with white spacing",
+      "panel_numbers": "small clear number badges"
+    },
+    "global_consistency": {
+      "anchor_description": "ONE exact detailed string reused across all panels",
+      "color_palette": "string",
+      "lighting": "string",
+      "environment": "string"
+    },
+    "on_screen_text": {
+      "rule": "minimal typography for panel titles and headers",
+      "placements": [
+        { "panel": 1, "text": "Header / Hook", "style": "bold modern sans-serif" }
+      ]
+    },
+    "ingredients_references": [
+      { "id": "REF_CHARACTER_01", "description": "exact anchor description", "used_in_panels": [1,2,3,4,5,6,7,8] }
+    ],
+    "panels": [
+      {
+        "panel": 1,
+        "beat": "string",
+        "shot_type": "string",
+        "camera": "string",
+        "description": "must include anchor_description",
+        "action": "string",
+        "reaction": "string",
+        "time_hint": "1s",
+        "key_object": "string",
+        "emotion": "string",
+        "voiceover": "string"
+      }
+    ],
+    "negative_prompt": "weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
+  },
+  "videoPromptJson": {
+    "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the ${isAdOrAffiliate ? '9' : '8'}-panel storyboard grid",
+    "source_image": "the generated storyboard grid",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "duration_seconds": ${totalSec},
+    "model_target": "${isAdOrAffiliate ? targetModel : aiPlaybookEngine}",
+    "ingredients_references": ["REF_CHARACTER_01"],
+    "on_screen_text": {
+      "rule": "clean minimal end-card or title only",
+      "placements": []
+    },
+    "timeline": [
+      {
+        "frame_ref": "panel 1",
+        "time": "0.0s-1.0s",
+        "action": "string",
+        "camera_move": "string",
+        "motion_intensity": "string",
+        "transition_to_next": "string",
+        "audio": "string"
+      }
+    ],
+    "audio_design": {
+      "music_mood": "string",
+      "sfx_layers": "string",
+      "voiceover": {
+        "coverage_rule": "8 lines of 5-12 words matching each panel",
+        "voice_match_rule": "voice matches character",
+        "lines": [
+          { "time": "0.0s-1.0s", "line": "short narration line" }
+        ],
+        "total_word_limit": "60-80 words total"
+      }
+    },
+    "consistency_lock": "repeat the EXACT anchor_description",
+    "negative_prompt": "subtitles, captions, logos, watermarks, glitches, character changes, sudden morphing, extra limbs",
+    "closing_directive": "Maintain perfect visual continuity, accurate object placement, realistic motion, and identical character appearance throughout the entire sequence."
+  },
+  "validationReport": {
+    "timingTotal10s": true,
+    "anchorConsistent": true,
+    "ingredientRefsMatch": true,
+    "styleAspectIdentical": true,
+    "onScreenTextRuleCompliant": true,
+    "voiceoverRuleCompliant": true
+  }
+}`;
     {
       "sceneNumber": 1,
       "beatTitle": "string",

@@ -268,7 +268,7 @@ export async function generateContentIdeas(
  */
 export async function developStoryFromIdea(
   idea: ContentIdea,
-  targetSceneCount: number = 9,
+  targetSceneCount?: number,
   targetModel: string = 'universal-neutral',
   dialogLanguage: string = 'indonesian'
 ): Promise<{
@@ -281,7 +281,11 @@ export async function developStoryFromIdea(
   validationReport: StoryboardValidationReport;
 }> {
   const projectId = `proj_${Date.now()}`;
-  const effectiveCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
+  const isAdOrAffiliate =
+    idea.categoryId === 'affiliate-marketing' ||
+    idea.categoryId === 'product-story';
+  const defaultSceneCount = isAdOrAffiliate ? 9 : 8;
+  const effectiveCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : defaultSceneCount;
 
   // 1. Try calling the secure backend proxy
   try {
@@ -387,6 +391,12 @@ export async function developStoryFromIdea(
             s.negativePrompt ||
             'blurry, distorted facial features, low quality, watermark, extra limbs',
           locked: false,
+          action: s.action || s.characterActions,
+          reaction: s.reaction,
+          timeHint: s.timeHint || s.time_hint,
+          keyObject: s.keyObject || s.key_object,
+          emotion: s.emotion,
+          voiceoverLine: s.voiceoverLine || s.voiceover,
         }));
 
         // Mock project representation to compute or validate FlowStoryboard package

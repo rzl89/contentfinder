@@ -43,12 +43,12 @@ describe('useLanguageStore — Language Switching & Translation Logic', () => {
     expect(useLanguageStore.getState().language).toBe('id');
   });
 
-  it('localizes all 21 categories properly when switching to English', () => {
+  it('localizes all 31 categories properly when switching to English', () => {
     const categoriesId = getLocalizedCategories('id');
     const categoriesEn = getLocalizedCategories('en');
 
-    expect(categoriesId).toHaveLength(21);
-    expect(categoriesEn).toHaveLength(21);
+    expect(categoriesId).toHaveLength(31);
+    expect(categoriesEn).toHaveLength(31);
 
     // In Indonesian
     const timeTravelId = categoriesId.find((c) => c.id === 'time-travel');

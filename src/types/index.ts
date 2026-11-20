@@ -281,6 +281,12 @@ export interface Scene {
   videoPrompt: string;
   negativePrompt: string;
   locked: boolean;
+  action?: string;
+  reaction?: string;
+  keyObject?: string;
+  emotion?: string;
+  voiceoverLine?: string;
+  timeHint?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -293,6 +299,12 @@ export interface StoryboardPanelItem {
   shot_type: string;
   camera: string;
   description: string;
+  action?: string;
+  reaction?: string;
+  time_hint?: string;
+  key_object?: string;
+  emotion?: string;
+  voiceover?: string;
 }
 
 export interface StoryboardOnScreenPlacement {
@@ -313,6 +325,13 @@ export interface StoryboardImagePromptJSON {
   task: string;
   style: string;
   aspect_ratio: string;
+  header?: {
+    video_title?: string;
+    total_video_time?: string;
+    shots_count?: number;
+    keywords?: string[];
+    legend_icons?: string[];
+  };
   grid_layout: {
     total_panels: number;
     rows: number;

@@ -1659,7 +1659,592 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
 ],
     icon: 'ShoppingBag',
   },
+
+  // ─────────────────────────────────────────────────────────────
+  //  GROUP 5 — How-To & Viral Knowledge (AI Playbook Framework)
+  // ─────────────────────────────────────────────────────────────
+  {
+    id: 'howto-cooking',
+    name: 'Memasak & Resep Viral',
+    nameEn: 'Cooking & Viral Culinary Hacks',
+    description:
+      'Tutorial memasak praktis dan resep viral dengan alur 8-shot infografis: dari bahan baku, proses pengolahan, hingga sajian menggoda.',
+    descriptionEn: 'Step-by-step culinary tutorials and viral food hacks structured in an 8-panel infographic storyboard.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'cooking-comfort-food',
+        name: 'Resep Praktis Cepat Saji (Cheeseburger, Pizza, Kentang Renyah)',
+        nameEn: 'Comfort Food Hacks (Burgers, Pizzas, Crispy Fries)',
+        description: 'Trik memasak hidangan favorit dengan tekstur sempurna',
+        descriptionEn: 'Hacks to achieve restaurant-grade texture at home',
+      },
+      {
+        id: 'cooking-beverage',
+        name: 'Kopi & Minuman Segar (Drip Coffee, Mocktail)',
+        nameEn: 'Artisanal Coffee & Beverages',
+        description: 'Metode seduh kopi presisi dan kreasi minuman segar',
+        descriptionEn: 'Precision coffee brewing and refreshing crafted drinks',
+      },
+      {
+        id: 'cooking-street-food',
+        name: 'Street Food & Jajanan Populer',
+        nameEn: 'Street Food & Trending Snacks',
+        description: 'Cara membuat jajanan viral kaki lima dengan bahan rumah tangga',
+        descriptionEn: 'Recreating popular street food using accessible home ingredients',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK CULINARY FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — 8-shot precision sequence: 1. Opener -> 2. Preparation -> 3. First Action -> 4. Transformation -> 5. Progress -> 6. Creative Angle -> 7. Final Step -> 8. Final Reveal with tactile key objects and crisp voiceover.',
+    hookStyle:
+      'Tampilkan hasil makanan matang paling menggoda (keju meleleh, desis panggangan, saus lumer) di detik pertama dengan teks judul resep bold.',
+    hookStyleEn: 'Lead with the mouth-watering finished hero shot within second 0-1 paired with bold punchy recipe title text.',
+    visualGuidance:
+      'Warm studio lighting, macro shot pada tekstur makanan, uap panas alami, palet warna oranye keemasan, layout infografis bersih.',
+    visualGuidanceEn: 'Warm high-CRI kitchen lighting, macro focus on sizzle and textures, authentic steam, clean infographic borders.',
+    globalGuidance:
+      'Kombinasikan inspirasi kuliner dunia: burger keju Amerika, artisan pizza Napoli, kopi pour-over Tokyo, hingga street grill Asia dengan bahan yang mudah dijangkau di mana saja.',
+    globalGuidanceEn: 'Blend globally popular comfort dishes: artisanal sourdough pizzas, precision espresso pours, and sizzling street delicacies with universally accessible ingredients.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Make the Perfect Cheeseburger',
+      'How to Brew Perfect Drip Coffee',
+      'How to Make Crispy French Fries',
+    ],
+    exampleIdeasEn: [
+      'How to Make the Perfect Cheeseburger',
+      'How to Brew Perfect Drip Coffee',
+      'How to Make Crispy French Fries',
+    ],
+    icon: 'ChefHat',
+  },
+
+  {
+    id: 'howto-diy',
+    name: 'DIY & Kerajinan Kreatif',
+    nameEn: 'DIY & Creative Crafting',
+    description:
+      'Panduan langkah demi langkah membuat alat inovatif dan karya kreatif mandiri dari bahan sederhana di sekitar kita.',
+    descriptionEn: 'Step-by-step guides for crafting innovative gadgets and creative projects from simple everyday materials.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'diy-cooler-gadget',
+        name: 'Alat Pendingin & Pendingin Es Mandiri',
+        nameEn: 'DIY Air Coolers & Ice Fan Hacks',
+        description: 'Membuat pendingin ruangan ekonomis menggunakan kipas dan kotak es',
+        descriptionEn: 'Crafting budget air coolers from plastic containers and portable fans',
+      },
+      {
+        id: 'diy-home-crafts',
+        name: 'Dekorasi & Perabot Rumah Kreatif',
+        nameEn: 'Home Decor & Functional Crafts',
+        description: 'Kreasi dekorasi fungsional dan estetis untuk ruang tamu',
+        descriptionEn: 'Aesthetic and functional home decor made by hand',
+      },
+      {
+        id: 'diy-mini-projects',
+        name: 'Proyek Mini & Upcycling Barang Bekas',
+        nameEn: 'Upcycling & Mini Inventions',
+        description: 'Mengubah barang tak terpakai menjadi alat bernilai tinggi',
+        descriptionEn: 'Transforming discarded items into useful creative inventions',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK DIY & CRAFT FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — 8-shot precision sequence: 1. Opener -> 2. Preparation -> 3. First Action -> 4. Transformation -> 5. Progress -> 6. Creative Angle -> 7. Final Step -> 8. Final Reveal.',
+    hookStyle:
+      'Tunjukkan alat yang sudah menyala atau bekerja di detik 0-1 dengan teks tantangan "How to make a DIY ... in seconds".',
+    hookStyleEn: 'Demonstrate the functioning DIY gadget at second zero with bold high-contrast challenge header.',
+    visualGuidance:
+      'Meja kerja terang dengan pencahayaan merata, alat kerja tersusun rapi (gunting, lem, penggaris), shot makro pemotongan presisi.',
+    visualGuidanceEn: 'Clean workbench layout, organized tools, precise macro assembly cuts, high contrast white border infographics.',
+    globalGuidance:
+      'Gunakan barang-barang rumah tangga universal (kotak kontainer transparan, pipa PVC, kawat, kardus tebal, kipas USB) yang mudah ditemukan secara global.',
+    globalGuidanceEn: 'Utilize universally available household items: clear storage tubs, USB fans, PVC elbows, craft blades, and zip ties.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Make a DIY Air Cooler with Ice and a Fan',
+      'How to Build a Modern Desk Lamp from Scrap Wood',
+      'How to Make an Automatic Plant Watering System',
+    ],
+    exampleIdeasEn: [
+      'How to Make a DIY Air Cooler with Ice and a Fan',
+      'How to Build a Modern Desk Lamp from Scrap Wood',
+      'How to Make an Automatic Plant Watering System',
+    ],
+    icon: 'Hammer',
+  },
+
+  {
+    id: 'howto-survival',
+    name: 'Survival & Alam Terbuka',
+    nameEn: 'Wilderness Survival & Bushcraft',
+    description:
+      'Keterampilan bertahan hidup darurat di alam liar: menyalakan api, membuat kompor kaleng, penjernihan air, dan navigasi alam.',
+    descriptionEn: 'Emergency outdoor survival skills: primitive fire-starting, tin-can camp stoves, water purification, and bushcraft hacks.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'survival-camp-stove',
+        name: 'Kompor Kaleng & Tungku Portabel',
+        nameEn: 'Tin Can Stoves & Pocket Furnaces',
+        description: 'Membuat kompor api efisien dari kaleng bekas dan ranting kering',
+        descriptionEn: 'Building ultra-light biomass stoves using tin cans and dry kindling',
+      },
+      {
+        id: 'survival-fire-craft',
+        name: 'Menyalakan Api Darurat Tanpa Korek',
+        nameEn: 'Emergency Fire Starting Hacks',
+        description: 'Teknik menyalakan api cepat dengan batu api, gesekan, atau baterai',
+        descriptionEn: 'Starting robust campfires using ferro rods, friction, or battery sparks',
+      },
+      {
+        id: 'survival-water-shelter',
+        name: 'Filter Air Darurat & Tenda Alam',
+        nameEn: 'Water Filtration & Emergency Shelters',
+        description: 'Menyaring air keruh menjadi layak minum dengan arang dan pasir',
+        descriptionEn: 'Purifying wild water using layered sand, charcoal, and stone filtration',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK BUSHCRAFT & SURVIVAL FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — 8-shot precision sequence focusing on outdoor bushcraft and survival readiness.',
+    hookStyle:
+      'Buka dengan nyala api membara di tengah hutan atau situasi bertahan hidup ekstrem di detik pertama.',
+    hookStyleEn: 'Ignite viewer interest with vibrant campfire flames or urgent wilderness dilemmas right at second zero.',
+    visualGuidance:
+      'Pemandangan hutan alami berlumut, pencahayaan golden hour menembus kanopi pohon, tekstur logam kaleng dan kayu bakar, asap realistis.',
+    visualGuidanceEn: 'Forest floor setting, dappled canopy sunlight, tactile steel and rough bark textures, photorealistic smoke plume.',
+    globalGuidance:
+      'Setting hutan cemara, perbukitan tropis, atau pegunungan berbatu lintas benua dengan perlengkapan survival outdoor universal.',
+    globalGuidanceEn: 'Cross-continental wilderness environments: pine groves, rugged trails, and temperate creeks with standard outdoor gear.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Build a Mini Campfire Stove from Tin Cans',
+      'How to Start a Fire in the Wild with a Ferro Rod',
+      'How to Filter Dirty River Water Using Charcoal & Sand',
+    ],
+    exampleIdeasEn: [
+      'How to Build a Mini Campfire Stove from Tin Cans',
+      'How to Start a Fire in the Wild with a Ferro Rod',
+      'How to Filter Dirty River Water Using Charcoal & Sand',
+    ],
+    icon: 'Flame',
+  },
+
+  {
+    id: 'howto-repair',
+    name: 'Reparasi & Perawatan Mandiri',
+    nameEn: 'DIY Repair & Vehicle Detailing',
+    description:
+      'Panduan merawat dan memperbaiki barang sehari-hari seperti profesional: cuci mobil detailing, menambal dinding, dan perbaikan perabot.',
+    descriptionEn: 'Mastering daily repairs and deep-cleaning maintenance: car wash detailing, wall drywall patching, and hardware fixing.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'repair-car-wash',
+        name: 'Cuci & Detailing Mobil Seperti Pro',
+        nameEn: 'How to Wash a Car Like a Pro',
+        description: 'Teknik cuci dua ember, pembersihan velg, dan pengeringan microfiber anti gores',
+        descriptionEn: 'Professional car wash workflow: pre-rinse, foam mitts, wheel deep-clean, and microfiber drying',
+      },
+      {
+        id: 'repair-home-drywall',
+        name: 'Menambal Lubang Dinding & Cat Ulang',
+        nameEn: 'Patching Holes in Drywall & Seamless Paint',
+        description: 'Memperbaiki dinding bolong atau retak agar kembali mulus tanpa bekas',
+        descriptionEn: 'Repairing drywall punctures with mesh patches, spackle compound, and sanders',
+      },
+      {
+        id: 'repair-tools-knives',
+        name: 'Mengasah Pisau Dapur Setajam Silet',
+        nameEn: 'Sharpening Kitchen Knives to Razor Edge',
+        description: 'Metode mengasah pisau dapur menggunakan batu asah bertingkat',
+        descriptionEn: 'Sharpening dull blades with whetstones to slice paper effortlessly',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK REPAIR & DETAILING FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — 8-shot repair and transformation arc with satisfying visual progression.',
+    hookStyle:
+      'Tampilkan kontras ekstrem antara objek yang kotor/rusak dan kilau sempurna hasil akhirnya dalam 1 detik pembuka.',
+    hookStyleEn: 'Present the high-contrast dirty vs mirror-shine condition within the opening split second.',
+    visualGuidance:
+      'Pantulan cahaya pada cat bodi mengkilap, busa sabun tebal berbusa, tetesan air jernih, kain microfiber lembut, pencahayaan outdoor terang.',
+    visualGuidanceEn: 'Glossy clear-coat reflections, thick snowy car shampoo suds, high-pressure water beads, plush microfiber towels.',
+    globalGuidance:
+      'Area garasi modern, halaman paving bersih, atau workshop perkotaan dengan peralatan perawatan standar internasional.',
+    globalGuidanceEn: 'Modern clean suburban driveway, paved carports, and organized tool sheds recognized worldwide.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Wash a Car Like a Pro',
+      'How to Sharpen a Kitchen Knife Like a Chef',
+      'How to Patch a Hole in Drywall in 5 Minutes',
+    ],
+    exampleIdeasEn: [
+      'How to Wash a Car Like a Pro',
+      'How to Sharpen a Kitchen Knife Like a Chef',
+      'How to Patch a Hole in Drywall in 5 Minutes',
+    ],
+    icon: 'Wrench',
+  },
+
+  {
+    id: 'howto-home-hacks',
+    name: 'Home Hacks & Trik Rumah Tangga',
+    nameEn: 'Home Hacks & Clever Living',
+    description:
+      'Trik cerdas menghemat waktu dan tenaga di rumah: melipat baju dalam 2 detik, membersihkan kerak membandel, dan trik penyimpanan rapi.',
+    descriptionEn: 'Genius time-saving household hacks: 2-second shirt folding, stubborn stain removal, and clutter-free organization.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'home-folding-wardrobe',
+        name: 'Melipat Kaos & Baju dalam 2 Detik',
+        nameEn: '2-Second T-Shirt Folding Technique',
+        description: 'Trik pinch-and-pull melipat pakaian sekejap mata seperti mesin laundry',
+        descriptionEn: 'The pinch-and-fold method to fold shirts perfectly in a single motion',
+      },
+      {
+        id: 'home-deep-clearing',
+        name: 'Menghilangkan Noda & Kerak Kamar Mandi',
+        nameEn: 'Removing Stubborn Stains & Limescale',
+        description: 'Ramuan cuka dan baking soda melenyapkan kerak air secara instan',
+        descriptionEn: 'Instant stain dissolving using simple eco-friendly baking soda solutions',
+      },
+      {
+        id: 'home-cable-organizing',
+        name: 'Manajemen Kabel & Meja Bebas Kusut',
+        nameEn: 'Cable Management & Desk Decluttering',
+        description: 'Menyembunyikan kabel semrawut agar meja tampak bersih minimalis',
+        descriptionEn: 'Hiding cable clutter for a sleek aesthetic minimalist desk',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK HOME HACKS FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — Rapid, highly repeatable 8-step daily hacks.',
+    hookStyle:
+      'Mulai dengan gerakan tangan super cepat yang langsung menyelesaikan masalah atau visual lemari berantakan yang mendadak rapi.',
+    hookStyleEn: 'Kick off with lightning-fast finger gestures solving a mess in under 2 seconds.',
+    visualGuidance:
+      'Interior rumah bersih bernuansa terang, meja kayu hangat, pencahayaan alami jendela, teks overlay hitungan detik yang dinamis.',
+    visualGuidanceEn: 'Bright scandinavian interiors, warm wooden tabletops, soft natural morning light, crisp graphic overlays.',
+    globalGuidance:
+      'Konteks hunian modern perkotaan (apartemen minimalis, rumah suburban) dengan busana santai dan perabot universal.',
+    globalGuidanceEn: 'Modern urban domestic spaces, modular storage organizers, and clean contemporary lifestyle settings.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Fold a T-Shirt in 2 Seconds Flat',
+      'How to Remove Tough Stains with Baking Soda',
+      'How to Organize Loose Wires on Your Work Desk',
+    ],
+    exampleIdeasEn: [
+      'How to Fold a T-Shirt in 2 Seconds Flat',
+      'How to Remove Tough Stains with Baking Soda',
+      'How to Organize Loose Wires on Your Work Desk',
+    ],
+    icon: 'Sparkles',
+  },
+
+  {
+    id: 'howto-gardening',
+    name: 'Berkebun & Tanaman Hijau',
+    nameEn: 'Gardening & Urban Plant Care',
+    description:
+      'Panduan menumbuhkan tanaman subur dari biji atau stek: menanam daun basil, memperbanyak monstera, dan menyiram tanaman secara efisien.',
+    descriptionEn: 'Urban gardening and botanical care: growing fresh basil at home, plant propagation, and soil nutrition hacks.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'garden-basil-herbs',
+        name: 'Menanam Daun Basil & Herba di Dapur',
+        nameEn: 'Growing Fresh Basil & Kitchen Herbs',
+        description: 'Trik menumbuhkan daun basil rimbun dari potongan batang di ambang jendela',
+        descriptionEn: 'Sprouting aromatic kitchen herbs on sunny windowsills from stem cuttings',
+      },
+      {
+        id: 'garden-propagation-leaf',
+        name: 'Stek Batang & Perbanyakan Tanaman Hias',
+        nameEn: 'Houseplant Propagation Secrets',
+        description: 'Menumbuhkan akar baru di dalam air sebelum dipindah ke pot tanah',
+        descriptionEn: 'Water-rooting tropical houseplant cuttings before potting',
+      },
+      {
+        id: 'garden-natural-fertilizer',
+        name: 'Pupuk Alami dari Ampas Kopi & Kulit Pisang',
+        nameEn: 'Organic Fertilizer from Kitchen Scraps',
+        description: 'Membuat nutrisi tanah organik dari sisa dapur untuk daun hijau berkilau',
+        descriptionEn: 'Enriching potting soil with banana peel and spent coffee compost tea',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK BOTANICAL & GARDENING FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — Organic green life journey in 8 structured instructional shots.',
+    hookStyle:
+      'Pot tanaman basil hijau rimbun yang dipetik daunnya dengan suara petikan renyah di detik pembuka.',
+    hookStyleEn: 'Close-up of fresh aromatic herb leaves harvested with a crisp tactile sound at second 0.',
+    visualGuidance:
+      'Warna hijau daun segar kontras dengan pot tanah liat terracotta, butiran air berkilau di atas daun, sinar matahari pagi hangat.',
+    visualGuidanceEn: 'Lush botanical emerald tones, terracotta pots, glistening dew droplets, warm morning sunbeams.',
+    globalGuidance:
+      'Balkon apartemen kota, pot jendela dapur modern, atau kebun belakang rumah dengan tanaman herba yang disukai dunia.',
+    globalGuidanceEn: 'Sunlit apartment balconies, modern kitchen herb racks, and urban terrace gardens.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Grow Unlimited Fresh Basil at Home',
+      'How to Propagate Houseplants in Water Jars',
+      'How to Revive a Dying Houseplant in 3 Days',
+    ],
+    exampleIdeasEn: [
+      'How to Grow Unlimited Fresh Basil at Home',
+      'How to Propagate Houseplants in Water Jars',
+      'How to Revive a Dying Houseplant in 3 Days',
+    ],
+    icon: 'Leaf',
+  },
+
+  {
+    id: 'howto-outdoor',
+    name: 'Keterampilan Outdoor & Petualangan',
+    nameEn: 'Outdoor Skills & Knot Tying',
+    description:
+      'Keahlian praktis untuk kemping, hiking, dan tali-temali: simpul tali terkuat, mendirikan hammock, dan orientasi medan.',
+    descriptionEn: 'Essential outdoor mastery: tying the strongest camping knots, shelter rigging, and trailcraft fundamentals.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'outdoor-knots-rigging',
+        name: 'Simpul Tali Kemping Terkuat & Cepat Lepas',
+        nameEn: 'Tie the Strongest Camping Knot',
+        description: 'Trik mengikat simpul bowline atau taut-line hitch yang kokoh namun mudah dibuka',
+        descriptionEn: 'Tying unbreakable load-bearing knots with rapid-release loops',
+      },
+      {
+        id: 'outdoor-tarp-setup',
+        name: 'Mendirikan Tarp & Flysheet Tahan Badai',
+        nameEn: 'Stormproof Tarp Pitching in 3 Minutes',
+        description: 'Sudut kemiringan terbaik dan pasak kokoh agar terpal tidak roboh diterpa angin',
+        descriptionEn: 'Aerodynamic guy-line anchoring and tarp geometry for torrential downpours',
+      },
+      {
+        id: 'outdoor-pack-organization',
+        name: 'Packing Ransel Gunung Efisien & Seimbang',
+        nameEn: 'Backpack Weight Distribution Mastery',
+        description: 'Menata barang berat di dekat punggung agar hiking berjam-jam tidak pegal',
+        descriptionEn: 'Ergonomic backpack loading to preserve center of gravity and stamina',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK OUTDOOR & KNOT RIGGING FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — 8-shot practical outdoor skills visualization.',
+    hookStyle:
+      'Uji coba tali ditarik dengan beban berat yang membuktikan simpul tidak melorot sama sekali dalam 1 detik pembuka.',
+    hookStyleEn: 'Violent tension test on a paracord knot proving zero slippage at second zero.',
+    visualGuidance:
+      'Tekstur tali paracord warna-warni kontras dengan latar pohon pinus, tangan terampil memutar simpul, bidikan kamera sudut atas (overhead).',
+    visualGuidanceEn: 'High-contrast paracord cordage, overhead top-down rope looping shots, weathered wooden post anchors.',
+    globalGuidance:
+      'Pemandangan alam perkemahan global: lereng danau berangin, hutan pinus, atau area piknik alam bebas.',
+    globalGuidanceEn: 'International camp settings: lakeside campgrounds, mountain foothills, and pine trailheads.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Tie the Strongest Camping Knot (Bowline Hitch)',
+      'How to Pitch a Tarp Shelter Against High Winds',
+      'How to Pack a 50L Hiking Backpack with Zero Back Pain',
+    ],
+    exampleIdeasEn: [
+      'How to Tie the Strongest Camping Knot (Bowline Hitch)',
+      'How to Pitch a Tarp Shelter Against High Winds',
+      'How to Pack a 50L Hiking Backpack with Zero Back Pain',
+    ],
+    icon: 'Compass',
+  },
+
+  {
+    id: 'howto-science',
+    name: 'Sains & Eksperimen Visual',
+    nameEn: 'Science & Visual Experiments',
+    description:
+      'Eksperimen fisika dan kimia visual yang mencengangkan dan aman: pusaran air mini, visualisasi gelombang suara, dan kepadatan fluida.',
+    descriptionEn: 'Mesmerizing visual physics and chemistry demonstrations: vortex bottles, non-newtonian fluid, and refractive optics.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'science-vortex-fluid',
+        name: 'Membuat Pusaran Tornado Air dalam Botol',
+        nameEn: 'DIY Tornado in a Water Bottle',
+        description: 'Hukum fisika fluida dan momentum sudut dengan dua botol dan konektor air',
+        descriptionEn: 'Creating stable vortex swirls demonstrating centripetal physics',
+      },
+      {
+        id: 'science-surface-tension',
+        name: 'Ketegangan Permukaan & Kembang Api Susu',
+        nameEn: 'Surface Tension Color Explosions',
+        description: 'Tetesan sabun pada pewarna susu yang memicu ledakan warna instan',
+        descriptionEn: 'Soap disrupting liquid surface tension causing dynamic color blooms',
+      },
+      {
+        id: 'science-refraction-optics',
+        name: 'Membalik Arah Panah dengan Segelas Air',
+        nameEn: 'Light Refraction Optical Illusion',
+        description: 'Prinsip lensa cembung air membalik gambar visual di belakangnya',
+        descriptionEn: 'Demonstrating optical light bending through cylinder liquid glasses',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK SCIENCE EXPERIMENT FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — Mind-expanding visual science demonstrations in 8 shots.',
+    hookStyle:
+      'Visual fenomena aneh yang menentang logika mata penonton di detik 0 (panah mendadak berbalik arah, tornado air berputar).',
+    hookStyleEn: 'Visual optical paradox or rapid fluid vortex unfolding at second 0.',
+    visualGuidance:
+      'Meja laboratorium bersih beralas putih, kaca bening berpantulan jernih, cairan berpigmen warna terang (biru, merah cerah), pencahayaan studio tajam.',
+    visualGuidanceEn: 'Clean white lab counter, crystalline glassware reflections, vibrant liquid dyes, studio backlight edge definition.',
+    globalGuidance:
+      'Konsep sains visual universal dengan materi yang dapat direplikasi di ruang kelas atau rumah di seluruh belahan dunia.',
+    globalGuidanceEn: 'Universal visual physics and chemistry principles accessible across homes and classrooms globally.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Create a Miniature Tornado Inside a Water Bottle',
+      'How to Reverse Images with a Single Glass of Water',
+      'How to Make Slime with Amazing Non-Newtonian Physics',
+    ],
+    exampleIdeasEn: [
+      'How to Create a Miniature Tornado Inside a Water Bottle',
+      'How to Reverse Images with a Single Glass of Water',
+      'How to Make Slime with Amazing Non-Newtonian Physics',
+    ],
+    icon: 'Atom',
+  },
+
+  {
+    id: 'howto-art',
+    name: 'Seni, Ilustrasi & Gambar Kreatif',
+    nameEn: 'Art, Drawing & Creative Design',
+    description:
+      'Metode cepat belajar menggambar karakter, gradasi warna cat air, dan tipografi estetis step-by-step.',
+    descriptionEn: 'Step-by-step drawing techniques, watercolor blending hacks, and modern creative lettering for beginners.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'art-character-sketch',
+        name: 'Menggambar Wajah & Karakter dengan Angka',
+        nameEn: 'Drawing Characters from Numbers Hack',
+        description: 'Trik menyulap angka sederhana menjadi ilustrasi kartun memikat dalam hitungan detik',
+        descriptionEn: 'Transforming simple digits into expressive cartoon characters',
+      },
+      {
+        id: 'art-watercolor-blending',
+        name: 'Gradasi Cat Air Basah-ke-Basah Sempurna',
+        nameEn: 'Wet-on-Wet Watercolor Gradient Mastery',
+        description: 'Pencampuran pigmen warna lembut di atas kertas bertekstur tanpa garis batas keras',
+        descriptionEn: 'Seamless pigment blooming on damp cotton paper',
+      },
+      {
+        id: 'art-perspective-room',
+        name: 'Menggambar Perspektif 1 Titik Lenyap',
+        nameEn: '1-Point Perspective Room Sketch in 60s',
+        description: 'Menciptakan ilusi ruang kamar 3 dimensi yang presisi dengan satu penggaris',
+        descriptionEn: 'Creating dramatic interior depth using 1-point focal lines',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK ART & DRAWING FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — Visual artistic creation broken into 8 seamless progression panels.',
+    hookStyle:
+      'Goresan spidol pertama yang lincah membentuk siluet tak terduga dalam 1 detik pembuka.',
+    hookStyleEn: 'Rapid marker stroke instantly outlining an intriguing silhouette at second zero.',
+    visualGuidance:
+      'Kamera top-down (overhead) menyorot kertas gambar putih bersih, pigmen warna kontras tinggi, gerakan tangan yang luwes dan fokus tajam.',
+    visualGuidanceEn: 'Crisp top-down 90-degree camera angle, textured paper fibers, saturated pigment bleeds, steady artist hand flow.',
+    globalGuidance:
+      'Studio seni kreatif modern dengan alat gambar standar universal (pensil grafit, spidol pigmen hitam, kuas air, kertas sketsa).',
+    globalGuidanceEn: 'Contemporary sunlit art studio, wooden drawing boards, and universal fine art stationery.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Draw a 3D Hole in Paper that Tricks Your Brain',
+      'How to Blend Watercolors Without Hard Edges',
+      'How to Draw Expressive Eyes in 3 Simple Strokes',
+    ],
+    exampleIdeasEn: [
+      'How to Draw a 3D Hole in Paper that Tricks Your Brain',
+      'How to Blend Watercolors Without Hard Edges',
+      'How to Draw Expressive Eyes in 3 Simple Strokes',
+    ],
+    icon: 'Palette',
+  },
+
+  {
+    id: 'howto-productivity',
+    name: 'Produktivitas & Alur Kerja Efisien',
+    nameEn: 'Productivity & Smart Workflows',
+    description:
+      'Trik efisiensi kerja dan kebiasaan harian: menata meja kerja bebas distraksi, metode time-blocking 25 menit, dan manajemen catatan cepat.',
+    descriptionEn: 'High-impact productivity habits: clutter-free desk ergonomics, 25-minute focus intervals, and rapid note-taking workflows.',
+    group: 'How-To & Viral Knowledge',
+    groupEn: 'How-To & Viral Knowledge',
+    subcategories: [
+      {
+        id: 'productivity-desk-ergonomics',
+        name: 'Setup Meja Kerja Minimalis Anti Capek',
+        nameEn: 'Ergonomic Minimalist Desk Setup',
+        description: 'Mengatur posisi monitor, keyboard, dan lampu agar fokus berjam-jam tanpa sakit leher',
+        descriptionEn: 'Optimal monitor eye-level alignment and lighting angles for deep focus',
+      },
+      {
+        id: 'productivity-digital-zen',
+        name: 'Merapikan File Komputer dalam 3 Folder Inti',
+        nameEn: 'The 3-Folder Desktop Zero System',
+        description: 'Trik merapikan desktop komputer berantakan menjadi bersih dan mudah dicari',
+        descriptionEn: 'Organizing digital workspaces into Inbox, Archive, and Active projects',
+      },
+      {
+        id: 'productivity-pomodoro-flow',
+        name: 'Ritme Fokus 25 Menit Pomodoro Nyata',
+        nameEn: 'Real 25-Minute Focus Sprint Setup',
+        description: 'Menyingkirkan ponsel dan menyetel timer analog untuk menuntaskan tugas sulit',
+        descriptionEn: 'Setting tactile timers and environmental blocks to eliminate micro-distractions',
+      },
+    ],
+    creativeFramework:
+      'AI PLAYBOOK PRODUCTIVITY & WORKFLOW FLOW — Struktur 8 shot presisi: 1. Opener (Wide establishing) -> 2. Preparation (Medium) -> 3. First Action (Close-up) -> 4. Transformation (Extreme close-up) -> 5. Progress (Medium close-up) -> 6. Creative Angle (POV/Low angle) -> 7. Final Step (Dramatic close shot) -> 8. Final Reveal (Wide cinematic shot). Setiap shot memuat Action, Reaction, Time, Key Object, dan Voice-over singkat.',
+    creativeFrameworkEn: 'AI PLAYBOOK 8-PANEL INFOGRAPHIC FLOW — Streamlined modern workflow habits captured in 8 crisp shots.',
+    hookStyle:
+      'Visual timer analog yang mulai berdetik atau meja kerja yang berubah dari semrawut menjadi rapi dalam 1 detik.',
+    hookStyleEn: 'Snap transition from chaotic desktop clutter to immaculate zen workspace at second zero.',
+    visualGuidance:
+      'Gaya minimalis monokrom dengan sentuhan kayu hangat, lampu meja LED terarah, shot close-up pengetikan keyboard mekanik dan pencatatan taktil.',
+    visualGuidanceEn: 'Minimalist desk aesthetics, directed warm task lighting, tactile mechanical keyboard action, tidy notebook setups.',
+    globalGuidance:
+      'Konteks profesional modern dan kreator digital di kota-kota metropolitan dunia yang mencari fokus dan ketenangan bekerja.',
+    globalGuidanceEn: 'Contemporary remote-work settings, coffee shop study nooks, and ergonomic home offices globally.',
+    suggestedDuration: ['10s', '15s', '15-30s'],
+    exampleIdeas: [
+      'How to Set Up a Distraction-Free Desk in 5 Minutes',
+      'How to Master the 25-Minute Deep Work Sprint',
+      'How to Clean Your Computer Desktop with the 3-Folder Rule',
+    ],
+    exampleIdeasEn: [
+      'How to Set Up a Distraction-Free Desk in 5 Minutes',
+      'How to Master the 25-Minute Deep Work Sprint',
+      'How to Clean Your Computer Desktop with the 3-Folder Rule',
+    ],
+    icon: 'CheckCircle',
+  },
+
 ];
+
 
 // ─────────────────────────────────────────────────────────────
 //  Helper functions

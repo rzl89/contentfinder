@@ -371,8 +371,12 @@ ${idea.localizationNotes}`;
       }
 
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
+      const isAdOrAffiliate =
+        idea.categoryId === 'affiliate-marketing' ||
+        idea.categoryId === 'product-story';
+      const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(idea, 9, activeModel, dialogLanguage);
+      const developed = await developStoryFromIdea(idea, sceneCount, activeModel, dialogLanguage);
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
       useProjectStore.getState().updateCurrentProject({
@@ -402,7 +406,7 @@ ${idea.localizationNotes}`;
       showToast({
         type: 'success',
         title: 'Storyboard Siap di Production Desk!',
-        message: `9-Panel Storyboard Grid, Video Prompt, dan Karakter telah siap diproduksi. (-${storyboardCost} Kredit AI)`,
+        message: `${isAdOrAffiliate ? '9-Panel Commercial Grid' : '8-Panel Infographic Storyboard'}, Video Prompt, dan Karakter telah siap diproduksi. (-${storyboardCost} Kredit AI)`,
       });
 
       // 5. Navigate to Prompt Desk
@@ -486,8 +490,12 @@ ${idea.localizationNotes}`;
         proj = createProject(generatedTitle, activeCategory.id, contextPreset);
       }
 
+      const isAdOrAffiliate =
+        activeCategory.id === 'affiliate-marketing' ||
+        activeCategory.id === 'product-story';
+      const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(manualIdea, 9, activeModel, dialogLanguage);
+      const developed = await developStoryFromIdea(manualIdea, sceneCount, activeModel, dialogLanguage);
 
       useProjectStore.getState().updateCurrentProject({
         name: generatedTitle,
@@ -515,7 +523,7 @@ ${idea.localizationNotes}`;
       showToast({
         type: 'success',
         title: 'Storyboard Berhasil Disusun!',
-        message: `9-Panel Storyboard Grid dan Video Prompt 10 Detik telah siap. (-${storyboardCost} Kredit AI)`,
+        message: `${isAdOrAffiliate ? '9-Panel Commercial Grid' : '8-Panel Infographic Storyboard'} dan Video Prompt telah siap. (-${storyboardCost} Kredit AI)`,
       });
 
       navigate('/prompt-desk');
@@ -852,9 +860,9 @@ ${idea.localizationNotes}`;
               value={duration}
               onChange={(e) => handleDurationChange(e.target.value as DurationRange)}
               options={[
-                { value: '10s', label: '10 Detik (Google Flow & Storyboard Master)' },
+                { value: '10s', label: '10 Detik (Optimized for Omni Flesh / Google Flow)' },
+                { value: '15s', label: '15 Detik (Optimized for Seedance / Short-Form)' },
                 { value: '5s', label: '5 Detik (Ultra Micro Hook)' },
-                { value: '15s', label: '15 Detik (TikTok & Reels Standar Viral)' },
                 { value: '30s', label: '30 Detik (Story Hook & Eskalasi)' },
                 { value: '60s', label: '60 Detik (Alur Cerita Mendalam)' },
                 { value: '90s', label: '90 Detik (Mini Movie / Drama)' },
