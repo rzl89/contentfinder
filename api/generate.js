@@ -297,14 +297,16 @@ FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects with keys: title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale.`
         : defaultSystemPromptIdeas;
 
-      const userPrompt = `Generate EXACTLY ${count} uniquely distinct video ideas for:
+      const userPrompt = `Generate EXACTLY ${count} uniquely distinct video ideas strictly referencing user parameters:
 Category: ${categoryName}
 Description: ${categoryDescription || ''}
 Type: ${isProductAd ? `Product Ad / Commercial (Brand: ${productBrandName || 'Standard'})` : 'Movie / Drama / Animated Clip'}
-${effectiveTopic ? `Specific Concept / Idea: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
-Platform: ${platform}
+${effectiveTopic ? `Specific Concept / Idea / Keywords: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
+Target Platform: ${platform}
 Target Duration: ${duration}
 Visual Style: ${visualStyle}
+Target AI Video Model: ${payload?.targetModel || 'universal-neutral'}
+Target Audience: ${targetAudience}
 Dialogue Language: ${languageInstruction}
 Entropy Seed: ${creativeEntropy || Date.now()}`;
 
@@ -439,23 +441,6 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
           ? 'All descriptions, role, appearance, clothing, personality, voiceStyle, world description, and scene summaries MUST be generated in natural, fluent ENGLISH.'
           : 'Deskripsi karakter, role, penampilan, pakaian, kepribadian, gaya bicara, deskripsi dunia, dan ringkasan scene harus ditulis dalam Bahasa Indonesia yang alami dan modern.';
 
-      // Vendor alignment block — always injected regardless of system prompt source
-      const vendorAlignmentBlock = `
---- VENDOR ALIGNMENT (MANDATORY — do NOT omit) ---
-Target AI video model for prompt formatting: ${targetModel}
-Apply these format rules strictly in every scene's videoPrompt field:
-- If Kling (kling-1-5): prefix video prompt with [Camera: <movement>] and add multi-angle tags.
-- If Veo 2 / Google Flow (google-veo-2): focus on optical realism, clean 9-panel contact sheet layout, and 4K textures.
-- If Runway Gen-3 (runway-gen3-alpha): start video prompt with [Camera Movement / Framing]: followed by scene and fluid motion vectors.
-- If Luma Ray 2 (luma-dream-machine): specify dynamic camera motion paths and continuous momentum.
-- If MiniMax Hailuo (minimax-hailuo): focus on authentic human micro-expressions and natural physical dynamics.
-- If OpenAI Sora (openai-sora): describe 3D spatial consistency, depth interaction, and environmental physics.
-- If Pika (pika-2-0): append camera motion parameters: -camera <move> -motion 2 -fps 24.
-- If PixVerse (pixverse-v3): focus on character consistency lock and 4K UHD cinematic clarity.
-- If Tencent Hunyuan (tencent-hunyuan): use rich, expressive visual descriptions and temporal stability.
-- If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
-Respond ONLY with valid JSON matching the schema provided.`;
-
       // Check whether this request is for Advertisement / Affiliate or general How-To / Storytelling
       const isAdOrAffiliate =
         payload?.storyboardType === 'ad' ||
@@ -464,10 +449,51 @@ Respond ONLY with valid JSON matching the schema provided.`;
         idea?.categoryId === 'product-story' ||
         (idea?.subcategoryId && (idea.subcategoryId.startsWith('affiliate-') || idea.subcategoryId.startsWith('product-')));
 
+      // Target Platform & Aspect Ratio Synchronization
+      const platformRaw = (payload?.platform || idea?.platform || '').toLowerCase();
+      let targetAspectRatio = '16:9';
+      if (['tiktok', 'instagram_reels', 'youtube_shorts', '9:16', 'vertical'].some((p) => platformRaw.includes(p))) {
+        targetAspectRatio = '9:16';
+      } else if (['facebook_reels', 'square', '1:1'].some((p) => platformRaw.includes(p))) {
+        targetAspectRatio = '1:1';
+      } else if (payload?.aspectRatio) {
+        targetAspectRatio = payload.aspectRatio;
+      }
+
+      // Duration resolution
       const durationRaw = String(payload?.duration || idea?.estimatedDuration || '10s').toLowerCase();
       const is15s = durationRaw.includes('15');
-      const totalSec = is15s ? 15 : 10;
-      const aiPlaybookEngine = is15s ? 'Seedance' : 'Omni Flesh';
+      const is5s = durationRaw.includes('5s') || durationRaw === '5';
+      const is30s = durationRaw.includes('30');
+      const is60s = durationRaw.includes('60');
+      const is90s = durationRaw.includes('90');
+      const totalSec = is15s ? 15 : is5s ? 5 : is30s ? 30 : is60s ? 60 : is90s ? 90 : 10;
+
+      // Visual Style & Target Model resolution
+      const resolvedVisualStyle = (payload?.visualStyle || idea?.visualStyle || 'Cinematic Realism').toString().replace(/_/g, ' ');
+      const resolvedTargetModel = payload?.targetModel || idea?.targetModel || targetModel || 'universal-neutral';
+      const aiPlaybookEngine = is15s ? 'Seedance' : (resolvedTargetModel !== 'universal-neutral' ? resolvedTargetModel : 'Omni Flesh');
+      const resolvedProductBrand = payload?.productBrandName || idea?.productBrandName || '';
+      const resolvedAudience = payload?.targetAudience || idea?.targetAudience || '';
+
+      // Vendor alignment block — strictly enforces AI vendor specific prompting rules
+      const vendorAlignmentBlock = `
+--- VENDOR ALIGNMENT & VIDEO PROMPT SYNTAX RULES (MANDATORY) ---
+Target AI video model for prompt formatting: ${resolvedTargetModel}
+Apply these vendor-specific syntax rules strictly in every scene's "videoPrompt" and in "videoPromptJson.timeline":
+- If Kling (kling-1-5): Prefix prompt with [Camera: Pan Left / Tilt Up / Zoom In / Pedestal Up] and append motion parameters: --camera <movement> --cfg 0.5.
+- If Runway Gen-3 (runway-gen3-alpha): Structure prompt as: "[Camera Movement / Framing]: <movement>, [Subject Action]: <action>, [Atmosphere / Lighting]: <light>". Include fluid motion vectors.
+- If Luma Ray 2 (luma-dream-machine): Specify continuous kinetic momentum: "[Motion]: Smooth push-in with consistent speed, dynamic momentum path".
+- If MiniMax Hailuo (minimax-hailuo): Prioritize ultra-fine human micro-expressions, authentic physics, and natural kinetic movements (eye dart, breath, subtle smile, fabric flutter).
+- If OpenAI Sora (openai-sora): Emphasize 3D spatial consistency, volumetric depth interaction, photorealistic physics, and cinematic focal rack.
+- If Pika (pika-2-0): Append camera motion parameters: "-camera <move> -motion 2 -fps 24".
+- If PixVerse (pixverse-v3): Include [ConsistencyLock: ON] and specify 4K UHD cinematic clarity with crisp edge separation.
+- If Tencent Hunyuan (tencent-hunyuan): Use descriptive temporal stability cues and rich expressive visual keywords.
+- If Google Flow / Veo 2 (google-veo-2): Focus on optical realism, clean multi-panel contact sheet progression, and 4K studio textures.
+- If Omni Flesh: Infographic Playbook multi-shot sequence (10s), seamless transitions between instructional beats, hyper-realistic hand-object physics.
+- If Seedance: Infographic Playbook sequence (15s), fluid narrative pacing, detailed transformation highlights, and educational micro-action flow.
+- If Universal (universal-neutral): Use standard cinematic structure: Shot Type, Angle, Camera Movement, Kinetic Action, Lighting, Atmosphere.
+Respond ONLY with valid JSON matching the schema provided.`;
 
       // Standard FlowStoryboard-Pro (Ad/Commercial 9-Panel) system prompt
       const flowStoryboardAdPrompt = `You are "FlowStoryboard-Pro" powered by ${requestedModel}, a veteran commercial director and ad-film engineer with 10+ years of hands-on experience crafting high-conversion commercials and product ads.
@@ -547,10 +573,10 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
 
       const adJsonSchema = `{
   "planSummary": [
-    "Style: Commercial | Aspect Ratio: 16:9",
+    "Style: ${resolvedVisualStyle} | Aspect Ratio: ${targetAspectRatio}",
     "Narrative arc: 9-panel sequential grid layout (Panel 1 Hook to Panel 9 End-Card)",
     "On-screen typography: Minimal premium rule (max 3 placements, <= 6 words each)",
-    "Timeline & Audio: Exactly 10.0s total runtime, ~50% VO coverage (max 15 words)"
+    "Timeline & Audio: Exactly ${totalSec}.0s total runtime, ~50% VO coverage (max 15 words)"
   ],
   "character": {
     "name": "string",
@@ -602,8 +628,8 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
   ],
   "imagePromptJson": {
     "task": "9-panel storyboard grid, single image",
-    "style": "string",
-    "aspect_ratio": "16:9",
+    "style": "${resolvedVisualStyle}",
+    "aspect_ratio": "${targetAspectRatio}",
     "grid_layout": {
       "total_panels": 9,
       "rows": 3,
@@ -635,17 +661,18 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
     "negative_prompt": "no more than 9 panels, no missing panels, no merged panels, no watermark, no text other than the specified on_screen_text placements, no long paragraphs of text, no misspelled brand names, no blurry panels, no inconsistent product design, no distorted characters"
   },
   "videoPromptJson": {
-    "task": "image-to-video, single continuous 10-second video built from the 9-panel storyboard grid, panels become sequential scenes",
+    "task": "image-to-video, single continuous ${totalSec}-second video built from the 9-panel storyboard grid, panels become sequential scenes",
     "source_image": "the generated 9-panel storyboard grid",
-    "style": "string",
-    "aspect_ratio": "16:9",
-    "duration_seconds": 10,
+    "style": "${resolvedVisualStyle}",
+    "aspect_ratio": "${targetAspectRatio}",
+    "duration_seconds": ${totalSec},
+    "model_target": "${resolvedTargetModel}",
     "ingredients_references": ["REF_CHARACTER_01"],
     "on_screen_text": {
       "rule": "same minimal placements as the image JSON; each text animates in only during its panel time slot",
       "placements": [
         { "appears_at": "0.0s-1.1s", "text": "hook text", "animation": "soft fade-in, hold, fade-out" },
-        { "appears_at": "8.8s-10.0s", "text": "Title — Tagline", "animation": "clean end-card reveal" }
+        { "appears_at": "${totalSec > 2 ? (totalSec - 1.2).toFixed(1) : 0}s-${totalSec}.0s", "text": "Title — Tagline", "animation": "clean end-card reveal" }
       ]
     },
     "timeline": [
@@ -748,8 +775,8 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
   ],
   "imagePromptJson": {
     "task": "8-panel infographic storyboard poster, single image",
-    "style": "string",
-    "aspect_ratio": "16:9",
+    "style": "${resolvedVisualStyle}",
+    "aspect_ratio": "${targetAspectRatio}",
     "header": {
       "video_title": "string",
       "total_video_time": "${totalSec} Seconds | 8 SHOTS",
@@ -799,8 +826,8 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
   "videoPromptJson": {
     "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the 8-panel storyboard grid",
     "source_image": "the generated storyboard grid",
-    "style": "string",
-    "aspect_ratio": "16:9",
+    "style": "${resolvedVisualStyle}",
+    "aspect_ratio": "${targetAspectRatio}",
     "duration_seconds": ${totalSec},
     "model_target": "${aiPlaybookEngine}",
     "ingredients_references": ["REF_CHARACTER_01"],
@@ -857,7 +884,7 @@ Target scene count: ${isAdOrAffiliate ? effectiveSceneCount : 8}
 Duration: ${totalSec} Seconds
 Dialogue language: ${languageInstruction}
 Output language: ${storyOutputLangInstruction}
-Target AI video model: ${isAdOrAffiliate ? targetModel : aiPlaybookEngine}
+Target AI video model: ${isAdOrAffiliate ? resolvedTargetModel : aiPlaybookEngine}
 ${vendorAlignmentBlock}${storyFoundationalDirective}
 
 Respond ONLY with a valid JSON object matching this structure:
@@ -867,13 +894,30 @@ ${targetJsonSchema}`
 Respond ONLY with a valid JSON object matching this structure:
 ${targetJsonSchema}`;
 
-      const userPrompt = `Develop complete production package for:
+      const userPrompt = `Develop complete production package strictly aligned with user-selected parameters:
+=== USER PRODUCTION PARAMETERS ===
+- Category: ${idea.categoryId || 'General'}
+- Storyboard Type: ${isAdOrAffiliate ? 'Product Commercial / Ad' : 'Infographic Playbook / Short-Form Clip'}
+${isAdOrAffiliate && resolvedProductBrand ? `- Product / Brand Name: ${resolvedProductBrand}` : ''}
+- Target Platform: ${platformRaw || 'Standard'} (Aspect Ratio: ${targetAspectRatio})
+- Visual Style: ${resolvedVisualStyle}
+- Total Duration: ${totalSec} Seconds
+- Dialogue & Narration Language: ${languageInstruction}
+- Target AI Video Model: ${isAdOrAffiliate ? resolvedTargetModel : aiPlaybookEngine} (Apply vendor-specific video prompting rules)
+${resolvedAudience ? `- Target Audience: ${resolvedAudience}` : ''}
+
+=== STORY IDEA TO DEVELOP ===
 Title: ${idea.title}
 Hook: ${idea.hook}
 Premise: ${idea.premise}
 Synopsis: ${idea.synopsis}
-Visual Style: ${idea.visualStyle}
-Duration: ${idea.estimatedDuration}`;
+${idea.storyBeats ? `Story Beats:\n${Array.isArray(idea.storyBeats) ? idea.storyBeats.join('\n') : idea.storyBeats}` : ''}
+${idea.conflict ? `Central Conflict: ${idea.conflict}` : ''}
+${idea.ending ? `Ending / Payoff / CTA: ${idea.ending}` : ''}
+${idea.suggestedLocation ? `Location Cue: ${idea.suggestedLocation}` : ''}
+${idea.creativeRationale ? `Creative Rationale: ${idea.creativeRationale}` : ''}
+
+Ensure every panel in imagePromptJson and every timeline shot in videoPromptJson strictly reflects the exact Visual Style (${resolvedVisualStyle}), Aspect Ratio (${targetAspectRatio}), Duration (${totalSec}s), and Target AI Model (${isAdOrAffiliate ? resolvedTargetModel : aiPlaybookEngine})!`;
 
       const { content, modelUsed, usage } = await callOpenAI(
         [

@@ -168,6 +168,10 @@ export interface ContentIdea {
   ending: string;
   estimatedDuration: DurationRange;
   visualStyle: VisualStyle;
+  platform?: Platform;
+  productBrandName?: string;
+  targetModel?: string;
+  targetAudience?: string;
   suggestedLocation: string;
   localizationNotes: string;
   creativeRationale: string;
@@ -181,6 +185,21 @@ export interface ContentIdea {
   globalGuidance?: string;
   productReferenceImages?: string[];
   createdAt: string; // ISO-8601
+}
+
+export interface DevelopStoryOptions {
+  platform?: Platform;
+  aspectRatio?: string;
+  visualStyle?: VisualStyle;
+  duration?: DurationRange | string;
+  storyboardType?: 'clip' | 'ad';
+  productBrandName?: string;
+  targetModel?: string;
+  targetAudience?: string;
+  customTopic?: string;
+  creativeFramework?: string;
+  hookStyle?: string;
+  globalGuidance?: string;
 }
 
 export interface IdeaGenerationConfig {
@@ -461,6 +480,7 @@ export interface Project {
   scenes: Scene[];
   qcResult?: QCResult;
   targetModel?: string;
+  platform?: Platform;
   creativeFramework?: string;
   hookStyle?: string;
   globalGuidance?: string;

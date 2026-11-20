@@ -350,9 +350,15 @@ export function getProjectAnchorDescription(project: Project): string {
 
 export function generateStoryboardImageJson(project: Project): StoryboardImagePromptJSON {
   const charAnchor = getProjectAnchorDescription(project);
-  const rawStyle = project.contextProfile?.visualStyle || 'cinematic_realistic';
+  const rawStyle = project.selectedIdea?.visualStyle || project.contextProfile?.visualStyle || 'cinematic_realistic';
   const cleanStyle = rawStyle.replace(/_/g, ' ');
-  const aspectRatio = '16:9';
+  const platformVal = (project as any).platform || project.selectedIdea?.platform;
+  let aspectRatio = '16:9';
+  if (platformVal && ['tiktok', 'instagram_reels', 'youtube_shorts'].includes(platformVal)) {
+    aspectRatio = '9:16';
+  } else if (platformVal && ['facebook_reels'].includes(platformVal)) {
+    aspectRatio = '1:1';
+  }
 
   const isAdOrAffiliate =
     project.categoryId === 'affiliate-marketing' ||

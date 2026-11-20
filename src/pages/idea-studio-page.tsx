@@ -376,14 +376,40 @@ ${idea.localizationNotes}`;
         idea.categoryId === 'product-story';
       const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(idea, sceneCount, activeModel, dialogLanguage);
+      const developed = await developStoryFromIdea(
+        idea,
+        sceneCount,
+        activeModel,
+        dialogLanguage,
+        {
+          platform,
+          visualStyle,
+          duration,
+          storyboardType,
+          productBrandName: productBrandName.trim(),
+          targetAudience: 'Audiens umum & kreator konten digital',
+          customTopic: additionalTheme.trim(),
+          creativeFramework: idea.creativeFramework || activeCategory.creativeFramework,
+          hookStyle: idea.hookStyle || activeCategory.hookStyle,
+          globalGuidance: idea.globalGuidance || activeCategory.globalGuidance,
+        }
+      );
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
       useProjectStore.getState().updateCurrentProject({
         name: idea.title,
         categoryId: idea.categoryId,
         targetModel: activeModel,
-        selectedIdea: idea,
+        platform,
+        selectedIdea: {
+          ...idea,
+          platform,
+          visualStyle,
+          estimatedDuration: duration,
+          storyboardType,
+          productBrandName: productBrandName.trim(),
+          targetModel: activeModel,
+        },
         creativeFramework: idea.creativeFramework || activeCategory.creativeFramework,
         hookStyle: idea.hookStyle || activeCategory.hookStyle,
         globalGuidance: idea.globalGuidance || activeCategory.globalGuidance,
@@ -478,6 +504,10 @@ ${idea.localizationNotes}`;
         creativeRationale: `Storyboard mandiri: ${storyboardType === 'ad' ? 'Product Commercial' : 'Cinematic Clip'}`,
         storyboardType,
         categoryId: activeCategory.id,
+        platform,
+        productBrandName: productBrandName.trim(),
+        targetModel: targetModel || 'universal-neutral',
+        targetAudience: 'Audiens umum & kreator konten digital',
         saved: true,
         creativeFramework: activeCategory.creativeFramework,
         hookStyle: activeCategory.hookStyle,
@@ -495,12 +525,30 @@ ${idea.localizationNotes}`;
         activeCategory.id === 'product-story';
       const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(manualIdea, sceneCount, activeModel, dialogLanguage);
+      const developed = await developStoryFromIdea(
+        manualIdea,
+        sceneCount,
+        activeModel,
+        dialogLanguage,
+        {
+          platform,
+          visualStyle,
+          duration,
+          storyboardType,
+          productBrandName: productBrandName.trim(),
+          targetAudience: 'Audiens umum & kreator konten digital',
+          customTopic: userPromptText,
+          creativeFramework: activeCategory.creativeFramework,
+          hookStyle: activeCategory.hookStyle,
+          globalGuidance: activeCategory.globalGuidance,
+        }
+      );
 
       useProjectStore.getState().updateCurrentProject({
         name: generatedTitle,
         categoryId: activeCategory.id,
         targetModel: activeModel,
+        platform,
         selectedIdea: manualIdea,
         creativeFramework: activeCategory.creativeFramework,
         hookStyle: activeCategory.hookStyle,

@@ -1,6 +1,7 @@
 import type {
   ContentIdea,
   IdeaGenerationConfig,
+  DevelopStoryOptions,
   CharacterBible,
   WorldBible,
   Scene,
@@ -126,6 +127,11 @@ export async function generateContentIdeas(
           ending: raw.ending || 'Penyelesaian berkesan.',
           estimatedDuration: config.duration || '30-60s',
           visualStyle: config.visualStyle || 'cinematic_realistic',
+          platform: config.platform,
+          productBrandName: config.productBrandName,
+          targetModel: config.targetModel,
+          targetAudience: config.targetAudience,
+          storyboardType: config.storyboardType,
           suggestedLocation: raw.suggestedLocation || 'Latar natural seimbang',
           localizationNotes: raw.localizationNotes || 'Nuansa Indonesia natural tanpa stereotip',
           creativeRationale: raw.creativeRationale || `Menerapkan framework ${category.name}`,
@@ -270,7 +276,8 @@ export async function developStoryFromIdea(
   idea: ContentIdea,
   targetSceneCount?: number,
   targetModel: string = 'universal-neutral',
-  dialogLanguage: string = 'indonesian'
+  dialogLanguage: string = 'indonesian',
+  options?: DevelopStoryOptions
 ): Promise<{
   characters: CharacterBible[];
   worldBible: WorldBible;
@@ -282,6 +289,8 @@ export async function developStoryFromIdea(
 }> {
   const projectId = `proj_${Date.now()}`;
   const isAdOrAffiliate =
+    options?.storyboardType === 'ad' ||
+    idea.storyboardType === 'ad' ||
     idea.categoryId === 'affiliate-marketing' ||
     idea.categoryId === 'product-story';
   const defaultSceneCount = isAdOrAffiliate ? 9 : 8;
@@ -303,13 +312,21 @@ export async function developStoryFromIdea(
           temperature: admin?.temperature || 0.7,
           idea,
           targetSceneCount: effectiveCount,
-          targetModel,
+          targetModel: options?.targetModel || targetModel || idea.targetModel || 'universal-neutral',
           dialogLanguage,
           uiLanguage: currentLang,
+          platform: options?.platform || idea.platform,
+          aspectRatio: options?.aspectRatio,
+          visualStyle: options?.visualStyle || idea.visualStyle,
+          duration: options?.duration || idea.estimatedDuration,
+          storyboardType: options?.storyboardType || idea.storyboardType,
+          productBrandName: options?.productBrandName || idea.productBrandName,
+          targetAudience: options?.targetAudience || idea.targetAudience,
+          customTopic: options?.customTopic,
           productReferenceImages: idea?.productReferenceImages || [],
-          creativeFramework: idea?.creativeFramework,
-          hookStyle: idea?.hookStyle,
-          globalGuidance: idea?.globalGuidance,
+          creativeFramework: options?.creativeFramework || idea?.creativeFramework,
+          hookStyle: options?.hookStyle || idea?.hookStyle,
+          globalGuidance: options?.globalGuidance || idea?.globalGuidance,
         },
       }),
     });
@@ -583,6 +600,7 @@ export async function developStoryFromIdea(
     userId: 'owner',
     name: idea.title,
     categoryId: idea.categoryId,
+    platform: options?.platform || idea.platform,
     contextProfile: {
       id: 'profile',
       name: 'Indonesia Natural',
