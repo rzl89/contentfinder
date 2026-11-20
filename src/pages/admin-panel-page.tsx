@@ -816,7 +816,7 @@ export const AdminPanelPage: React.FC = () => {
                   <Bot className="w-4 h-4 text-amber-400" />
                   Konfigurasi Model AI / LLM
                 </h3>
-                <Badge variant="amber">Default: gpt-6-luna</Badge>
+                <Badge variant="amber">Default: gpt-6.1-terra</Badge>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -824,7 +824,7 @@ export const AdminPanelPage: React.FC = () => {
                   label="Default Model"
                   value={localSettings.defaultModel}
                   onChange={(e) => setLocalSettings({ ...localSettings, defaultModel: e.target.value })}
-                  placeholder="gpt-6-luna"
+                  placeholder="gpt-6.1-terra"
                 />
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-zinc-400">Temperature</label>
@@ -847,7 +847,7 @@ export const AdminPanelPage: React.FC = () => {
 
               <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/20 text-xs text-amber-300 flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-                <span>Model reasoning (gpt-6-luna, o1, o3) tidak mendukung parameter temperature. Sistem akan otomatis mengabaikan temperature untuk model tersebut.</span>
+                <span>Model gpt-6.1-terra mendukung parameter temperature adaptif (0.7 - 0.8) untuk variasi ide cerita. Model reasoning (gpt-6-luna, o1, o3) akan otomatis mengabaikan temperature.</span>
               </div>
 
               {/* System Prompt Override & Viewer */}
@@ -985,7 +985,8 @@ FORMAT:
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { name: 'gpt-6-luna', label: 'GPT-6 Luna', badge: 'Default', desc: 'Reasoning terbaik' },
+                  { name: 'gpt-6.1-terra', label: 'GPT-6.1 Terra', badge: 'Default', desc: 'Resmi & hemat token' },
+                  { name: 'gpt-6-luna', label: 'GPT-6 Luna', badge: 'Reasoning', desc: 'Reasoning mendalam' },
                   { name: 'gpt-4o', label: 'GPT-4o', badge: 'Stabil', desc: 'Cepat & andal' },
                   { name: 'gpt-4o-mini', label: 'GPT-4o Mini', badge: 'Hemat', desc: 'Fallback murah' },
                   { name: 'o3-mini', label: 'o3-mini', badge: 'Reasoning', desc: 'Analitik mendalam' },

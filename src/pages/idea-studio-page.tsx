@@ -20,7 +20,7 @@ import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore, calculateActionCredits } from '@/stores/subscription-store';
 import { useLanguageStore } from '@/stores/language-store';
-import { generateContentIdeas, developStoryFromIdea, analyzeReferenceImage } from '@/lib/ai-generator';
+import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
   ContentIdea,
   Platform,
@@ -28,10 +28,6 @@ import type {
   VisualStyle,
   ContextProfilePreset,
   DialogLanguage,
-  VisionAnalysisState,
-  ProductVisionAnalysis,
-  CharacterVisionAnalysis,
-  TokenUsage,
 } from '@/types';
 import {
   Sparkles,
@@ -50,17 +46,6 @@ import {
   Zap,
   ShieldCheck,
   Crown,
-  Camera,
-  Upload,
-  X,
-  ExternalLink,
-  User,
-  ScanLine,
-  Eye,
-  Cpu,
-  Coins,
-  BarChart3,
-  RefreshCw,
 } from 'lucide-react';
 
 export const IdeaStudioPage: React.FC = () => {
@@ -197,186 +182,6 @@ export const IdeaStudioPage: React.FC = () => {
   // Visual gallery modal state
   const [isVisualGalleryOpen, setIsVisualGalleryOpen] = useState(false);
 
-  // Active Reference Tab: 'product' | 'character'
-  const [activeRefTab, setActiveRefTab] = useState<'product' | 'character'>('product');
-
-  // Product Reference Images state (for Affiliate & Product Commercials)
-  const [productRefImages, setProductRefImages] = useState<string[]>(
-    () => currentProject?.productReferenceImages || []
-  );
-  const [inputImageUrl, setInputImageUrl] = useState('');
-
-  // Character Reference Images state (for Character Consistency & Face-Lock)
-  const [characterRefImages, setCharacterRefImages] = useState<string[]>(
-    () => currentProject?.characterReferenceImages || []
-  );
-  const [inputCharImageUrl, setInputCharImageUrl] = useState('');
-
-  // Vision AI (GPT-6.1-Terra) Analysis State & Token Tracker
-  const [visionAnalyses, setVisionAnalyses] = useState<VisionAnalysisState[]>(
-    () => currentProject?.visionAnalyses || []
-  );
-  const [isAnalyzingVision, setIsAnalyzingVision] = useState(false);
-  const [analyzingKey, setAnalyzingKey] = useState<string | null>(null);
-  const [lastTokenUsage, setLastTokenUsage] = useState<TokenUsage | null>(null);
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast({ type: 'warning', title: 'Ukuran Terlalu Besar', message: 'Maksimal ukuran foto adalah 5MB.' });
-      return;
-    }
-
-    if (productRefImages.length >= 3) {
-      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi produk.' });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        const next = [...productRefImages, reader.result];
-        setProductRefImages(next);
-        showToast({ type: 'success', title: 'Foto Ditambahkan', message: `Foto produk #${next.length} berhasil diunggah.` });
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleAddImageUrl = () => {
-    const clean = inputImageUrl.trim();
-    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-      showToast({ type: 'warning', title: 'URL Tidak Valid', message: 'Masukkan tautan gambar yang diawali http:// atau https://' });
-      return;
-    }
-    if (productRefImages.length >= 3) {
-      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi produk.' });
-      return;
-    }
-    const next = [...productRefImages, clean];
-    setProductRefImages(next);
-    setInputImageUrl('');
-    showToast({ type: 'success', title: 'Tautan Ditambahkan', message: `URL referensi #${next.length} berhasil disimpan.` });
-  };
-
-  const handleRemoveProductImage = (index: number) => {
-    const next = productRefImages.filter((_, i) => i !== index);
-    setProductRefImages(next);
-  };
-
-  const handleCharFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast({ type: 'warning', title: 'Ukuran Terlalu Besar', message: 'Maksimal ukuran foto adalah 5MB.' });
-      return;
-    }
-
-    if (characterRefImages.length >= 3) {
-      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi karakter.' });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        const next = [...characterRefImages, reader.result];
-        setCharacterRefImages(next);
-        showToast({ type: 'success', title: 'Foto Karakter Ditambahkan', message: `Foto karakter #${next.length} berhasil diunggah.` });
-      }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  };
-
-  const handleAddCharImageUrl = () => {
-    const clean = inputCharImageUrl.trim();
-    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
-      showToast({ type: 'warning', title: 'URL Tidak Valid', message: 'Masukkan tautan gambar yang diawali http:// atau https://' });
-      return;
-    }
-    if (characterRefImages.length >= 3) {
-      showToast({ type: 'warning', title: 'Batas Tercapai', message: 'Maksimal 3 foto referensi karakter.' });
-      return;
-    }
-    const next = [...characterRefImages, clean];
-    setCharacterRefImages(next);
-    setInputCharImageUrl('');
-    showToast({ type: 'success', title: 'Tautan Karakter Ditambahkan', message: `URL referensi #${next.length} berhasil disimpan.` });
-  };
-
-  const handleRemoveCharImage = (index: number) => {
-    const next = characterRefImages.filter((_, i) => i !== index);
-    setCharacterRefImages(next);
-  };
-
-  const handleRunVisionAnalysis = async (imgUrl: string, type: 'product' | 'character', index: number) => {
-    if (!hasSufficientCredits(5)) {
-      showToast({
-        type: 'warning',
-        title: 'Kredit AI Tidak Mencukupi',
-        message: 'Analisis visual GPT-6.1-Terra memerlukan 5 Kredit AI. Silakan top-up atau upgrade akun Anda.',
-      });
-      return;
-    }
-
-    const key = `${type}_${index}`;
-    setAnalyzingKey(key);
-    setIsAnalyzingVision(true);
-
-    try {
-      const result = await analyzeReferenceImage(imgUrl, type);
-      await deductCredits(5, 'analyze_reference_image', {
-        promptTokens: result.tokenUsage.promptTokens,
-        completionTokens: result.tokenUsage.completionTokens,
-        totalTokens: result.tokenUsage.totalTokens,
-      });
-
-      const newAnalysisState: VisionAnalysisState = {
-        id: `va_${Date.now()}_${index}`,
-        imageUrl: imgUrl,
-        imageType: type,
-        analysis: result.analysis,
-        tokenUsage: result.tokenUsage,
-        analyzedAt: new Date().toISOString(),
-      };
-
-      const updated = [newAnalysisState, ...visionAnalyses.filter((v) => v.imageUrl !== imgUrl)];
-      setVisionAnalyses(updated);
-      setLastTokenUsage(result.tokenUsage);
-
-      if (currentProject) {
-        useProjectStore.getState().updateCurrentProject({
-          visionAnalyses: updated,
-          productVisionAnalysis: type === 'product' ? (result.analysis as ProductVisionAnalysis) : currentProject.productVisionAnalysis,
-          characterVisionAnalysis: type === 'character' ? (result.analysis as CharacterVisionAnalysis) : currentProject.characterVisionAnalysis,
-        });
-      }
-
-      showToast({
-        type: 'success',
-        title: 'Analisis Visual GPT-6.1-Terra Selesai!',
-        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 5 Kredit AI. Prompt otomatis diselaraskan.`,
-      });
-    } catch (err: any) {
-      showToast({
-        type: 'error',
-        title: 'Gagal Menganalisis Gambar',
-        message: err.message || 'Terjadi kesalahan saat memproses gambar dengan model Vision.',
-      });
-    } finally {
-      setIsAnalyzingVision(false);
-      setAnalyzingKey(null);
-    }
-  };
-
-  const latestProductAnalysis = visionAnalyses.find((v) => v.imageType === 'product')?.analysis as ProductVisionAnalysis | undefined;
-  const latestCharacterAnalysis = visionAnalyses.find((v) => v.imageType === 'character')?.analysis as CharacterVisionAnalysis | undefined;
-
   // Result state
   const [isGenerating, setIsGenerating] = useState(false);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
@@ -511,10 +316,6 @@ ${idea.localizationNotes}`;
         ideaMode,
         productBrandName: productBrandName.trim(),
         targetModel,
-        productReferenceImages: productRefImages,
-        characterReferenceImages: characterRefImages,
-        productVisionAnalysis: latestProductAnalysis,
-        characterVisionAnalysis: latestCharacterAnalysis,
       });
 
       setIdeas(generated);
@@ -568,30 +369,16 @@ ${idea.localizationNotes}`;
         proj = createProject(idea.title, idea.categoryId, contextPreset);
       }
 
-      const enrichedIdea: ContentIdea = {
-        ...idea,
-        productReferenceImages: productRefImages,
-        characterReferenceImages: characterRefImages,
-        productVisionAnalysis: latestProductAnalysis,
-        characterVisionAnalysis: latestCharacterAnalysis,
-        visionAnalyses,
-      };
-
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
-      const developed = await developStoryFromIdea(enrichedIdea, 9, activeModel, dialogLanguage);
+      const developed = await developStoryFromIdea(idea, 9, activeModel, dialogLanguage);
 
       // 3. Save to store atomically (overwriting old scenes & characters from previous storyboard)
       useProjectStore.getState().updateCurrentProject({
         name: idea.title,
         categoryId: idea.categoryId,
         targetModel: activeModel,
-        selectedIdea: enrichedIdea,
-        productReferenceImages: productRefImages,
-        characterReferenceImages: characterRefImages,
-        productVisionAnalysis: latestProductAnalysis,
-        characterVisionAnalysis: latestCharacterAnalysis,
-        visionAnalyses,
+        selectedIdea: idea,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -684,11 +471,6 @@ ${idea.localizationNotes}`;
         storyboardType,
         categoryId: activeCategory.id,
         saved: true,
-        productReferenceImages: productRefImages,
-        characterReferenceImages: characterRefImages,
-        productVisionAnalysis: latestProductAnalysis,
-        characterVisionAnalysis: latestCharacterAnalysis,
-        visionAnalyses,
         createdAt: new Date().toISOString(),
       };
 
@@ -705,11 +487,6 @@ ${idea.localizationNotes}`;
         categoryId: activeCategory.id,
         targetModel: activeModel,
         selectedIdea: manualIdea,
-        productReferenceImages: productRefImages,
-        characterReferenceImages: characterRefImages,
-        productVisionAnalysis: latestProductAnalysis,
-        characterVisionAnalysis: latestCharacterAnalysis,
-        visionAnalyses,
         characters: developed.characters,
         worldBible: developed.worldBible,
         scenes: developed.scenes,
@@ -1175,364 +952,6 @@ ${idea.localizationNotes}`;
             </div>
           )}
 
-          {/* Kolom Referensi Visual: Produk & Karakter dengan Analisis Model Vision GPT-6.1-Terra */}
-          <div className="p-4 rounded-xl bg-black/40 border border-amber-500/25 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
-              <div className="flex items-center gap-2">
-                <ScanLine className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-semibold text-zinc-100">
-                  Input Referensi Visual (Karakter & Produk)
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                  <Cpu className="w-3 h-3 text-emerald-400" />
-                  GPT-6.1-Terra Vision Ready
-                </span>
-              </div>
-              <span className="text-[11px] text-zinc-400">
-                Analisis visual otomatis untuk I2V &amp; Midjourney --cref
-              </span>
-            </div>
-
-            {/* Tab Selector: Produk vs Karakter */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveRefTab('product')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  activeRefTab === 'product'
-                    ? 'bg-amber-500 text-black shadow-md'
-                    : 'bg-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-white/10'
-                }`}
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <span>Referensi Produk ({productRefImages.length}/3)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveRefTab('character')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  activeRefTab === 'character'
-                    ? 'bg-amber-500 text-black shadow-md'
-                    : 'bg-white/5 text-zinc-400 hover:text-zinc-200 hover:bg-white/10'
-                }`}
-              >
-                <User className="w-3.5 h-3.5" />
-                <span>Referensi Karakter ({characterRefImages.length}/3)</span>
-              </button>
-            </div>
-
-            {/* TAB 1: REFERENSI PRODUK */}
-            {activeRefTab === 'product' && (
-              <div className="space-y-3">
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Unggah foto produk asli atau masukkan URL gambar. Model <code className="text-amber-300 font-mono text-[10px]">gpt-6.1-terra</code> akan membedah bentuk fisik, label, material botol, dan lighting untuk mengunci keaslian produk di video generator.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                  {/* Upload File */}
-                  <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
-                    <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                      <Upload className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Upload File Foto Produk</span>
-                    </span>
-                    <label className="flex flex-col items-center justify-center p-3 border border-dashed border-white/15 rounded-lg hover:border-amber-500/50 hover:bg-amber-500/5 cursor-pointer transition-all text-center">
-                      <span className="text-[11px] text-zinc-300 font-medium">Pilih foto produk dari perangkat</span>
-                      <span className="text-[10px] text-zinc-500 mt-0.5">JPG, PNG, WebP (Maks 5MB)</span>
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                        disabled={productRefImages.length >= 3}
-                      />
-                    </label>
-                  </div>
-
-                  {/* URL Input */}
-                  <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
-                    <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Input URL Foto Produk Langsung</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Input
-                          placeholder="https://... foto katalog produk Shopee / Tokopedia"
-                          value={inputImageUrl}
-                          onChange={(e) => setInputImageUrl(e.target.value)}
-                          disabled={productRefImages.length >= 3}
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleAddImageUrl}
-                        disabled={!inputImageUrl.trim() || productRefImages.length >= 3}
-                        className="shrink-0"
-                      >
-                        Tambah
-                      </Button>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block">Tautan gambar online resolusi tinggi</span>
-                  </div>
-                </div>
-
-                {/* Attached Product Images Grid with GPT-6.1-Terra Analysis Button */}
-                {productRefImages.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Foto Produk Terpasang:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {productRefImages.map((imgUrl, idx) => {
-                        const analysisState = visionAnalyses.find((v) => v.imageUrl === imgUrl);
-                        const isAnalyzingThis = isAnalyzingVision && analyzingKey === `product_${idx}`;
-
-                        return (
-                          <div key={idx} className="relative rounded-lg overflow-hidden border border-amber-500/30 bg-zinc-950 p-2.5 space-y-2">
-                            <div className="relative w-full h-28 rounded-md overflow-hidden bg-black flex items-center justify-center">
-                              <img src={imgUrl} alt={`Produk ${idx + 1}`} className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveProductImage(idx)}
-                                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/80 text-red-400 hover:text-red-300 transition-colors shadow"
-                                title="Hapus foto ini"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="absolute bottom-1 left-1.5 bg-black/80 text-[10px] text-amber-300 font-mono px-1.5 py-0.5 rounded border border-white/10">
-                                Produk #{idx + 1}
-                              </span>
-                            </div>
-
-                            {/* Tombol Analisis GPT-6.1-Terra */}
-                            <Button
-                              type="button"
-                              variant={analysisState ? 'secondary' : 'primary'}
-                              size="sm"
-                              className="w-full text-xs justify-center"
-                              loading={isAnalyzingThis}
-                              disabled={isAnalyzingVision}
-                              onClick={() => handleRunVisionAnalysis(imgUrl, 'product', idx)}
-                              icon={analysisState ? <RefreshCw className="w-3 h-3 text-emerald-400" /> : <Eye className="w-3 h-3" />}
-                            >
-                              {analysisState ? 'Analisis Ulang (5 Kredit)' : '🔍 Analisis GPT-6.1-Terra (5 Kredit)'}
-                            </Button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 2: REFERENSI KARAKTER */}
-            {activeRefTab === 'character' && (
-              <div className="space-y-3">
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Unggah foto karakter atau masukkan URL potret. Model <code className="text-emerald-300 font-mono text-[10px]">gpt-6.1-terra</code> akan menganalisis struktur wajah, model rambut, dan pakaian untuk menghasilkan deskripsi jangkar (anchor consistency) pada video generator.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                  {/* Upload File Karakter */}
-                  <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
-                    <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                      <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Upload File Foto Karakter</span>
-                    </span>
-                    <label className="flex flex-col items-center justify-center p-3 border border-dashed border-white/15 rounded-lg hover:border-emerald-500/50 hover:bg-emerald-500/5 cursor-pointer transition-all text-center">
-                      <span className="text-[11px] text-zinc-300 font-medium">Pilih foto potret dari perangkat</span>
-                      <span className="text-[10px] text-zinc-500 mt-0.5">JPG, PNG, WebP (Maks 5MB)</span>
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        className="hidden"
-                        onChange={handleCharFileUpload}
-                        disabled={characterRefImages.length >= 3}
-                      />
-                    </label>
-                  </div>
-
-                  {/* URL Input Karakter */}
-                  <div className="p-3 rounded-lg bg-zinc-900/70 border border-white/5 space-y-2">
-                    <span className="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Input URL Foto Karakter Langsung</span>
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Input
-                          placeholder="https://... potret karakter atau foto model"
-                          value={inputCharImageUrl}
-                          onChange={(e) => setInputCharImageUrl(e.target.value)}
-                          disabled={characterRefImages.length >= 3}
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleAddCharImageUrl}
-                        disabled={!inputCharImageUrl.trim() || characterRefImages.length >= 3}
-                        className="shrink-0"
-                      >
-                        Tambah
-                      </Button>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block">Tautan potret wajah atau concept art karakter</span>
-                  </div>
-                </div>
-
-                {/* Attached Character Images Grid with GPT-6.1-Terra Analysis Button */}
-                {characterRefImages.length > 0 && (
-                  <div className="space-y-2 pt-2">
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Foto Karakter Terpasang:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {characterRefImages.map((imgUrl, idx) => {
-                        const analysisState = visionAnalyses.find((v) => v.imageUrl === imgUrl);
-                        const isAnalyzingThis = isAnalyzingVision && analyzingKey === `character_${idx}`;
-
-                        return (
-                          <div key={idx} className="relative rounded-lg overflow-hidden border border-emerald-500/30 bg-zinc-950 p-2.5 space-y-2">
-                            <div className="relative w-full h-28 rounded-md overflow-hidden bg-black flex items-center justify-center">
-                              <img src={imgUrl} alt={`Karakter ${idx + 1}`} className="w-full h-full object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCharImage(idx)}
-                                className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/80 text-red-400 hover:text-red-300 transition-colors shadow"
-                                title="Hapus foto ini"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                              <span className="absolute bottom-1 left-1.5 bg-black/80 text-[10px] text-emerald-300 font-mono px-1.5 py-0.5 rounded border border-white/10">
-                                Karakter #{idx + 1}
-                              </span>
-                            </div>
-
-                            <Button
-                              type="button"
-                              variant={analysisState ? 'secondary' : 'emerald'}
-                              size="sm"
-                              className="w-full text-xs justify-center"
-                              loading={isAnalyzingThis}
-                              disabled={isAnalyzingVision}
-                              onClick={() => handleRunVisionAnalysis(imgUrl, 'character', idx)}
-                              icon={analysisState ? <RefreshCw className="w-3 h-3 text-emerald-400" /> : <Eye className="w-3 h-3" />}
-                            >
-                              {analysisState ? 'Analisis Ulang (5 Kredit)' : '🔍 Analisis GPT-6.1-Terra (5 Kredit)'}
-                            </Button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* HASIL ANALISIS VISION AI & TOKEN USAGE AUDIT CARD */}
-            {visionAnalyses.length > 0 && (
-              <div className="p-4 rounded-xl bg-gradient-to-r from-zinc-950 via-[#101017] to-zinc-950 border border-emerald-500/30 space-y-3.5 mt-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span className="text-xs font-bold text-zinc-100">
-                      Hasil Analisis GPT-6.1-Terra Vision ({visionAnalyses.length} Analisis Tersimpan)
-                    </span>
-                    <Badge variant="emerald">Tersambung ke Video Generator</Badge>
-                  </div>
-                  <span className="text-[11px] text-zinc-400 font-mono">
-                    Model: gpt-6.1-terra
-                  </span>
-                </div>
-
-                {/* Token Usage & Credit Breakdown Bar */}
-                {lastTokenUsage && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2.5 rounded-lg bg-black/60 border border-white/10 text-xs">
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase block font-mono">Prompt Tokens:</span>
-                      <span className="font-mono text-zinc-200 font-semibold">{lastTokenUsage.promptTokens.toLocaleString()} tokens</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase block font-mono">Completion:</span>
-                      <span className="font-mono text-zinc-200 font-semibold">{lastTokenUsage.completionTokens.toLocaleString()} tokens</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase block font-mono">Total Tokens:</span>
-                      <span className="font-mono text-amber-300 font-semibold">{lastTokenUsage.totalTokens.toLocaleString()} tokens</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase block font-mono">Credit Terpakai:</span>
-                      <span className="font-mono text-emerald-400 font-semibold">-5 Kredit AI</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Preview Produk yang Teranalisis */}
-                {latestProductAnalysis && (
-                  <div className="p-3 rounded-lg bg-zinc-900/60 border border-white/5 space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-amber-300 flex items-center gap-1.5">
-                        <Camera className="w-3.5 h-3.5" />
-                        <span>Fisik Produk: {latestProductAnalysis.productName || 'Produk Referensi'}</span>
-                      </span>
-                      <span className="text-[10px] text-zinc-400 font-mono">{latestProductAnalysis.category || 'Commercial'}</span>
-                    </div>
-                    <p className="text-zinc-300 leading-relaxed text-[11px]">
-                      {latestProductAnalysis.physicalDescription}
-                    </p>
-                    {latestProductAnalysis.colorPalette && latestProductAnalysis.colorPalette.length > 0 && (
-                      <div className="flex items-center gap-2 pt-1 flex-wrap">
-                        <span className="text-[10px] text-zinc-500">Palet Warna:</span>
-                        {latestProductAnalysis.colorPalette.map((col, cIdx) => (
-                          <span key={cIdx} className="text-[10px] px-2 py-0.5 rounded bg-black/50 border border-white/10 text-zinc-300 font-mono">
-                            {col}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="pt-1 text-[11px] text-zinc-400 bg-black/40 p-2 rounded border border-white/5">
-                      <span className="text-amber-400 font-semibold block text-[10px] uppercase font-mono">Prompt Enhancement Suffix:</span>
-                      <span className="text-zinc-300 font-mono text-[10px]">{latestProductAnalysis.promptEnhancement}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Preview Karakter yang Teranalisis */}
-                {latestCharacterAnalysis && (
-                  <div className="p-3 rounded-lg bg-zinc-900/60 border border-white/5 space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-emerald-300 flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5" />
-                        <span>Karakter: {latestCharacterAnalysis.characterName || 'Protagonis Utama'}</span>
-                      </span>
-                      <span className="text-[10px] text-zinc-400 font-mono">{latestCharacterAnalysis.age || 'Dewasa muda'}</span>
-                    </div>
-                    <p className="text-zinc-300 leading-relaxed text-[11px]">
-                      {latestCharacterAnalysis.anchorDescription}
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] pt-1">
-                      <div className="p-2 rounded bg-black/40 border border-white/5">
-                        <span className="text-zinc-500 block">Pakaian / Wardrobe:</span>
-                        <span className="text-zinc-300">{latestCharacterAnalysis.clothing}</span>
-                      </div>
-                      <div className="p-2 rounded bg-black/40 border border-white/5">
-                        <span className="text-zinc-500 block">Rambut &amp; Wajah:</span>
-                        <span className="text-zinc-300">{latestCharacterAnalysis.hairStyle}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-2 text-[10px] text-emerald-400/90 pt-1">
-                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                  <span>
-                    Analisis visual di atas otomatis diinjeksikan ke dalam prompt Midjourney <code className="font-mono text-zinc-200">--cref</code>, scene video prompt, dan instruksi I2V.
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
 
           <div className="pt-1">
             <Input

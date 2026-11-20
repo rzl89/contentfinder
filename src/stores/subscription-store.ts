@@ -240,7 +240,7 @@ export interface TokenAuditLog {
 }
 
 export function calculateActionCredits(
-  action: 'generate_ideas' | 'generate_storyboard' | 'regenerate_storyboard' | 'regenerate_single_scene' | 'analyze_reference_image',
+  action: 'generate_ideas' | 'generate_storyboard' | 'regenerate_storyboard' | 'regenerate_single_scene',
   inputWordCount = 0
 ): {
   baseCost: number;
@@ -254,7 +254,6 @@ export function calculateActionCredits(
     generate_storyboard: 3,
     regenerate_storyboard: 3,
     regenerate_single_scene: 1,
-    analyze_reference_image: 5,
   };
 
   const baseCost = baseCosts[action] ?? 1;

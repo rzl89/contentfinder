@@ -1,7 +1,7 @@
 /**
  * Vercel Serverless Function — Secure AI Gateway
  * Protected backend endpoint: reads process.env.OPENAI_API_KEY securely.
- * Default Model: gpt-6-luna (with resilient automatic fallback)
+ * Default Model: gpt-6.1-terra (with resilient automatic fallback)
  */
 
 import fs from 'fs';
@@ -80,8 +80,8 @@ export default async function handler(req, res) {
     });
   }
 
-  // Model default: gpt-6-luna per user specification
-  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-6-luna';
+  // Model default: gpt-6.1-terra per user specification
+  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-6.1-terra';
   const { action, payload } = req.body || {};
 
   /**
@@ -114,7 +114,7 @@ export default async function handler(req, res) {
       body: JSON.stringify(requestBody),
     });
 
-    // If requested model (e.g. gpt-6-luna) returns 404 or unsupported on this tier, fallback smoothly to gpt-4o-mini
+    // If requested model (e.g. gpt-6.1-terra) returns 404 or unsupported on this tier, fallback smoothly to gpt-4o-mini
     if (!response.ok && (response.status === 404 || response.status === 400) && activeModel !== 'gpt-4o-mini') {
       const errCheck = await response.clone().json().catch(() => ({}));
       console.warn(`Model ${activeModel} error (${errCheck.error?.message}), falling back to gpt-4o-mini`);
@@ -181,10 +181,6 @@ export default async function handler(req, res) {
         trendApproach = 'trend_first',
         storyboardType = 'clip',
         productBrandName = '',
-        productReferenceImages = [],
-        characterReferenceImages = [],
-        productVisionAnalysis,
-        characterVisionAnalysis,
         additionalTheme,
         topic,
         count = 5,
@@ -283,10 +279,6 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
 Category: ${categoryName}
 Description: ${categoryDescription || ''}
 Type: ${isProductAd ? `Product Ad / Commercial (Brand: ${productBrandName || 'Standard'})` : 'Movie / Drama / Animated Clip'}
-${productReferenceImages && productReferenceImages.length > 0 ? `Product Reference: ${productReferenceImages.length} image(s) provided. Structure every concept around hero product demonstration, physical unboxing/use-case, high-converting problem-to-solution arc, and visual proof.` : ''}
-${characterReferenceImages && characterReferenceImages.length > 0 ? `Character Reference: ${characterReferenceImages.length} image(s) provided. Ground character actions, appearance, and styling strictly to the character reference images.` : ''}
-${productVisionAnalysis ? `Product Vision AI Analysis (GPT-6.1-Terra): ${productVisionAnalysis.physicalDescription} | Key Features: ${productVisionAnalysis.keyVisualFeatures ? productVisionAnalysis.keyVisualFeatures.join(', ') : ''} | Colors: ${productVisionAnalysis.colorPalette ? productVisionAnalysis.colorPalette.join(', ') : ''}` : ''}
-${characterVisionAnalysis ? `Character Vision AI Analysis (GPT-6.1-Terra): ${characterVisionAnalysis.anchorDescription} | Wardrobe: ${characterVisionAnalysis.clothing}` : ''}
 ${effectiveTopic ? `Specific Concept / Idea: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
 Platform: ${platform}
 Target Duration: ${duration}
@@ -378,17 +370,9 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         dialogLanguage = 'indonesian',
         temperature = 0.7,
         uiLanguage = 'id',
-        productReferenceImages = idea?.productReferenceImages || [],
-        characterReferenceImages = idea?.characterReferenceImages || payload?.characterReferenceImages || [],
-        productVisionAnalysis = idea?.productVisionAnalysis || payload?.productVisionAnalysis,
-        characterVisionAnalysis = idea?.characterVisionAnalysis || payload?.characterVisionAnalysis,
       } = payload || {};
 
       const effectiveSceneCount = targetSceneCount && targetSceneCount >= 4 ? targetSceneCount : 9;
-      const httpRefUrls = (productReferenceImages || []).filter((u) => typeof u === 'string' && u.startsWith('http'));
-      const sampleCrefUrl = httpRefUrls.length > 0 ? httpRefUrls[0] : '[URL_GAMBAR_PRODUK]';
-      const httpCharUrls = (characterReferenceImages || []).filter((u) => typeof u === 'string' && u.startsWith('http'));
-      const sampleCharCrefUrl = httpCharUrls.length > 0 ? httpCharUrls[0] : '[URL_GAMBAR_KARAKTER]';
 
       const languageInstruction =
         dialogLanguage === 'javanese'
@@ -421,34 +405,6 @@ Apply these format rules strictly in every scene's videoPrompt field:
 - If PixVerse (pixverse-v3): focus on character consistency lock and 4K UHD cinematic clarity.
 - If Tencent Hunyuan (tencent-hunyuan): use rich, expressive visual descriptions and temporal stability.
 - If Universal (universal-neutral): use neutral studio cinematography terms (Shot, Angle, Movement, Lighting).
-${productReferenceImages && productReferenceImages.length > 0 ? `
-PRODUCT REFERENCE ATTACHMENT (Mode: Image-to-Video & Midjourney --cref):
-- Reference images provided (${productReferenceImages.length} image(s)).
-- In individual scene prompts ("scenes"):
-  * For scenes showcasing the hero product: describe the exact physical product appearance, packaging, material textures, and studio lighting highlights.
-  * In imagePrompt: Append Midjourney product continuity parameter: "--cref ${sampleCrefUrl} --cw 100".
-  * In videoPrompt: Add prefix "[I2V Mode: Use product reference as starting frame]" with camera movement highlighting the product.
-- In imagePromptJson: include reference instruction or Midjourney tag "--cref ${sampleCrefUrl} --cw 100".
-- In videoPromptJson: specify "[I2V Mode: Use product reference as starting frame]" and focus camera motion and lighting around the physical product.
-- In worldBible props: explicitly anchor the product physical traits (branding, packaging, color palette).` : ''}
-${characterReferenceImages && characterReferenceImages.length > 0 ? `
-CHARACTER REFERENCE ATTACHMENT (Mode: Face & Wardrobe Lock):
-- Reference character images provided (${characterReferenceImages.length} image(s)).
-- In Character Bible: Lock facial geometry, skin tone, hair, and clothing to match reference images exactly.
-- In imagePrompt: Append Midjourney character continuity parameter: "--cref ${sampleCharCrefUrl} --cw 100".
-- In videoPrompt: Lock facial consistency and wardrobe.` : ''}
-${productVisionAnalysis ? `
-VISION AI PRODUCT ATTRIBUTES (GPT-6.1-Terra Analysis):
-- Physical description: ${productVisionAnalysis.physicalDescription}
-- Color palette: ${productVisionAnalysis.colorPalette ? productVisionAnalysis.colorPalette.join(', ') : ''}
-- Visual features: ${productVisionAnalysis.keyVisualFeatures ? productVisionAnalysis.keyVisualFeatures.join('; ') : ''}
-- Prompt enhancement: "${productVisionAnalysis.promptEnhancement || ''}"` : ''}
-${characterVisionAnalysis ? `
-VISION AI CHARACTER ATTRIBUTES (GPT-6.1-Terra Analysis):
-- Consistency anchor: ${characterVisionAnalysis.anchorDescription}
-- Appearance: ${characterVisionAnalysis.appearance}
-- Clothing: ${characterVisionAnalysis.clothing}
-- Hair style: ${characterVisionAnalysis.hairStyle}` : ''}
 Respond ONLY with valid JSON matching the schema provided.`;
 
       // Use admin-defined system prompt override if set; otherwise use built-in FlowStoryboard-Pro prompt
@@ -653,127 +609,6 @@ Duration: ${idea.estimatedDuration}`;
 
       const parsed = JSON.parse(content);
       return res.status(200).json({ success: true, package: parsed, modelUsed, usage });
-    }
-
-    if (action === 'analyze_reference_image') {
-      const {
-        imageUrl,
-        imageDataUrl,
-        imageType = 'product',
-        model: reqVisionModel,
-        promptHint,
-      } = payload || {};
-
-      const targetImageUrl = imageUrl || imageDataUrl;
-      if (!targetImageUrl || typeof targetImageUrl !== 'string') {
-        return res.status(400).json({
-          error: 'IMAGE_MISSING',
-          message: 'Gambar referensi belum disertakan atau format tidak valid.',
-        });
-      }
-
-      const visionModel = reqVisionModel || process.env.OPENAI_VISION_MODEL || 'gpt-6.1-terra';
-
-      const isCharacter = imageType === 'character';
-
-      const systemPrompt = isCharacter
-        ? `You are Fixprom GPT-6.1-Terra Vision Engine, an elite character design and cinematic continuity AI.
-Analyze the provided character reference image in photographic detail to generate locked visual prompts for AI video generators (Runway Gen-3/4, Kling 2.1, Google Veo, Luma Dream Machine, Midjourney cref).
-You MUST respond with a valid JSON object matching this schema:
-{
-  "characterName": "Detected or inferred archetype/name",
-  "age": "Apparent age range (e.g. 25-30 years old)",
-  "gender": "Gender presentation",
-  "appearance": "Facial geometry, skin tone, facial features, distinctive traits",
-  "clothing": "Detailed wardrobe, fabrics, color palette, jacket/shirt style, accessories",
-  "hairStyle": "Hair color, texture, length, styling",
-  "distinctiveFeatures": ["Feature 1", "Feature 2"],
-  "expressionTone": "Demeanor and default expression",
-  "lightingStyle": "Cinematic portrait lighting style",
-  "anchorDescription": "Exact consistency anchor sentence to lock character identity in every scene",
-  "midjourneyCrefParam": "--cref ${targetImageUrl.startsWith('http') ? targetImageUrl : '[URL]'} --cw 100",
-  "i2vStartFrameInstruction": "[I2V Mode: Lock character identity, face geometry, and outfit from reference image. Prevent morphing]",
-  "promptEnhancement": "Concise English character consistency prompt to anchor into all video scene prompts"
-}`
-        : `You are Fixprom GPT-6.1-Terra Vision Engine, an elite commercial product cinematography and brand visual AI.
-Analyze the provided product reference image in extreme visual detail to generate production-ready prompts for AI video generators (Runway Gen-3/4, Google Veo, Kling 2.1, Luma Dream Machine, Sora, Midjourney cref).
-You MUST respond with a valid JSON object matching this schema:
-{
-  "productName": "Extracted brand or product name, or descriptive title",
-  "category": "Product category (e.g. Skincare, Beverage, Gadget, Apparel)",
-  "physicalDescription": "Ultra-clear English description of product geometry, materials, bottle/packaging shape, texture, and finish",
-  "colorPalette": ["#Hex or Primary Color", "Secondary Color", "Accent Highlight"],
-  "keyVisualFeatures": ["Visual detail 1", "Visual detail 2", "Visual detail 3"],
-  "packagingStyle": "Label typography, minimalist/luxury design, logo placement, packaging material",
-  "lightingAndReflection": "Optimal studio lighting, rim highlights, soft ambient diffuse, specular reflection",
-  "suggestedCameraAngles": ["Macro close-up 45-degree hero angle", "360-degree floating turntable rotation", "Slow motion reveal"],
-  "midjourneyCrefParam": "--cref ${targetImageUrl.startsWith('http') ? targetImageUrl : '[URL]'} --cw 100",
-  "i2vStartFrameInstruction": "[I2V Mode: Use reference image as frame 0 first frame. Lock product silhouette, typography, and texture without morphing]",
-  "promptEnhancement": "Cinematic English prompt suffix anchoring exact product look into all video scene prompts"
-}`;
-
-      const userText = isCharacter
-        ? `Perform comprehensive visual analysis of this character reference image. Extract identity, wardrobe, facial geometry, and cinematic prompt anchors for AI video generation.${promptHint ? ` Additional user hint: ${promptHint}` : ''}`
-        : `Perform comprehensive visual analysis of this product reference image. Extract geometry, material textures, brand aesthetics, and cinematic prompt anchors for AI video generation.${promptHint ? ` Additional user hint: ${promptHint}` : ''}`;
-
-      const userMessage = {
-        role: 'user',
-        content: [
-          { type: 'text', text: userText },
-          {
-            type: 'image_url',
-            image_url: {
-              url: targetImageUrl,
-              detail: 'high',
-            },
-          },
-        ],
-      };
-
-      const result = await callOpenAI(
-        [
-          { role: 'system', content: systemPrompt },
-          userMessage,
-        ],
-        0.4,
-        visionModel
-      );
-
-      let parsedAnalysis;
-      try {
-        parsedAnalysis = JSON.parse(result.content);
-      } catch (parseErr) {
-        console.warn('Vision analysis JSON parse failed, returning fallback extraction:', parseErr);
-        parsedAnalysis = {
-          productName: 'Reference Item',
-          physicalDescription: result.content?.slice(0, 300) || 'Detailed product reference',
-          colorPalette: ['#1A1A1A', '#F59E0B'],
-          keyVisualFeatures: ['High-fidelity physical reference', 'Cinematic studio lighting'],
-          suggestedCameraAngles: ['Hero shot 45-degree angle', 'Dynamic macro close-up'],
-          midjourneyCrefParam: `--cref ${targetImageUrl.startsWith('http') ? targetImageUrl : '[URL]'} --cw 100`,
-          i2vStartFrameInstruction: '[I2V Mode: Reference image locked as frame 0 first frame]',
-          promptEnhancement: 'photorealistic physical product reference with authentic surface texture and studio lighting',
-        };
-      }
-
-      const promptTokens = result.usage?.prompt_tokens || 850;
-      const completionTokens = result.usage?.completion_tokens || 280;
-      const totalTokens = result.usage?.total_tokens || (promptTokens + completionTokens);
-
-      return res.status(200).json({
-        success: true,
-        analysis: parsedAnalysis,
-        modelUsed: 'gpt-6.1-terra',
-        actualEngine: result.modelUsed,
-        usage: {
-          promptTokens,
-          completionTokens,
-          totalTokens,
-          modelUsed: 'gpt-6.1-terra',
-          estimatedCreditCost: 5,
-        },
-        estimatedCreditCost: 5,
-      });
     }
 
     return res.status(400).json({ error: 'INVALID_ACTION', message: `Unknown action: ${action}` });

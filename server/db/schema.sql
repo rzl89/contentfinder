@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS public.ideas (
   subcategory_id text,
   topic text,
   creative_direction text,
-  model_identifier text DEFAULT 'gpt-6-luna'::text,
+  model_identifier text DEFAULT 'gpt-6.1-terra'::text,
   normalized_text text,
   is_favorite boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),

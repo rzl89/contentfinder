@@ -153,59 +153,6 @@ export interface ContentCategory {
 }
 
 // ---------------------------------------------------------------------------
-// Vision AI & Reference Analysis (GPT-6.1-Terra)
-// ---------------------------------------------------------------------------
-
-export interface ProductVisionAnalysis {
-  productName?: string;
-  category?: string;
-  physicalDescription: string;
-  colorPalette: string[];
-  keyVisualFeatures: string[];
-  packagingStyle?: string;
-  lightingAndReflection?: string;
-  suggestedCameraAngles: string[];
-  midjourneyCrefParam: string;
-  i2vStartFrameInstruction: string;
-  promptEnhancement: string;
-}
-
-export interface CharacterVisionAnalysis {
-  characterName?: string;
-  age?: string;
-  gender?: string;
-  appearance: string;
-  clothing: string;
-  hairStyle: string;
-  distinctiveFeatures: string[];
-  expressionTone?: string;
-  lightingStyle?: string;
-  anchorDescription: string;
-  midjourneyCrefParam: string;
-  i2vStartFrameInstruction: string;
-  promptEnhancement: string;
-}
-
-export type VisionAnalysisResult = ProductVisionAnalysis | CharacterVisionAnalysis;
-
-export interface TokenUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-  modelUsed: string;
-  estimatedCreditCost: number;
-}
-
-export interface VisionAnalysisState {
-  id: string;
-  imageUrl: string;
-  imageType: 'product' | 'character';
-  analysis: VisionAnalysisResult;
-  tokenUsage: TokenUsage;
-  analyzedAt: string; // ISO-8601
-}
-
-// ---------------------------------------------------------------------------
 // Content Ideas
 // ---------------------------------------------------------------------------
 
@@ -229,10 +176,6 @@ export interface ContentIdea {
   subcategoryId?: string;
   saved: boolean;
   productReferenceImages?: string[];
-  characterReferenceImages?: string[];
-  productVisionAnalysis?: ProductVisionAnalysis;
-  characterVisionAnalysis?: CharacterVisionAnalysis;
-  visionAnalyses?: VisionAnalysisState[];
   createdAt: string; // ISO-8601
 }
 
@@ -254,10 +197,6 @@ export interface IdeaGenerationConfig {
   productBrandName?: string;
   targetModel?: string;
   productReferenceImages?: string[];
-  characterReferenceImages?: string[];
-  productVisionAnalysis?: ProductVisionAnalysis;
-  characterVisionAnalysis?: CharacterVisionAnalysis;
-  visionAnalyses?: VisionAnalysisState[];
 }
 
 // ---------------------------------------------------------------------------
@@ -497,10 +436,6 @@ export interface Project {
   qcResult?: QCResult;
   targetModel?: string;
   productReferenceImages?: string[];
-  characterReferenceImages?: string[];
-  productVisionAnalysis?: ProductVisionAnalysis;
-  characterVisionAnalysis?: CharacterVisionAnalysis;
-  visionAnalyses?: VisionAnalysisState[];
   masterStoryboardImagePrompt?: StoryboardImagePromptJSON | string;
   masterStoryboardVideoPrompt?: StoryboardVideoPromptJSON | string;
   storyboardPlanSummary?: string[];

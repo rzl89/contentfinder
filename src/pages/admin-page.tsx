@@ -59,7 +59,7 @@ export const AdminPage: React.FC = () => {
   const [aiTestResult, setAiTestResult] = useState<string | null>(null);
 
   // Form states initialized from admin settings
-  const [formModel, setFormModel] = useState(settings.defaultModel || 'gpt-6-luna');
+  const [formModel, setFormModel] = useState(settings.defaultModel || 'gpt-6.1-terra');
   const [formApiKey, setFormApiKey] = useState(settings.openAiApiKey || '');
   const [formTemp, setFormTemp] = useState(settings.temperature || 0.75);
 
@@ -349,7 +349,7 @@ export const AdminPage: React.FC = () => {
                   <span>Konfigurasi Model LLM Default</span>
                 </h3>
                 <p className="text-xs text-zinc-400">
-                  Model default saat ini disetel ke <strong className="text-amber-400">gpt-6-luna</strong> dengan sistem fallback cerdas.
+                  Model default saat ini disetel ke <strong className="text-amber-400">gpt-6.1-terra</strong> dengan sistem fallback cerdas.
                 </p>
               </div>
               <Badge variant="emerald">Live Gateway Connected</Badge>
@@ -361,7 +361,8 @@ export const AdminPage: React.FC = () => {
                 value={formModel}
                 onChange={(e) => setFormModel(e.target.value)}
                 options={[
-                  { value: 'gpt-6-luna', label: 'gpt-6-luna (Rekomendasi Utama — Ultra Cepat & Akurat)' },
+                  { value: 'gpt-6.1-terra', label: 'gpt-6.1-terra (Rekomendasi Utama — Ultra Cepat & Efisien)' },
+                  { value: 'gpt-6-luna', label: 'gpt-6-luna (Reasoning Engine)' },
                   { value: 'gpt-4o', label: 'gpt-4o (Omni High Reasoning)' },
                   { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Hemat Token & Cepat)' },
                   { value: 'custom', label: 'Model Kustom Lainnya...' },

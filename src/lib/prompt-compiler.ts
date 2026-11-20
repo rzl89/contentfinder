@@ -8,8 +8,6 @@ import type {
   StoryboardValidationReport,
   StoryboardPanelItem,
   StoryboardTimelineEntry,
-  ProductVisionAnalysis,
-  CharacterVisionAnalysis,
 } from '@/types';
 import { getModelCapability } from './model-catalog';
 
@@ -45,10 +43,7 @@ export function compileScenePrompt(
   targetModelId: string = 'universal-neutral',
   characters: CharacterBible[] = [],
   _worldBible?: WorldBible,
-  productReferenceImages?: string[],
-  characterReferenceImages?: string[],
-  productVisionAnalysis?: ProductVisionAnalysis,
-  characterVisionAnalysis?: CharacterVisionAnalysis
+  productReferenceImages?: string[]
 ): CompiledScenePrompts {
   const model = getModelCapability(targetModelId);
 
@@ -139,25 +134,6 @@ export function compileScenePrompt(
     }
   }
 
-  // Append character reference continuity tags if character references are attached
-  if (characterReferenceImages && characterReferenceImages.length > 0) {
-    const httpCharUrl = characterReferenceImages.find((u) => typeof u === 'string' && u.startsWith('http'));
-    if (httpCharUrl && !finalImagePrompt.includes(httpCharUrl)) {
-      finalImagePrompt = `${finalImagePrompt} --cref ${httpCharUrl} --cw 100`;
-    }
-    if (!finalVideoPrompt.includes('[Character Lock:')) {
-      finalVideoPrompt = `[Character Lock: Consistent face and wardrobe from reference] ${finalVideoPrompt}`;
-    }
-  }
-
-  // Inject Vision AI (GPT-6.1-Terra) prompt enhancements
-  if (productVisionAnalysis?.promptEnhancement && !finalVideoPrompt.includes(productVisionAnalysis.promptEnhancement)) {
-    finalVideoPrompt = `${finalVideoPrompt} Product Detail: ${productVisionAnalysis.promptEnhancement}.`;
-  }
-  if (characterVisionAnalysis?.anchorDescription && !finalVideoPrompt.includes(characterVisionAnalysis.anchorDescription)) {
-    finalVideoPrompt = `${finalVideoPrompt} Character Anchor: ${characterVisionAnalysis.anchorDescription}.`;
-  }
-
   return {
     sceneNumber: scene.sceneNumber,
     beatTitle: scene.beatTitle,
@@ -189,10 +165,7 @@ export function compileProjectPrompts(
       modelId,
       project.characters,
       project.worldBible,
-      project.productReferenceImages,
-      project.characterReferenceImages,
-      project.productVisionAnalysis,
-      project.characterVisionAnalysis
+      project.productReferenceImages
     )
   );
 }
@@ -259,34 +232,6 @@ export function exportProductionSheetMarkdown(project: Project): string {
     });
     lines.push(`- **Midjourney Parameter:** \`--cref ${project.productReferenceImages.find(u => !u.startsWith('data:')) || '[URL_GAMBAR]'} --cw 100\``);
     lines.push(`- **I2V Video Guidance:** Gunakan gambar produk sebagai First Frame / Start Image untuk mengunci logo dan bentuk fisik produk.`);
-    lines.push('');
-  }
-
-  if (project.characterReferenceImages && project.characterReferenceImages.length > 0) {
-    lines.push(`## 👤 CHARACTER REFERENCE (FACE & WARDROBE CONSISTENCY)`);
-    project.characterReferenceImages.forEach((imgUrl, i) => {
-      lines.push(`- **Foto Karakter #${i + 1}:** ${imgUrl.startsWith('data:') ? '[Base64 Image Attached]' : imgUrl}`);
-    });
-    lines.push(`- **Midjourney Face-Lock:** \`--cref ${project.characterReferenceImages.find(u => !u.startsWith('data:')) || '[URL_KARAKTER]'} --cw 100\``);
-    lines.push('');
-  }
-
-  if (project.productVisionAnalysis || project.characterVisionAnalysis) {
-    lines.push(`## 🔍 VISION AI ANALYSIS (GPT-6.1-TERRA)`);
-    if (project.productVisionAnalysis) {
-      lines.push(`### 📦 Analisis Visual Produk`);
-      lines.push(`- **Deskripsi Fisik:** ${project.productVisionAnalysis.physicalDescription}`);
-      lines.push(`- **Palet Warna:** ${project.productVisionAnalysis.colorPalette.join(', ')}`);
-      lines.push(`- **Fitur Kunci:** ${project.productVisionAnalysis.keyVisualFeatures.join('; ')}`);
-      lines.push(`- **Prompt Suffix:** \`${project.productVisionAnalysis.promptEnhancement}\``);
-    }
-    if (project.characterVisionAnalysis) {
-      lines.push(`### 👤 Analisis Visual Karakter`);
-      lines.push(`- **Anchor Konsistensi:** ${project.characterVisionAnalysis.anchorDescription}`);
-      lines.push(`- **Penampilan:** ${project.characterVisionAnalysis.appearance}`);
-      lines.push(`- **Wardrobe:** ${project.characterVisionAnalysis.clothing}`);
-      lines.push(`- **Gaya Rambut:** ${project.characterVisionAnalysis.hairStyle}`);
-    }
     lines.push('');
   }
 
