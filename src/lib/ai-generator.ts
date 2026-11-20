@@ -77,6 +77,8 @@ export async function generateContentIdeas(
         payload: {
           model: admin?.defaultModel || 'gpt-6.1-terra',
           temperature: admin?.temperature || 0.8,
+          categoryId: config.categoryId || category.id,
+          subcategoryId: config.subcategoryId || subcat?.id,
           categoryName: category.name,
           categoryDescription: category.description,
           subcatName: subcat?.name,

@@ -20,12 +20,12 @@ const ARCHETYPE_MAP: Record<string, 'how_to' | 'thought_experiment' | 'commercia
   'howto-art': 'how_to',
   'howto-productivity': 'how_to',
   'satisfying-restoration': 'how_to',
-  // ── THOUGHT EXPERIMENT (4) ──
+  // ── THOUGHT EXPERIMENT / EXPLANATORY (3) ──
   'what-if': 'thought_experiment',
   'educational-facts': 'thought_experiment',
   'mystery-horror': 'thought_experiment',
-  'scenic-aesthetic': 'thought_experiment',
-  // ── STORYTELLING (14) ──
+  // ── STORYTELLING (15) ──
+  'scenic-aesthetic': 'storytelling',
   'time-travel': 'storytelling',
   'stickman': 'storytelling',
   'pov-experience': 'storytelling',
@@ -76,13 +76,18 @@ const ARCHETYPE_LABELS: Record<ContentArchetype, ArchetypeEntry> = {
     colorClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
   },
   thought_experiment: {
-    badge: 'Eksperimen Pikiran', badgeEn: 'Thought Experiment',
-    primaryLabel: 'Hipotesis / Konsep Inti', primaryLabelEn: 'Core Hypothesis / Concept',
-    secondaryLabel: 'Rantai Dampak & Konsekuensi', secondaryLabelEn: 'Impact Chain & Consequences',
-    beatsLabel: 'Fase Eksplorasi', beatsLabelEn: 'Exploration Phases',
-    endingLabel: 'Konklusi Ilmiah / Filosofis', endingLabelEn: 'Scientific / Philosophical Conclusion',
-    description: 'Eksplorasi spekulatif berbasis fakta ilmiah dan logika kausal — gaya Kurzgesagt / Vsauce.',
-    descriptionEn: 'Fact-grounded speculative exploration with causal logic — Kurzgesagt / Vsauce style.',
+    badge: 'Eksplanatori & Sebab-Akibat',
+    badgeEn: 'Explanatory & Cause-and-Effect',
+    primaryLabel: 'Pernyataan Hipotesis / Kejadian',
+    primaryLabelEn: 'Core Hypothesis / Event Statement',
+    secondaryLabel: 'Eksplanasi Skenario & Sebab-Akibat',
+    secondaryLabelEn: 'Scenario Explanation & Cause-and-Effect',
+    beatsLabel: 'Rantai Sebab-Akibat (Kejadian & Kaskade)',
+    beatsLabelEn: 'Cause-and-Effect Chain (Events & Cascades)',
+    endingLabel: 'Konklusi & Kesimpulan Ilmiah',
+    endingLabelEn: 'Conclusion & Scientific Takeaway',
+    description: 'Format eksplanatori murni: simulasi kejadian nyata, analisis sebab-akibat multi-disiplin, dan konklusi ilmiah.',
+    descriptionEn: 'Pure explanatory format: realistic scenario simulation, interdisciplinary cause-and-effect chains, and scientific conclusions.',
     colorClass: 'bg-violet-500/20 text-violet-300 border-violet-500/40',
   },
   commercial: {

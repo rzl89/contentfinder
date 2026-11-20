@@ -420,8 +420,8 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
     name: 'Bagaimana Jika & Realitas Alternatif',
     nameEn: 'What If & Alternate Realities',
     description:
-      'Konten spekulatif yang mengeksplorasi skenario "bagaimana jika" — dari yang mungkin terjadi hingga yang benar-benar fantastis.',
-    descriptionEn: 'Speculative storytelling exploring \'what if\' scenarios — from intriguing historical pivots to mind-expanding scientific and societal shifts.',
+      'Format edukasi & eksplanatori spekulatif: simulasi kejadian nyata, analisis sebab-akibat berantai (fisika, biosfer, peradaban), dan konklusi wawasan realitas gaya Kurzgesagt / What If.',
+    descriptionEn: 'Pure explanatory & speculative cause-and-effect simulations: breakdown of real-world what-if scenarios, scientific chain reactions, and mind-expanding conclusions.',
     group: 'Storytelling & Entertainment',
     groupEn: 'Storytelling & Entertainment',
     subcategories: [
@@ -469,33 +469,34 @@ export const CONTENT_CATEGORIES: ContentCategory[] = [
       },
     ],
     creativeFramework:
-      'PREMISE ESCALATION — Mulai dengan satu premis "bagaimana jika" yang jelas, ' +
-      'lalu escalate konsekuensinya secara logis tapi mengejutkan. ' +
-      'Setiap beat menunjukkan dampak yang semakin besar dari premis awal. ' +
-      'Penonton harus berpikir "oh iya, kalau begitu berarti…" di setiap tahap. ' +
-      'Akhiri dengan konsekuensi terbesar yang belum terpikirkan penonton.',
-    creativeFrameworkEn: 'PREMISE ESCALATION — Start with one clear \'what if\' premise, then escalate logical yet startling chain reactions. Each beat reveals a bigger, unforeseen ripple effect.',
+      'EXPLANATORY SIMULATION & CAUSE-AND-EFFECT (SEBAB-AKIBAT) — Format edukasi eksplanatori spekulatif murni. ' +
+      'DILARANG membuat cerita drama fiksi tokoh atau kisah asmara. ' +
+      'Struktur wajib mengikuti 4 fase sebab-akibat: (1) Pernyataan Hipotesis/Kejadian Awal, ' +
+      '(2) Eksplanasi Efek Fisik Langsung (Detik 0-15), ' +
+      '(3) Kaskade Sebab-Akibat Sistemik & Global (Detik 15-45), dan ' +
+      '(4) Kesimpulan/Konklusi Ilmiah mendalam (Detik 45-60) yang mengungkap fakta mencengangkan tentang dunia nyata.',
+    creativeFrameworkEn: 'EXPLANATORY SIMULATION & CAUSE-AND-EFFECT — Pure educational speculative explainer. Strictly NO fictional character drama. Must follow the 4-phase consequence escalation: (1) Core Hypothesis / Event, (2) Direct Physical Cause-and-Effect, (3) Systemic & Planetary Cascades, and (4) Scientific / Philosophical Conclusion.',
     hookStyle:
-      'Teks bold "BAGAIMANA JIKA…" diikuti premis yang langsung memicu rasa penasaran. Visual pertama menunjukkan dunia "normal" yang akan segera berubah.',
-    hookStyleEn: 'Bold text \'WHAT IF...\' backed by an uncanny visual that turns a familiar everyday rule upside down.',
+      'Teks eksplanatori tajam: "BAGAIMANA JIKA [Skenario Spesifik]?" disertai visual simulasi detik pertama kejadian yang menghentikan scroll.',
+    hookStyleEn: 'Sharp speculative inquiry: \'WHAT IF [Specific Scenario]?\' backed by an immediate physical simulation visual that breaks assumptions.',
     visualGuidance:
-      'Split-screen atau before/after untuk menunjukkan perbedaan realitas. Efek visual surreal untuk menunjukkan perubahan dunia. World-building visual yang detail untuk membuat realitas alternatif terasa nyata.',
-    visualGuidanceEn: 'Split-screen comparisons, surreal environmental world-building, cinematic scale, high contrast before-and-after aesthetics.',
+      'Gaya visual simulasi ilmiah, diagram infografis sinematik, efek fisika partikel realistis, split-screen komparasi peradaban, dan cinematic scale spektakuler.',
+    visualGuidanceEn: 'Scientific simulation aesthetics, cinematic infographic cutaways, realistic particle physics, civilizational split-screens, and grand planetary scales.',
     globalGuidance:
       'Eksplorasi skenario hipotetis berskala global: bagaimana jika gravitasi Bumi hilang 10 detik, bagaimana jika internet mati permanen, atau bagaimana jika manusia bisa melihat frekuensi suara secara visual.',
     globalGuidanceEn:
       'Explore planetary what-if scenarios: temporary loss of gravity, global digital blackouts, or visible soundwaves — combining scientific wonder with cinematic realism.',
     suggestedDuration: ['30-60s', '1-3min'],
     exampleIdeas: [
-      'Bagaimana jika gravitasi bumi tiba-tiba menjadi setengahnya — apa yang terjadi pada kehidupan sehari-hari?',
-      'Bagaimana jika Indonesia tidak pernah dijajah — seperti apa kota-kota kita sekarang?',
-      'Bagaimana jika setiap orang hanya bisa berbohong sekali seumur hidup?',
+      'BAGAIMANA JIKA Gravitasi Bumi Hilang Selama 10 Detik? Analisis rantai kehancuran atmosfer, pelepasan rotasi kinetik, dan konklusi stabilitas orbit.',
+      'BAGAIMANA JIKA Seluruh Es Kutub Mencair Seketika? Peta baru peradaban pesisir dunia, penghentian sirkulasi arus laut, dan kesimpulan iklim.',
+      'BAGAIMANA JIKA Oksigen Bumi Bertambah 2 Kali Lipat? Dampak fisiologis raksasa serangga, risiko kebakaran atmosfer spontan, dan konklusi evolusi.',
     ],
     exampleIdeasEn: [
-      "What if Earth's gravity suddenly halved for 24 hours — how daily life and transit collapse",
-      "What if historical ancient empires survived and evolved into hyper-modern cybernetic metropolises",
-      "What if humans could only tell one lie in their entire lifetime before losing the ability to speak?"
-],
+      'WHAT IF Earth Lost Gravity for 10 Seconds? Atmospheric decompression chain, kinetic inertia release, and orbital stability conclusion.',
+      'WHAT IF All Polar Ice Melted Instantly? Sea-level displacement of world coastlines, oceanic conveyor shutdown, and climate equilibrium conclusion.',
+      'WHAT IF Earth Oxygen Doubled? Insect gigantism physiology, spontaneous atmospheric wildfires, and evolutionary takeaway.',
+    ],
     icon: 'HelpCircle',
   },
 

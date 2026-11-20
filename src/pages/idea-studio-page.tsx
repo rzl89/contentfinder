@@ -236,21 +236,21 @@ export const IdeaStudioPage: React.FC = () => {
     try {
       const formatted = `=== ${idea.title.toUpperCase()} ===
 Format: ${idea.visualStyle} | Durasi: ${idea.estimatedDuration}
-Kategori: ${activeCategory.name}
+Kategori: ${activeCategory.name} (${archetypeLabels.badge})
 
 🎣 HOOK:
 ${idea.hook}
 
-📖 PREMIS:
+📌 ${archetypeLabels.primaryLabel.toUpperCase()}:
 ${idea.premise}
 
-📝 SINOPSIS:
+📋 ${archetypeLabels.secondaryLabel.toUpperCase()}:
 ${idea.synopsis}
 
-🎬 STORY BEATS:
+🎬 ${archetypeLabels.beatsLabel.toUpperCase()}:
 ${idea.storyBeats.map((b) => `• ${b}`).join('\n')}
 
-⚡ ENDING / PAYOFF:
+⚡ ${archetypeLabels.endingLabel.toUpperCase()}:
 ${idea.ending}
 
 📍 LOKASI & SETTING:

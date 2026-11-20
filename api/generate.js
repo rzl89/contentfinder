@@ -198,19 +198,39 @@ export default async function handler(req, res) {
       const isProductAd = storyboardType === 'ad';
 
       // ── CONTENT ARCHETYPE DETECTION ──────────────────────────────────────
-      // Determine which of the 4 production engines to use based on category ID.
-      const categoryId = payload?.categoryId || '';
+      // Determine which of the 4 production engines to use based on category ID or category Name.
+      let categoryId = payload?.categoryId || '';
+      const catName = (payload?.categoryName || '').toLowerCase();
+      if (!categoryId && catName) {
+        if (catName.includes('bagaimana jika') || catName.includes('what if')) categoryId = 'what-if';
+        else if (catName.includes('fakta') || catName.includes('edukatif') || catName.includes('curiosity')) categoryId = 'educational-facts';
+        else if (catName.includes('misteri') || catName.includes('horror') || catName.includes('unexplained')) categoryId = 'mystery-horror';
+        else if (catName.includes('masak') || catName.includes('cooking')) categoryId = 'howto-cooking';
+        else if (catName.includes('diy') || catName.includes('kerajinan')) categoryId = 'howto-diy';
+        else if (catName.includes('survival')) categoryId = 'howto-survival';
+        else if (catName.includes('reparasi') || catName.includes('repair')) categoryId = 'howto-repair';
+        else if (catName.includes('hacks') || catName.includes('rumah tangga')) categoryId = 'howto-home-hacks';
+        else if (catName.includes('kebun') || catName.includes('gardening')) categoryId = 'howto-gardening';
+        else if (catName.includes('outdoor')) categoryId = 'howto-outdoor';
+        else if (catName.includes('sains') || catName.includes('science')) categoryId = 'howto-science';
+        else if (catName.includes('seni') || catName.includes('art')) categoryId = 'howto-art';
+        else if (catName.includes('produktivitas') || catName.includes('productivity')) categoryId = 'howto-productivity';
+        else if (catName.includes('restorasi')) categoryId = 'satisfying-restoration';
+        else if (catName.includes('afiliasi') || catName.includes('affiliate')) categoryId = 'affiliate-marketing';
+        else if (catName.includes('produk') || catName.includes('product')) categoryId = 'product-story';
+      }
+
       const ARCHETYPE_MAP = {
-        // Commercial
+        // Commercial (2)
         'product-story': 'commercial', 'affiliate-marketing': 'commercial',
-        // How-To
+        // How-To (11)
         'howto-cooking': 'how_to', 'howto-diy': 'how_to', 'howto-survival': 'how_to',
         'howto-repair': 'how_to', 'howto-home-hacks': 'how_to', 'howto-gardening': 'how_to',
         'howto-outdoor': 'how_to', 'howto-science': 'how_to', 'howto-art': 'how_to',
         'howto-productivity': 'how_to', 'satisfying-restoration': 'how_to',
-        // Thought Experiment
+        // Thought Experiment / Explanatory (3)
         'what-if': 'thought_experiment', 'educational-facts': 'thought_experiment',
-        'mystery-horror': 'thought_experiment', 'scenic-aesthetic': 'thought_experiment',
+        'mystery-horror': 'thought_experiment',
       };
       const contentArchetype = isProductAd ? 'commercial' : (ARCHETYPE_MAP[categoryId] || 'storytelling');
 
@@ -338,40 +358,46 @@ Respond with a JSON object containing a single key "ideas" which is an array of 
 }`;
 
       } else if (contentArchetype === 'thought_experiment') {
-        // ── THOUGHT EXPERIMENT: What-If / Educational / Mystery / Science ──
-        archetypeSystemPrompt = `You are "MindExpander-Pro", an elite educational short-form video scriptwriter channeling the voice and intellectual depth of Kurzgesagt, Vsauce, and What If channel. You transform abstract scientific questions into visually compelling, fact-grounded thought experiments and educational content.
-Your job: Convert the user's category, theme, and parameters into EXACTLY ${count} production-ready, diverse EDUCATIONAL THOUGHT EXPERIMENT / INFORMATIONAL VIDEO CONCEPTS.
+        // ── THOUGHT EXPERIMENT / EXPLANATORY: What-If, Educational Facts, Science ──
+        archetypeSystemPrompt = `You are "MindExpander-Pro", an elite scientific explainer and speculative thought-experiment scriptwriter in the style of Kurzgesagt, Vsauce, and What If channel.
+Your job: Convert the user's category, theme, and parameters into EXACTLY ${count} EXPLANATORY SPECULATIVE & FACT-BASED VIDEO CONCEPTS.
+
+CORE CONCEPT REQUIREMENTS (MANDATORY — NON-NEGOTIABLE):
+1. PURE EXPLANATORY FORMAT: Every concept must be an objective, mind-expanding simulation of "WHAT ACTUALLY HAPPENS" if the scenario occurs.
+2. STRICT BAN ON FICTIONAL NARRATIVE DRAMA:
+   - NEVER write a personal story about a high-school student, teenager, romance, or fictional individual.
+   - NEVER create a protagonist undergoing personal/emotional dilemmas.
+   - The focus is the PHENOMENON, the SCIENCE, the SYSTEMIC CASCADE, and HUMAN CIVILIZATION AS A WHOLE.
+3. 4-STAGE SEBAB-AKIBAT (CAUSE & EFFECT) ARC:
+   • Kejadian Awal / Efek Langsung (Detik 0-15): Kejadian fisik nyata yang terjadi di detik/menit pertama.
+   • Sebab-Akibat Sistemik (Detik 15-30): Kaskade domino — bagaimana efek awal merembet ke rantai fisika, biologi, teknologi, atau sosial.
+   • Dampak Skala Global (Detik 30-45): Konsekuensi jangka menengah/panjang berskala planet atau peradaban.
+   • Konklusi & Kesimpulan Ilmiah (Detik 45-60): Insight penutup — paradoks mengejutkan atau fakta realitas dunia nyata yang diungkap oleh eksperimen ini.
+4. Output ONLY valid JSON matching the schema below.
+${outputLanguageInstruction}
 ${foundationalDirective}
-GOLDEN RULES (STRICT):
-1. Output ONLY valid JSON code blocks. Zero prose outside JSON.
-2. THOUGHT EXPERIMENT ARC (4-Phase Consequence Escalation):
-   • Phase 1 — Immediate Effects (detik 0-15): The direct, observable consequence of the hypothesis in the first moments/minutes/hours.
-   • Phase 2 — Systemic Cascade (detik 15-30): How the initial effect ripples through interconnected systems (ecosystem, society, economy, biology).
-   • Phase 3 — Planetary / Long-Term Impact (detik 30-45): Global or civilizational-scale consequences over weeks, years, or millennia.
-   • Phase 4 — Scientific / Philosophical Reflection (detik 45-60): What this reveals about the real world — a surprising truth, counterintuitive fact, or paradigm-shifting perspective.
-3. ABSOLUTE FORBIDDEN: Do NOT write high-school teenage drama. Do NOT create fictional character romance plots. Do NOT make a protagonist going through an emotional journey. The "character" here is HUMANITY, a civilization, a species, or an educated narrator observing consequences.
-4. premise = The core scientific hypothesis or thought experiment question (e.g. "Apa yang terjadi jika gravitasi Bumi tiba-tiba berkurang 10%?").
-5. synopsis = The 4-phase consequence cascade: immediate → systemic → planetary → philosophical insight.
-6. storyBeats = 4 exploration phases as defined above, with specific, real scientific consequences.
-7. GROUNDING: Every consequence must be rooted in real physics, biology, chemistry, history, or social science — no pure fantasy.
-8. DIVERSITY: Each concept must explore a completely different scientific domain (physics, biology, chemistry, astronomy, psychology, history, geopolitics, etc.).
-9. ${outputLanguageInstruction}
 ${historyContext}${anglesContext}
+
 FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects.
 {
   "ideas": [
     {
-      "title": "string (judul dalam format pertanyaan atau pernyataan spekulatif yang memancing rasa ingin tahu)",
-      "hook": "string (Detik 0-3: ajukan hipotesis dengan visual konsekuensi pertama yang mengejutkan)",
-      "premise": "string (hipotesis / pertanyaan ilmiah inti yang dieksplorasi)",
-      "synopsis": "string (rantai konsekuensi 4 fase: langsung → sistemik → planetari → refleksi ilmiah/filosofis)",
-      "storyBeats": ["Fase 1 (Efek Langsung)...", "Fase 2 (Kaskade Sistemik)...", "Fase 3 (Dampak Skala Global)...", "Fase 4 (Insight Ilmiah/Filosofis)..."],
-      "conflict": "string (paradoks atau ketegangan konseptual yang membuat pertanyaan ini menarik)",
-      "ending": "string (fakta mengejutkan atau perspektif baru tentang dunia nyata yang terungkap)",
-      "suggestedLocation": "string",
+      "title": "string (format: 'BAGAIMANA JIKA [Skenario Spesifik]?' atau judul pertanyaan ilmiah tajam)",
+      "hook": "string (Detik 0-3: pertanyaan skenario tajam + visual kejadian awal yang mengejutkan)",
+      "premise": "string (Pernyataan Hipotesis / Kejadian Inti: skenario spekulatif atau pertanyaan ilmiah spesifik)",
+      "synopsis": "string (Eksplanasi Skenario & Sebab-Akibat: penjelasan kejadian berantai dari detik pertama hingga kaskade skala besar)",
+      "storyBeats": [
+        "Fase 1 (Kejadian Awal): [Penjelasan kejadian fisik langsung di detik pertama]...",
+        "Fase 2 (Sebab-Akibat Sistemik): [Rantai domino terhadap lingkungan/teknologi/tubuh manusia]...",
+        "Fase 3 (Dampak Skala Global): [Konsekuensi besar terhadap peradaban/bumi]...",
+        "Fase 4 (Konklusi Ilmiah): [Kesimpulan mendalam dan wawasan baru tentang realitas kita]..."
+      ],
+      "conflict": "string (Paradoks atau tantangan ilmiah terbesar dalam skenario ini)",
+      "ending": "string (Konklusi & Kesimpulan Ilmiah: fakta mencengangkan tentang dunia nyata yang terbukti)",
+      "suggestedLocation": "string (Skala makro/lingkungan ilmiah yang disimulasikan)",
       "localizationNotes": "string",
-      "creativeRationale": "string"
+      "creativeRationale": "string (Alasan mengapa skenario sebab-akibat ini memicu rasa ingin tahu tinggi)"
     }
   ]
 }`;
@@ -579,6 +605,11 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         (idea?.subcategoryId && (idea.subcategoryId.startsWith('affiliate-') || idea.subcategoryId.startsWith('product-')));
 
       // Determine story archetype from idea's category
+      let ideaCatId = idea?.categoryId || '';
+      const ideaTitle = (idea?.title || '').toLowerCase();
+      if (!ideaCatId && (ideaTitle.includes('bagaimana jika') || ideaTitle.includes('what if'))) {
+        ideaCatId = 'what-if';
+      }
       const storyArchetypeMap = {
         'product-story': 'commercial', 'affiliate-marketing': 'commercial',
         'howto-cooking': 'how_to', 'howto-diy': 'how_to', 'howto-survival': 'how_to',
@@ -586,9 +617,9 @@ Entropy Seed: ${creativeEntropy || Date.now()}`;
         'howto-outdoor': 'how_to', 'howto-science': 'how_to', 'howto-art': 'how_to',
         'howto-productivity': 'how_to', 'satisfying-restoration': 'how_to',
         'what-if': 'thought_experiment', 'educational-facts': 'thought_experiment',
-        'mystery-horror': 'thought_experiment', 'scenic-aesthetic': 'thought_experiment',
+        'mystery-horror': 'thought_experiment',
       };
-      const storyArchetype = isAdOrAffiliate ? 'commercial' : (storyArchetypeMap[idea?.categoryId] || 'storytelling');
+      const storyArchetype = isAdOrAffiliate ? 'commercial' : (storyArchetypeMap[ideaCatId] || 'storytelling');
 
       // Target Platform & Aspect Ratio Synchronization
       const platformRaw = (payload?.platform || idea?.platform || '').toLowerCase();
@@ -673,16 +704,16 @@ CRITICAL RULES (FOLLOW STRICTLY):
       // AI Playbook (8-Panel Infographic Storyboard & Video) prompt — archetype-aware
       // For thought_experiment: treat panels as 4 exploration phases × 2 panels each
       const thoughtExperimentPanels = storyArchetype === 'thought_experiment' ? `
-3. 8-PANEL EXPLORATION ARC (Thought Experiment / Educational):
-   - Panel 1 — HIPOTESIS (Wide concept shot): Visualize the core "what if" question. Narrator poses the hypothesis with striking visual metaphor.
-   - Panel 2 — EFEK LANGSUNG (Close dramatic shot): First immediate consequence — what happens in the first seconds/minutes.
-   - Panel 3 — REAKSI MANUSIA (Medium shot): How individuals / communities react in real-time.
-   - Panel 4 — KASKADE SISTEMIK (Infographic / cutaway): Systems breakdown — biology, physics, economy, ecology starting to cascade.
-   - Panel 5 — SKALA GLOBAL (Wide epic shot): Planetary or civilizational-scale impact visualized.
-   - Panel 6 — TITIK KRITIS (Dramatic close-up): The critical turning point — the most surprising or counterintuitive consequence.
-   - Panel 7 — PERSPEKTIF SAINS (Narrator / diagram overlay): Scientific or philosophical insight revealed — what the real world teaches us.
-   - Panel 8 — KONKLUSI (Wide reflective shot): Final thought — what this scenario reveals about reality, human nature, or the universe.
-   FORBIDDEN: No romantic teenage drama. No fictional character emotional journeys. The "character" is HUMANITY or a scientific narrator.` : `
+3. 8-PANEL EXPLANATORY & CAUSE-AND-EFFECT ARC (Thought Experiment / Explanatory):
+   - Panel 1 — PERNYATAAN HIPOTESIS (Wide concept shot): Skenario eksplanatori dibuka ("Bagaimana jika..."). Visualisasi konsep inti.
+   - Panel 2 — KEJADIAN AWAL / SIMULASI (Close dramatic shot): Kejadian fisik nyata yang terjadi di detik/menit pertama saat kondisi berlangsung.
+   - Panel 3 — SEBAB-AKIBAT LANGSUNG (Medium shot): Bagaimana objek, manusia, dan lingkungan sekitar langsung terpengaruh oleh kejadian tersebut.
+   - Panel 4 — KASKADE SEBAB-AKIBAT SISTEMIK (Infographic cutaway): Rantai domino — kegagalan atau perubahan sistem (fisika, biosfer, jaringan teknologi, rantai makanan).
+   - Panel 5 — DAMPAK SKALA BESAR / GLOBAL (Wide epic shot): Visualisasi skala planet, benua, atau peradaban luas.
+   - Panel 6 — TITIK KRITIS SEBAB-AKIBAT (Dramatic angle): Titik balik paling ekstrem atau paradoks yang tak terduga.
+   - Panel 7 — EKSPLANASI SAINS / MEKANISME (Narrator / diagram overlay): Penjelasan sains mengapa ini terjadi berdasarkan hukum alam nyata.
+   - Panel 8 — KONKLUSI & KESIMPULAN (Wide reflective shot): Kesimpulan ilmiah penutup — apa arti eksperimen ini bagi pemahaman dunia nyata kita.
+   STRICT RULE: DILARANG menulis drama anak sekolah, kisah romansa, atau fiksi karakter individu. Subjek utamanya adalah fenomena, hukum alam, dan peradaban.` : `
 3. 8-PANEL NARRATIVE ARC:
    - Panel 1 — Opener (Wide establishing shot): Introduce the character, environment, goal, and important key object.
    - Panel 2 — Preparation (Medium shot): Character prepares, reveal necessary tools.
