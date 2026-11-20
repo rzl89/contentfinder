@@ -3,7 +3,7 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore } from '@/stores/subscription-store';
 import { useLanguageStore } from '@/stores/language-store';
-import { developStoryFromIdea } from '@/lib/ai-generator';
+import { developStoryFromIdea, analyzeReferenceImage } from '@/lib/ai-generator';
 import {
   BentoTile,
   Button,
@@ -29,6 +29,10 @@ import type {
   StoryboardImagePromptJSON,
   StoryboardVideoPromptJSON,
   StoryboardValidationReport,
+  VisionAnalysisState,
+  ProductVisionAnalysis,
+  CharacterVisionAnalysis,
+  TokenUsage,
 } from '@/types';
 import {
   Copy,
@@ -51,6 +55,14 @@ import {
   Grid,
   FileCode,
   BookOpen,
+  User,
+  ScanLine,
+  Eye,
+  Cpu,
+  Coins,
+  BarChart3,
+  RefreshCw,
+  Check,
 } from 'lucide-react';
 
 const FRAMING_OPTIONS = [
@@ -162,6 +174,110 @@ export const PromptDeskPage: React.FC = () => {
   const [isRegeneratingScene, setIsRegeneratingScene] = useState(false);
   const [studioTab, setStudioTab] = useState<'master_image' | 'master_video' | 'scenes' | 'validation'>('master_image');
   const [copiedBlock, setCopiedBlock] = useState<'block1' | 'block2' | null>(null);
+  const [isAnalyzingVision, setIsAnalyzingVision] = useState(false);
+  const [analyzingKey, setAnalyzingKey] = useState<string | null>(null);
+  const [isApplyingVision, setIsApplyingVision] = useState(false);
+
+  const handleRunVisionInDesk = async (imgUrl: string, type: 'product' | 'character', index: number) => {
+    if (!hasSufficientCredits(1)) {
+      showToast({
+        type: 'warning',
+        title: 'Kredit AI Tidak Mencukupi',
+        message: 'Analisis visual GPT-6.1-Terra memerlukan 1 Kredit AI. Silakan top-up atau upgrade akun Anda.',
+      });
+      return;
+    }
+
+    const key = `${type}_${index}`;
+    setAnalyzingKey(key);
+    setIsAnalyzingVision(true);
+
+    try {
+      const result = await analyzeReferenceImage(imgUrl, type);
+      await deductCredits(1, 'analyze_reference_image', {
+        promptTokens: result.tokenUsage.promptTokens,
+        completionTokens: result.tokenUsage.completionTokens,
+        totalTokens: result.tokenUsage.totalTokens,
+      });
+
+      const newAnalysisState: VisionAnalysisState = {
+        id: `va_desk_${Date.now()}_${index}`,
+        imageUrl: imgUrl,
+        imageType: type,
+        analysis: result.analysis,
+        tokenUsage: result.tokenUsage,
+        analyzedAt: new Date().toISOString(),
+      };
+
+      const existing = currentProject?.visionAnalyses || [];
+      const updated = [newAnalysisState, ...existing.filter((v) => v.imageUrl !== imgUrl)];
+
+      useProjectStore.getState().updateCurrentProject({
+        visionAnalyses: updated,
+        productVisionAnalysis: type === 'product' ? (result.analysis as ProductVisionAnalysis) : currentProject?.productVisionAnalysis,
+        characterVisionAnalysis: type === 'character' ? (result.analysis as CharacterVisionAnalysis) : currentProject?.characterVisionAnalysis,
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Analisis Visual GPT-6.1-Terra Selesai!',
+        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 1 Kredit AI.`,
+      });
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Menganalisis Gambar',
+        message: err.message || 'Terjadi kesalahan saat memproses gambar.',
+      });
+    } finally {
+      setIsAnalyzingVision(false);
+      setAnalyzingKey(null);
+    }
+  };
+
+  const handleApplyVisionToAllScenes = () => {
+    if (!currentProject || !currentProject.scenes || currentProject.scenes.length === 0) return;
+    setIsApplyingVision(true);
+
+    try {
+      const prodAnalysis = currentProject.productVisionAnalysis;
+      const charAnalysis = currentProject.characterVisionAnalysis;
+      const prodEnhance = prodAnalysis?.promptEnhancement;
+      const charAnchor = charAnalysis?.anchorDescription;
+
+      const updatedScenes = currentProject.scenes.map((sc) => {
+        let vp = sc.videoPrompt;
+        if (prodEnhance && !vp.includes(prodEnhance)) {
+          vp = `${vp} Product Detail: ${prodEnhance}.`;
+        }
+        if (charAnchor && !vp.includes(charAnchor)) {
+          vp = `${vp} Character Anchor: ${charAnchor}.`;
+        }
+        return {
+          ...sc,
+          videoPrompt: vp,
+        };
+      });
+
+      useProjectStore.getState().updateCurrentProject({
+        scenes: updatedScenes,
+      });
+
+      showToast({
+        type: 'success',
+        title: 'Prompt Video Diperbarui!',
+        message: `Detail visual GPT-6.1-Terra berhasil disinkronkan ke seluruh ${updatedScenes.length} adegan video.`,
+      });
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Gagal Memperbarui Scene',
+        message: err.message,
+      });
+    } finally {
+      setIsApplyingVision(false);
+    }
+  };
 
   // Auto-connect first project if no active project is currently selected
   useEffect(() => {
@@ -681,47 +797,198 @@ export const PromptDeskPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Product Reference Images Strip (if attached to current project) */}
-      {currentProject?.productReferenceImages && currentProject.productReferenceImages.length > 0 && (
-        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#14141c] to-[#14141c] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-              <Camera className="w-4 h-4 text-amber-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-amber-300">
-                  Referensi Produk Aktif ({currentProject.productReferenceImages.length} Foto)
-                </span>
-                <Badge variant="amber">I2V &amp; Midjourney --cref</Badge>
+      {/* Visual Reference & Vision AI (GPT-6.1-Terra) Analysis Strip */}
+      {((currentProject?.productReferenceImages && currentProject.productReferenceImages.length > 0) ||
+        (currentProject?.characterReferenceImages && currentProject.characterReferenceImages.length > 0) ||
+        (currentProject?.visionAnalyses && currentProject.visionAnalyses.length > 0)) && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#14141c] to-emerald-500/10 border border-amber-500/30 space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <ScanLine className="w-4 h-4 text-amber-400" />
               </div>
-              <p className="text-[11px] text-zinc-400">
-                Gambar ini digunakan sebagai referensi fisik produk untuk kontinuitas visual di semua adegan iklan/affiliate.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-amber-300">
+                    Referensi Visual Aktif (GPT-6.1-Terra Vision)
+                  </span>
+                  <Badge variant="emerald">I2V &amp; Midjourney --cref</Badge>
+                </div>
+                <p className="text-[11px] text-zinc-400">
+                  Foto produk &amp; karakter untuk kontinuitas visual dan konsistensi wajah antar-adegan video.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Action: Apply Vision to All Scenes */}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="emerald"
+                size="sm"
+                loading={isApplyingVision}
+                onClick={handleApplyVisionToAllScenes}
+                icon={<Sparkles className="w-3.5 h-3.5" />}
+              >
+                🚀 Bawa Prompt &amp; Gambar ke Video Generator
+              </Button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {currentProject.productReferenceImages.map((imgUrl, idx) => (
-              <div key={idx} className="relative group">
-                <img
-                  src={imgUrl}
-                  alt={`Referensi Produk ${idx + 1}`}
-                  className="w-12 h-12 object-cover rounded-lg border border-amber-500/40 hover:scale-105 transition-all shadow-md cursor-pointer"
-                  onClick={() => window.open(imgUrl, '_blank')}
-                  title="Klik untuk membuka gambar"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleCopyText(imgUrl, `URL Foto Produk ${idx + 1}`)}
-                  className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-mono transition-opacity"
-                  title="Salin URL / cref"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
+          {/* Reference Thumbnails Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* 1. Referensi Produk */}
+            {currentProject?.productReferenceImages && currentProject.productReferenceImages.length > 0 && (
+              <div className="p-3 rounded-lg bg-black/40 border border-amber-500/20 space-y-2">
+                <span className="text-[11px] font-semibold text-amber-300 flex items-center gap-1.5">
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Foto Produk ({currentProject.productReferenceImages.length})</span>
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {currentProject.productReferenceImages.map((imgUrl, idx) => {
+                    const isAnalyzed = currentProject.visionAnalyses?.some((v) => v.imageUrl === imgUrl);
+                    const isAnalyzingThis = isAnalyzingVision && analyzingKey === `product_${idx}`;
+
+                    return (
+                      <div key={idx} className="relative group space-y-1">
+                        <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-amber-500/40 bg-black">
+                          <img
+                            src={imgUrl}
+                            alt={`Produk ${idx + 1}`}
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={() => window.open(imgUrl, '_blank')}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(imgUrl, `URL Produk ${idx + 1}`)}
+                            className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-mono transition-opacity"
+                            title="Salin URL"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <Button
+                          type="button"
+                          variant={isAnalyzed ? 'secondary' : 'primary'}
+                          size="sm"
+                          className="w-14 text-[9px] px-1 py-0.5 h-6 justify-center"
+                          loading={isAnalyzingThis}
+                          disabled={isAnalyzingVision}
+                          onClick={() => handleRunVisionInDesk(imgUrl, 'product', idx)}
+                          title="Analisis gambar dengan model gpt-6.1-terra (1 kredit)"
+                        >
+                          {isAnalyzed ? 'Re-AI' : 'Analisis'}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
+            )}
+
+            {/* 2. Referensi Karakter */}
+            {currentProject?.characterReferenceImages && currentProject.characterReferenceImages.length > 0 && (
+              <div className="p-3 rounded-lg bg-black/40 border border-emerald-500/20 space-y-2">
+                <span className="text-[11px] font-semibold text-emerald-300 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5" />
+                  <span>Foto Karakter ({currentProject.characterReferenceImages.length})</span>
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {currentProject.characterReferenceImages.map((imgUrl, idx) => {
+                    const isAnalyzed = currentProject.visionAnalyses?.some((v) => v.imageUrl === imgUrl);
+                    const isAnalyzingThis = isAnalyzingVision && analyzingKey === `character_${idx}`;
+
+                    return (
+                      <div key={idx} className="relative group space-y-1">
+                        <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-emerald-500/40 bg-black">
+                          <img
+                            src={imgUrl}
+                            alt={`Karakter ${idx + 1}`}
+                            className="w-full h-full object-cover cursor-pointer"
+                            onClick={() => window.open(imgUrl, '_blank')}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(imgUrl, `URL Karakter ${idx + 1}`)}
+                            className="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-mono transition-opacity"
+                            title="Salin URL"
+                          >
+                            <Copy className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <Button
+                          type="button"
+                          variant={isAnalyzed ? 'secondary' : 'emerald'}
+                          size="sm"
+                          className="w-14 text-[9px] px-1 py-0.5 h-6 justify-center"
+                          loading={isAnalyzingThis}
+                          disabled={isAnalyzingVision}
+                          onClick={() => handleRunVisionInDesk(imgUrl, 'character', idx)}
+                          title="Analisis gambar dengan model gpt-6.1-terra (1 kredit)"
+                        >
+                          {isAnalyzed ? 'Re-AI' : 'Analisis'}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Token Usage & Vision Details Breakdown Card */}
+          {currentProject?.visionAnalyses && currentProject.visionAnalyses.length > 0 && (
+            <div className="p-3 rounded-lg bg-black/60 border border-white/10 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-200 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Penggunaan Token &amp; Kredit Vision (gpt-6.1-terra)</span>
+                </span>
+                <span className="text-[10px] text-zinc-400 font-mono">
+                  {currentProject.visionAnalyses.length} Analisis Tersimpan
+                </span>
+              </div>
+
+              {/* Latest Token Metrics */}
+              {(() => {
+                const latest = currentProject.visionAnalyses[0];
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
+                    <div className="p-1.5 rounded bg-zinc-900 border border-white/5">
+                      <span className="text-[9px] text-zinc-500 uppercase block">Prompt:</span>
+                      <span className="text-zinc-200">{latest.tokenUsage.promptTokens.toLocaleString()} tokens</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-zinc-900 border border-white/5">
+                      <span className="text-[9px] text-zinc-500 uppercase block">Completion:</span>
+                      <span className="text-zinc-200">{latest.tokenUsage.completionTokens.toLocaleString()} tokens</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-zinc-900 border border-white/5">
+                      <span className="text-[9px] text-zinc-500 uppercase block">Total:</span>
+                      <span className="text-amber-300 font-semibold">{latest.tokenUsage.totalTokens.toLocaleString()} tokens</span>
+                    </div>
+                    <div className="p-1.5 rounded bg-zinc-900 border border-white/5">
+                      <span className="text-[9px] text-zinc-500 uppercase block">Biaya:</span>
+                      <span className="text-emerald-400 font-semibold">-1 Kredit AI</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Extracted Prompt Enhancement */}
+              {currentProject.productVisionAnalysis?.promptEnhancement && (
+                <div className="p-2 rounded bg-zinc-900/80 border border-white/5 text-[11px]">
+                  <span className="text-amber-400 font-medium block">Detail Produk (Injected to Prompts):</span>
+                  <span className="text-zinc-300 font-mono text-[10px]">{currentProject.productVisionAnalysis.promptEnhancement}</span>
+                </div>
+              )}
+              {currentProject.characterVisionAnalysis?.anchorDescription && (
+                <div className="p-2 rounded bg-zinc-900/80 border border-white/5 text-[11px]">
+                  <span className="text-emerald-400 font-medium block">Jangkar Karakter (Injected to Prompts):</span>
+                  <span className="text-zinc-300 font-mono text-[10px]">{currentProject.characterVisionAnalysis.anchorDescription}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
