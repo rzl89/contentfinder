@@ -545,27 +545,12 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
       // Choose prompt based on category
       const activeBasePrompt = isAdOrAffiliate ? flowStoryboardAdPrompt : aiPlaybookPrompt;
 
-      // Use admin-defined system prompt override if set; otherwise use category-specialized prompt
-      const systemPrompt = adminSystemPromptOverride
-        ? `${adminSystemPromptOverride}
-
---- DYNAMIC CONTEXT (injected per request) ---
-Category Type: ${isAdOrAffiliate ? 'Advertisement & Affiliate Commercial (9-Panel FlowStoryboard)' : 'How-To / Storytelling (8-Panel Infographic AI Playbook)'}
-Target scene count: ${isAdOrAffiliate ? effectiveSceneCount : 8}
-Duration: ${totalSec} Seconds
-Dialogue language: ${languageInstruction}
-Output language: ${storyOutputLangInstruction}
-Target AI video model: ${isAdOrAffiliate ? targetModel : aiPlaybookEngine}
-${vendorAlignmentBlock}${storyFoundationalDirective}`
-        : `${activeBasePrompt}
-
-Respond ONLY with a valid JSON object matching this structure:
-{
+      const adJsonSchema = `{
   "planSummary": [
-    "Style and Aspect Ratio: ...",
-    "Narrative arc and beat structure: ...",
-    "On-screen typography plan: ...",
-    "Voice-over plan (8 lines, 5-12 words each): ..."
+    "Style: Commercial | Aspect Ratio: 16:9",
+    "Narrative arc: 9-panel sequential grid layout (Panel 1 Hook to Panel 9 End-Card)",
+    "On-screen typography: Minimal premium rule (max 3 placements, <= 6 words each)",
+    "Timeline & Audio: Exactly 10.0s total runtime, ~50% VO coverage (max 15 words)"
   ],
   "character": {
     "name": "string",
@@ -588,137 +573,6 @@ Respond ONLY with a valid JSON object matching this structure:
     "rules": ["rule1", "rule2"]
   },
   "scenes": [
-    {
-      "sceneNumber": 1,
-      "beatTitle": "string",
-      "purpose": "string",
-      "summary": "string",
-      "action": "string (specific kinetic action)",
-      "reaction": "string (character reaction)",
-      "timeHint": "string (e.g. 1s or 1.5s)",
-      "keyObject": "string (primary focal tool or prop)",
-      "emotion": "string (e.g. Excited, Focused, Amazed)",
-      "voiceoverLine": "string (5-12 words voiceover line)",
-      "location": {
-        "environmentType": "indoor",
-        "description": "string",
-        "timeOfDay": "string",
-        "weather": "string"
-      },
-      "characterActions": "string",
-      "camera": {
-        "shot": "string",
-        "angle": "string",
-        "movement": "string",
-        "framing": "string"
-      },
-      "lighting": "string",
-      "dialogue": "string",
-      "narration": "string",
-      "continuityAnchors": ["string"],
-      "imagePrompt": "string in English",
-      "videoPrompt": "string in English",
-      "negativePrompt": "string"
-    }
-  ],
-  "imagePromptJson": {
-    "task": "${isAdOrAffiliate ? '9-panel storyboard grid' : '8-panel infographic storyboard poster, single image'}",
-    "style": "string",
-    "aspect_ratio": "16:9",
-    "header": {
-      "video_title": "string",
-      "total_video_time": "${totalSec} Seconds | ${isAdOrAffiliate ? '9' : '8'} SHOTS",
-      "keywords": ["keyword1", "keyword2", "keyword3"],
-      "legend_icons": ["ACTION", "REACTION", "TIME", "KEY OBJECT", "MAIN CHARACTER"]
-    },
-    "grid_layout": {
-      "total_panels": ${isAdOrAffiliate ? 9 : 8},
-      "rows": ${isAdOrAffiliate ? 3 : 8},
-      "columns": ${isAdOrAffiliate ? 3 : 1},
-      "reading_order": "top to bottom, vertical sequence",
-      "panel_borders": "clean black borders with white spacing",
-      "panel_numbers": "small clear number badges"
-    },
-    "global_consistency": {
-      "anchor_description": "ONE exact detailed string reused across all panels",
-      "color_palette": "string",
-      "lighting": "string",
-      "environment": "string"
-    },
-    "on_screen_text": {
-      "rule": "minimal typography for panel titles and headers",
-      "placements": [
-        { "panel": 1, "text": "Header / Hook", "style": "bold modern sans-serif" }
-      ]
-    },
-    "ingredients_references": [
-      { "id": "REF_CHARACTER_01", "description": "exact anchor description", "used_in_panels": [1,2,3,4,5,6,7,8] }
-    ],
-    "panels": [
-      {
-        "panel": 1,
-        "beat": "string",
-        "shot_type": "string",
-        "camera": "string",
-        "description": "must include anchor_description",
-        "action": "string",
-        "reaction": "string",
-        "time_hint": "1s",
-        "key_object": "string",
-        "emotion": "string",
-        "voiceover": "string"
-      }
-    ],
-    "negative_prompt": "weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
-  },
-  "videoPromptJson": {
-    "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the ${isAdOrAffiliate ? '9' : '8'}-panel storyboard grid",
-    "source_image": "the generated storyboard grid",
-    "style": "string",
-    "aspect_ratio": "16:9",
-    "duration_seconds": ${totalSec},
-    "model_target": "${isAdOrAffiliate ? targetModel : aiPlaybookEngine}",
-    "ingredients_references": ["REF_CHARACTER_01"],
-    "on_screen_text": {
-      "rule": "clean minimal end-card or title only",
-      "placements": []
-    },
-    "timeline": [
-      {
-        "frame_ref": "panel 1",
-        "time": "0.0s-1.0s",
-        "action": "string",
-        "camera_move": "string",
-        "motion_intensity": "string",
-        "transition_to_next": "string",
-        "audio": "string"
-      }
-    ],
-    "audio_design": {
-      "music_mood": "string",
-      "sfx_layers": "string",
-      "voiceover": {
-        "coverage_rule": "8 lines of 5-12 words matching each panel",
-        "voice_match_rule": "voice matches character",
-        "lines": [
-          { "time": "0.0s-1.0s", "line": "short narration line" }
-        ],
-        "total_word_limit": "60-80 words total"
-      }
-    },
-    "consistency_lock": "repeat the EXACT anchor_description",
-    "negative_prompt": "subtitles, captions, logos, watermarks, glitches, character changes, sudden morphing, extra limbs",
-    "closing_directive": "Maintain perfect visual continuity, accurate object placement, realistic motion, and identical character appearance throughout the entire sequence."
-  },
-  "validationReport": {
-    "timingTotal10s": true,
-    "anchorConsistent": true,
-    "ingredientRefsMatch": true,
-    "styleAspectIdentical": true,
-    "onScreenTextRuleCompliant": true,
-    "voiceoverRuleCompliant": true
-  }
-}`;
     {
       "sceneNumber": 1,
       "beatTitle": "string",
@@ -830,6 +684,188 @@ Respond ONLY with a valid JSON object matching this structure:
     "voiceoverRuleCompliant": true
   }
 }`;
+
+      const playbookJsonSchema = `{
+  "planSummary": [
+    "Style and Aspect Ratio: ...",
+    "Narrative arc and beat structure (8 shots): ...",
+    "Infographic typography and header layout: ...",
+    "Voice-over plan (8 lines, 5-12 words each): ..."
+  ],
+  "character": {
+    "name": "string",
+    "role": "string",
+    "appearance": "string",
+    "clothing": "string",
+    "personality": "string",
+    "voiceStyle": "string",
+    "consistencyAnchors": ["anchor1", "anchor2", "anchor3"]
+  },
+  "worldBible": {
+    "name": "string",
+    "environmentType": "urban | suburban | rural | natural | indoor | fantasy | mixed",
+    "description": "string",
+    "timeOfDay": "string",
+    "weather": "string",
+    "moodAndTone": "string",
+    "colorPalette": ["color1", "color2", "color3"],
+    "props": ["prop1", "prop2"],
+    "rules": ["rule1", "rule2"]
+  },
+  "scenes": [
+    {
+      "sceneNumber": 1,
+      "beatTitle": "string",
+      "purpose": "string",
+      "summary": "string",
+      "action": "string (specific kinetic action)",
+      "reaction": "string (character reaction)",
+      "timeHint": "string (e.g. 1s or 1.5s)",
+      "keyObject": "string (primary focal tool or prop)",
+      "emotion": "string (e.g. Excited, Focused, Amazed)",
+      "voiceoverLine": "string (5-12 words voiceover line)",
+      "location": {
+        "environmentType": "indoor",
+        "description": "string",
+        "timeOfDay": "string",
+        "weather": "string"
+      },
+      "characterActions": "string",
+      "camera": {
+        "shot": "string",
+        "angle": "string",
+        "movement": "string",
+        "framing": "string"
+      },
+      "lighting": "string",
+      "dialogue": "string in ${languageInstruction}",
+      "narration": "string",
+      "continuityAnchors": ["string"],
+      "imagePrompt": "string in English",
+      "videoPrompt": "string in English",
+      "negativePrompt": "string"
+    }
+  ],
+  "imagePromptJson": {
+    "task": "8-panel infographic storyboard poster, single image",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "header": {
+      "video_title": "string",
+      "total_video_time": "${totalSec} Seconds | 8 SHOTS",
+      "keywords": ["keyword1", "keyword2", "keyword3"],
+      "legend_icons": ["ACTION", "REACTION", "TIME", "KEY OBJECT", "MAIN CHARACTER"]
+    },
+    "grid_layout": {
+      "total_panels": 8,
+      "rows": 8,
+      "columns": 1,
+      "reading_order": "top to bottom, vertical sequence",
+      "panel_borders": "clean black borders with white spacing",
+      "panel_numbers": "small clear number badges"
+    },
+    "global_consistency": {
+      "anchor_description": "ONE exact detailed string reused across all panels",
+      "color_palette": "string",
+      "lighting": "string",
+      "environment": "string"
+    },
+    "on_screen_text": {
+      "rule": "minimal typography for panel titles and headers",
+      "placements": [
+        { "panel": 1, "text": "Header / Hook", "style": "bold modern sans-serif" }
+      ]
+    },
+    "ingredients_references": [
+      { "id": "REF_CHARACTER_01", "description": "exact anchor description", "used_in_panels": [1,2,3,4,5,6,7,8] }
+    ],
+    "panels": [
+      {
+        "panel": 1,
+        "beat": "string",
+        "shot_type": "string",
+        "camera": "string",
+        "description": "must include anchor_description",
+        "action": "string",
+        "reaction": "string",
+        "time_hint": "1s",
+        "key_object": "string",
+        "emotion": "string",
+        "voiceover": "string"
+      }
+    ],
+    "negative_prompt": "weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
+  },
+  "videoPromptJson": {
+    "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the 8-panel storyboard grid",
+    "source_image": "the generated storyboard grid",
+    "style": "string",
+    "aspect_ratio": "16:9",
+    "duration_seconds": ${totalSec},
+    "model_target": "${aiPlaybookEngine}",
+    "ingredients_references": ["REF_CHARACTER_01"],
+    "on_screen_text": {
+      "rule": "clean minimal end-card or title only",
+      "placements": []
+    },
+    "timeline": [
+      {
+        "frame_ref": "panel 1",
+        "time": "0.0s-1.0s",
+        "action": "string",
+        "camera_move": "string",
+        "motion_intensity": "string",
+        "transition_to_next": "string",
+        "audio": "string"
+      }
+    ],
+    "audio_design": {
+      "music_mood": "string",
+      "sfx_layers": "string",
+      "voiceover": {
+        "coverage_rule": "8 lines of 5-12 words matching each panel",
+        "voice_match_rule": "voice matches character",
+        "lines": [
+          { "time": "0.0s-1.0s", "line": "short narration line" }
+        ],
+        "total_word_limit": "60-80 words total"
+      }
+    },
+    "consistency_lock": "repeat the EXACT anchor_description",
+    "negative_prompt": "subtitles, captions, logos, watermarks, glitches, character changes, sudden morphing, extra limbs",
+    "closing_directive": "Maintain perfect visual continuity, accurate object placement, realistic motion, and identical character appearance throughout the entire sequence."
+  },
+  "validationReport": {
+    "timingTotal10s": true,
+    "anchorConsistent": true,
+    "ingredientRefsMatch": true,
+    "styleAspectIdentical": true,
+    "onScreenTextRuleCompliant": true,
+    "voiceoverRuleCompliant": true
+  }
+}`;
+
+      const targetJsonSchema = isAdOrAffiliate ? adJsonSchema : playbookJsonSchema;
+
+      // Use admin-defined system prompt override if set; otherwise use category-specialized prompt
+      const systemPrompt = adminSystemPromptOverride
+        ? `${adminSystemPromptOverride}
+
+--- DYNAMIC CONTEXT (injected per request) ---
+Category Type: ${isAdOrAffiliate ? 'Advertisement & Affiliate Commercial (9-Panel FlowStoryboard)' : 'How-To / Storytelling (8-Panel Infographic AI Playbook)'}
+Target scene count: ${isAdOrAffiliate ? effectiveSceneCount : 8}
+Duration: ${totalSec} Seconds
+Dialogue language: ${languageInstruction}
+Output language: ${storyOutputLangInstruction}
+Target AI video model: ${isAdOrAffiliate ? targetModel : aiPlaybookEngine}
+${vendorAlignmentBlock}${storyFoundationalDirective}
+
+Respond ONLY with a valid JSON object matching this structure:
+${targetJsonSchema}`
+        : `${activeBasePrompt}
+
+Respond ONLY with a valid JSON object matching this structure:
+${targetJsonSchema}`;
 
       const userPrompt = `Develop complete production package for:
 Title: ${idea.title}

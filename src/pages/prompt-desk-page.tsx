@@ -421,7 +421,7 @@ export const PromptDeskPage: React.FC = () => {
         message:
           lockedCount > 0
             ? `Variasi alur baru diterapkan (${lockedCount} adegan terkunci tetap dipertahankan). (-3 Kredit AI)`
-            : 'Variasi 9 adegan storyboard dan character bible telah dirancang ulang. (-3 Kredit AI)',
+            : `Variasi ${panelCount} adegan storyboard dan character bible telah dirancang ulang. (-3 Kredit AI)`,
       });
       setSelectedSceneIndex(0);
     } catch (err: any) {
@@ -521,11 +521,23 @@ export const PromptDeskPage: React.FC = () => {
     currentProject?.storyboardValidationReport ||
     (currentProject ? validateStoryboardPackage(masterImageJson, masterVideoJson) : ({} as any));
 
+  // Detect format: Playbook (8-panel infographic) vs Commercial (9-panel grid)
+  const panelCount: number = (masterImageJson as any)?.grid_layout?.total_panels ?? (masterImageJson as any)?.panels?.length ?? 9;
+  const isPlaybookFormat = panelCount === 8 || !!(masterImageJson as any)?.header;
+  const videoDuration: number = (masterVideoJson as any)?.duration_seconds ?? 10;
+  const targetModelName: string = (masterVideoJson as any)?.model_target || (isPlaybookFormat ? 'Omni Flesh' : 'Google Flow (Omni Flash)');
+
   const planSummary = currentProject?.storyboardPlanSummary || [
     `Style: ${masterImageJson.style || 'Cinematic'} | Aspect Ratio: ${masterImageJson.aspect_ratio || '16:9'}`,
-    'Narrative arc: 9-panel sequential grid layout (Panel 1 Hook to Panel 9 End-Card)',
-    'On-screen typography: Minimal premium rule (max 3 placements, <= 6 words each)',
-    'Timeline & Audio: Exactly 10.0s total runtime, ~50% VO coverage (max 15 words)',
+    isPlaybookFormat
+      ? `Narrative arc: 8-panel infographic storyboard poster (AI Playbook vertical sequence)`
+      : 'Narrative arc: 9-panel sequential grid layout (Panel 1 Hook to Panel 9 End-Card)',
+    isPlaybookFormat
+      ? 'Header metadata: VIDEO TITLE • TOTAL TIME • Keywords • Legend Icons per panel'
+      : 'On-screen typography: Minimal premium rule (max 3 placements, <= 6 words each)',
+    isPlaybookFormat
+      ? `Timeline & Audio: ${videoDuration}s total runtime, 8 VO lines (5–12 words each)`
+      : 'Timeline & Audio: Exactly 10.0s total runtime, ~50% VO coverage (max 15 words)',
   ];
 
   const handleCopyCodeBlock = async (block: 'block1' | 'block2', jsonContent: any) => {
@@ -537,8 +549,12 @@ export const PromptDeskPage: React.FC = () => {
         type: 'success',
         title: block === 'block1' ? 'CODE BLOCK 1 Tersalin!' : 'CODE BLOCK 2 Tersalin!',
         message: block === 'block1'
-          ? '9-panel storyboard image grid JSON siap ditempel ke AI image generator.'
-          : '10-second video JSON siap digunakan di Google Flow (Omni Flash) atau video AI.',
+          ? isPlaybookFormat
+            ? '8-panel infographic storyboard JSON siap ditempel ke AI image generator.'
+            : '9-panel storyboard image grid JSON siap ditempel ke AI image generator.'
+          : isPlaybookFormat
+            ? `${videoDuration}-second Playbook video JSON siap digunakan di ${(masterVideoJson as any)?.model_target || 'AI video generator'}.`
+            : '10-second video JSON siap digunakan di Google Flow (Omni Flash) atau video AI.',
       });
       setTimeout(() => setCopiedBlock(null), 2500);
     } catch {
@@ -635,7 +651,7 @@ export const PromptDeskPage: React.FC = () => {
             loading={isRegeneratingStoryboard}
             icon={<RotateCw className="w-3.5 h-3.5 text-amber-400" />}
             onClick={handleRegenerateStoryboard}
-            title="Generate ulang seluruh 9 adegan dengan ide saat ini (-3 Kredit AI)"
+            title="Generate ulang seluruh adegan dengan ide saat ini (-3 Kredit AI)"
             className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
           >
             Buat Ulang Storyboard (3 Kredit)
@@ -797,7 +813,7 @@ export const PromptDeskPage: React.FC = () => {
           }`}
         >
           <Grid className="w-4 h-4" />
-          <span>CODE BLOCK 1: Image Grid (9 Panel)</span>
+          <span>CODE BLOCK 1: Image Grid ({panelCount} Panel{isPlaybookFormat ? ' Infographic' : ''})</span>
         </button>
 
         <button
@@ -809,7 +825,7 @@ export const PromptDeskPage: React.FC = () => {
           }`}
         >
           <Film className="w-4 h-4" />
-          <span>CODE BLOCK 2: 10s Video JSON</span>
+          <span>CODE BLOCK 2: {videoDuration}s Video JSON{isPlaybookFormat ? ' (Playbook)' : ''}</span>
         </button>
 
         <button
@@ -845,10 +861,14 @@ export const PromptDeskPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="amber">CODE BLOCK 1</Badge>
-                  <h3 className="text-base font-bold text-white">9-Panel Storyboard Grid Image Prompt</h3>
+                  <h3 className="text-base font-bold text-white">
+                    {isPlaybookFormat ? '8-Panel Infographic Storyboard Poster' : '9-Panel Storyboard Grid Image Prompt'}
+                  </h3>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Prompt gambar tunggal dengan tata letak 3x3 contact sheet bernomor 1–9 dan gutter putih bersih untuk Google Flow, Midjourney, Flux, atau Ideogram.
+                  {isPlaybookFormat
+                    ? 'Infographic storyboard poster 1×8 untuk Midjourney, Flux, Imagen, atau Ideogram. Berisi header metadata, panel legend, dan 8 panel vertikal berurutan.'
+                    : 'Prompt gambar tunggal dengan tata letak 3x3 contact sheet bernomor 1–9 dan gutter putih bersih untuk Google Flow, Midjourney, Flux, atau Ideogram.'}
                 </p>
               </div>
 
@@ -882,30 +902,50 @@ export const PromptDeskPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 3x3 Grid Preview Visual */}
+            {/* Panel Preview — adaptive grid vs vertical list */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span className="font-semibold text-zinc-300">Layout Contact Sheet (3x3 Adaptive Grid):</span>
-                <span className="font-mono text-amber-400">Rasio {masterImageJson.aspect_ratio || '16:9'} • 9 Panel Terstruktur</span>
+                <span className="font-semibold text-zinc-300">
+                  {isPlaybookFormat ? 'Layout Infographic Poster (1×8 Vertical):' : 'Layout Contact Sheet (3×3 Adaptive Grid):'}
+                </span>
+                <span className="font-mono text-amber-400">
+                  Rasio {masterImageJson.aspect_ratio || '16:9'} • {panelCount} Panel {isPlaybookFormat ? 'Infographic' : 'Terstruktur'}
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-black/60 border border-white/5">
+              {/* Playbook: 1-col vertical list; Commercial: 3-col grid */}
+              <div className={`${isPlaybookFormat ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'} p-3 rounded-2xl bg-black/60 border border-white/5`}>
                 {(masterImageJson.panels || []).map((p: any) => (
                   <div
                     key={p.panel}
-                    className="p-3 rounded-xl bg-[#161620] border border-white/10 hover:border-amber-500/40 transition-colors flex flex-col justify-between min-h-[110px]"
+                    className="p-3 rounded-xl bg-[#161620] border border-white/10 hover:border-amber-500/40 transition-colors flex flex-col justify-between min-h-[90px]"
                   >
                     <div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[11px] font-bold">
                           PANEL #{p.panel}
                         </span>
                         <span className="text-[10px] text-zinc-400 font-mono">{p.shot_type}</span>
+                        {/* Playbook extra metadata chips */}
+                        {isPlaybookFormat && p.emotion && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 text-[10px]">{p.emotion}</span>
+                        )}
+                        {isPlaybookFormat && p.time_hint && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-mono text-[10px]">{p.time_hint}</span>
+                        )}
                       </div>
                       <h4 className="text-xs font-semibold text-zinc-200 mt-1 line-clamp-1">{p.beat}</h4>
                       <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
                         {p.description}
                       </p>
+                      {/* Playbook action/reaction/voiceover */}
+                      {isPlaybookFormat && p.action && (
+                        <div className="mt-1.5 flex flex-col gap-0.5">
+                          <span className="text-[10px] text-sky-300"><span className="text-sky-500 font-semibold">ACT:</span> {p.action}</span>
+                          {p.reaction && <span className="text-[10px] text-pink-300"><span className="text-pink-500 font-semibold">REACT:</span> {p.reaction}</span>}
+                          {p.voiceover && <span className="text-[10px] text-amber-200 italic">🎙 {p.voiceover}</span>}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -931,10 +971,16 @@ export const PromptDeskPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="emerald">CODE BLOCK 2</Badge>
-                  <h3 className="text-base font-bold text-white">10-Second Continuous Video JSON Prompt</h3>
+                <h3 className="text-base font-bold text-white">
+                  {isPlaybookFormat
+                    ? `${videoDuration}-Second AI Playbook Video JSON Prompt`
+                    : '10-Second Continuous Video JSON Prompt'}
+                </h3>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
-                  Prompt Image-to-Video presisi 10 detik dengan timeline per panel (1–8: 1.1s, 9: 1.2s), transisi mulus, dan audio/VO rule untuk Google Flow (Omni Flash).
+                  {isPlaybookFormat
+                    ? `Prompt Image-to-Video presisi ${videoDuration} detik dengan 8 timeline shots, transisi mulus, narasi 8 baris VO, dan audio rule untuk ${(masterVideoJson as any)?.model_target || 'AI video generator'}.`
+                    : 'Prompt Image-to-Video presisi 10 detik dengan timeline per panel (1–8: 1.1s, 9: 1.2s), transisi mulus, dan audio/VO rule untuk Google Flow (Omni Flash).'}
                 </p>
               </div>
 
@@ -971,8 +1017,16 @@ export const PromptDeskPage: React.FC = () => {
             {/* Video Timeline Sequencer Preview */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-zinc-400">
-                <span className="font-semibold text-zinc-300">Timeline Sequencer (Total 10.0 Detik):</span>
-                <span className="font-mono text-emerald-400">9 Slices • Panels 1-8 (1.1s) + Panel 9 (1.2s)</span>
+                <span className="font-semibold text-zinc-300">
+                  {isPlaybookFormat
+                    ? `Timeline Sequencer (Total ${videoDuration}.0 Detik):`
+                    : 'Timeline Sequencer (Total 10.0 Detik):'}
+                </span>
+                <span className="font-mono text-emerald-400">
+                  {isPlaybookFormat
+                    ? `8 Shots • ${videoDuration}s AI Playbook Sequence`
+                    : '9 Slices • Panels 1-8 (1.1s) + Panel 9 (1.2s)'}
+                </span>
               </div>
 
               <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
@@ -1412,7 +1466,11 @@ export const PromptDeskPage: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
-                  <span className="text-zinc-300">Durasi total video tepat 10.0s (1.1s x 8 + 1.2s):</span>
+                  <span className="text-zinc-300">
+                    {isPlaybookFormat
+                      ? `Durasi total video tepat ${videoDuration}s (8 shots berurutan):`
+                      : 'Durasi total video tepat 10.0s (1.1s x 8 + 1.2s):'}
+                  </span>
                   <span className="text-emerald-400 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> PASS
                   </span>
@@ -1440,14 +1498,22 @@ export const PromptDeskPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
-                  <span className="text-zinc-300">On-screen text minimal (≤ 3 penempatan, 3–6 kata):</span>
+                  <span className="text-zinc-300">
+                    {isPlaybookFormat
+                      ? 'Header metadata lengkap (title, time, keywords, legend):'
+                      : 'On-screen text minimal (≤ 3 penempatan, 3–6 kata):'}
+                  </span>
                   <span className="text-emerald-400 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> PASS
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
-                  <span className="text-zinc-300">Voiceover light (~50% durasi, ≤ 15 kata total):</span>
+                  <span className="text-zinc-300">
+                    {isPlaybookFormat
+                      ? 'Voiceover 8 baris (5–12 kata per panel, 60–80 kata total):'
+                      : 'Voiceover light (~50% durasi, ≤ 15 kata total):'}
+                  </span>
                   <span className="text-emerald-400 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> PASS
                   </span>
@@ -1455,11 +1521,15 @@ export const PromptDeskPage: React.FC = () => {
               </div>
             </BentoTile>
 
-            {/* How to use in Google Flow Guide Card */}
+            {/* How to use in Google Flow / AI Video Guide Card */}
             <BentoTile className="p-6 border-amber-500/30 bg-[#121218] space-y-4">
               <div className="flex items-center gap-2 pb-3 border-b border-white/10">
                 <Sparkles className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-bold text-white">Panduan Alur Google Flow (Omni Flash)</h3>
+                <h3 className="text-base font-bold text-white">
+                  {isPlaybookFormat
+                    ? `Panduan Alur Produksi Video (${targetModelName})`
+                    : 'Panduan Alur Google Flow (Omni Flash)'}
+                </h3>
               </div>
 
               <div className="space-y-4 text-xs text-zinc-300 leading-relaxed">
@@ -1468,8 +1538,12 @@ export const PromptDeskPage: React.FC = () => {
                     1
                   </span>
                   <div>
-                    <strong className="text-white block">Generate Gambar Storyboard:</strong>
-                    Salin <strong>CODE BLOCK 1</strong>. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan 9 panel contact sheet bersih bernomor 1–9.
+                    <strong className="text-white block">
+                      {isPlaybookFormat ? 'Generate Poster Infographic Storyboard:' : 'Generate Gambar Storyboard:'}
+                    </strong>
+                    {isPlaybookFormat
+                      ? 'Salin CODE BLOCK 1. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan poster vertikal 8-panel infographic yang kaya metadata & emosi visual.'
+                      : 'Salin CODE BLOCK 1. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan 9 panel contact sheet bersih bernomor 1–9.'}
                   </div>
                 </div>
 
@@ -1478,8 +1552,12 @@ export const PromptDeskPage: React.FC = () => {
                     2
                   </span>
                   <div>
-                    <strong className="text-white block">Import ke Google Flow:</strong>
-                    Buka Google Flow, aktifkan mode <strong>OMNI FLASH</strong>. Import foto referensi (jika ada) dan gambar 9-panel storyboard hasil langkah 1.
+                    <strong className="text-white block">
+                      {isPlaybookFormat ? `Import ke AI Video Tool (${targetModelName}):` : 'Import ke Google Flow:'}
+                    </strong>
+                    {isPlaybookFormat
+                      ? `Buka AI Video Generator pilihan Anda (${targetModelName}). Import gambar poster 8-panel hasil langkah 1 sebagai visual keyframe panduan kontinuitas.`
+                      : 'Buka Google Flow, aktifkan mode OMNI FLASH. Import foto referensi (jika ada) dan gambar 9-panel storyboard hasil langkah 1.'}
                   </div>
                 </div>
 
@@ -1488,8 +1566,12 @@ export const PromptDeskPage: React.FC = () => {
                     3
                   </span>
                   <div>
-                    <strong className="text-white block">Generate Video 10 Detik:</strong>
-                    Atur panjang video = 10 detik. Salin dan tempelkan <strong>CODE BLOCK 2</strong>. Klik Generate dan saksikan video 10 detik terangkai utuh!
+                    <strong className="text-white block">
+                      Generate Video {videoDuration} Detik:
+                    </strong>
+                    {isPlaybookFormat
+                      ? `Atur durasi video = ${videoDuration} detik. Salin dan tempelkan CODE BLOCK 2 ke prompt input video generator. Klik Generate untuk merangkai video ${videoDuration} detik naratif!`
+                      : 'Atur panjang video = 10 detik. Salin dan tempelkan CODE BLOCK 2. Klik Generate dan saksikan video 10 detik terangkai utuh!'}
                   </div>
                 </div>
               </div>
