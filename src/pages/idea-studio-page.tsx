@@ -128,6 +128,12 @@ export const IdeaStudioPage: React.FC = () => {
     }
   }, [currentProject?.id, currentProject?.targetModel]);
 
+  // Auto-sync storyboardType when category changes based on its archetype
+  useEffect(() => {
+    const arch = getContentArchetype(selectedCategoryId);
+    setStoryboardType(arch === 'commercial' ? 'ad' : 'clip');
+  }, [selectedCategoryId]);
+
   // Instant Two-Way Handlers: automatically save parameter modifications to project & studio prefs
   const handleTargetModelChange = (newModelId: string) => {
     setTargetModel(newModelId);
@@ -375,7 +381,8 @@ ${idea.localizationNotes}`;
       // 2. Generate Storyboard scenes, Character Bible & World Bible with model & language alignment
       const isAdOrAffiliate =
         idea.categoryId === 'affiliate-marketing' ||
-        idea.categoryId === 'product-story';
+        idea.categoryId === 'product-story' ||
+        (getContentArchetype(idea.categoryId) === 'commercial' && (idea.storyboardType === 'ad' || storyboardType === 'ad'));
       const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
       const developed = await developStoryFromIdea(
@@ -524,7 +531,8 @@ ${idea.localizationNotes}`;
 
       const isAdOrAffiliate =
         activeCategory.id === 'affiliate-marketing' ||
-        activeCategory.id === 'product-story';
+        activeCategory.id === 'product-story' ||
+        (activeArchetype === 'commercial' && storyboardType === 'ad');
       const sceneCount = isAdOrAffiliate ? 9 : 8;
       const activeModel = targetModel || proj?.targetModel || savedStudioPrefs?.defaultModelId || 'universal-neutral';
       const developed = await developStoryFromIdea(
@@ -588,14 +596,14 @@ ${idea.localizationNotes}`;
     }
   };
 
-  const isAdOrAffiliateCategory =
-    activeCategory.id === 'affiliate-marketing' ||
-    activeCategory.id === 'product-story' ||
-    storyboardType === 'ad';
-
   // Archetype-aware labels for idea cards
   const activeArchetype = getContentArchetype(activeCategory.id);
   const archetypeLabels = getArchetypeLabels(activeArchetype, language as 'id' | 'en');
+
+  const isAdOrAffiliateCategory =
+    activeCategory.id === 'affiliate-marketing' ||
+    activeCategory.id === 'product-story' ||
+    (activeArchetype === 'commercial' && storyboardType === 'ad');
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">

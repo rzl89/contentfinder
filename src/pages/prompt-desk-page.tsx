@@ -49,8 +49,6 @@ import {
   Crown,
   CheckCircle2,
   Grid,
-  FileCode,
-  BookOpen,
 } from 'lucide-react';
 
 const FRAMING_OPTIONS = [
@@ -165,10 +163,10 @@ export const PromptDeskPage: React.FC = () => {
 
   // Sync activeModelId when currentProject changes
   useEffect(() => {
-    if (currentProject?.targetModel && currentProject.targetModel !== activeModelId) {
+    if (currentProject?.targetModel) {
       setActiveModelId(currentProject.targetModel);
     }
-  }, [currentProject?.targetModel]);
+  }, [currentProject?.id]);
 
   // Auto-connect first project if no active project is currently selected
   useEffect(() => {
@@ -1509,6 +1507,28 @@ export const PromptDeskPage: React.FC = () => {
       {/* Tab Content 4: Plan Summary, Validation & Google Flow Guide */}
       {studioTab === 'validation' && (
         <div className="space-y-6">
+          {/* Plan Summary Card */}
+          {planSummary && planSummary.length > 0 && (
+            <BentoTile className="p-6 border-amber-500/20 bg-[#121218] space-y-3">
+              <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base font-bold text-white">
+                  {t('Ringkasan Strategi Produksi Storyboard', 'Production Plan Summary')}
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                {planSummary.map((item, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-[11px] shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="text-zinc-200 leading-relaxed">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </BentoTile>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Self-Validation Report Card */}
             <BentoTile className="p-6 border-emerald-500/30 bg-[#121218] space-y-4">
@@ -1524,30 +1544,54 @@ export const PromptDeskPage: React.FC = () => {
                       ? `Durasi total video tepat ${videoDuration}s (8 shots berurutan):`
                       : 'Durasi total video tepat 10.0s (1.1s x 8 + 1.2s):'}
                   </span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.timingTotal10s !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
                   <span className="text-zinc-300">Anchor description identik di seluruh panel & consistency_lock:</span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.anchorConsistent !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
                   <span className="text-zinc-300">Ingredient references (REF_ IDs) cocok & konsisten:</span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.ingredientRefsMatch !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
                   <span className="text-zinc-300">Style & rasio aspek identik di kedua JSON:</span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.styleAspectIdentical !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
@@ -1556,9 +1600,15 @@ export const PromptDeskPage: React.FC = () => {
                       ? 'Header metadata lengkap (title, time, keywords, legend):'
                       : 'On-screen text minimal (≤ 3 penempatan, 3–6 kata):'}
                   </span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.onScreenTextRuleCompliant !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
@@ -1567,9 +1617,15 @@ export const PromptDeskPage: React.FC = () => {
                       ? 'Voiceover 8 baris (5–12 kata per panel, 60–80 kata total):'
                       : 'Voiceover light (~50% durasi, ≤ 15 kata total):'}
                   </span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> PASS
-                  </span>
+                  {validationReport.voiceoverRuleCompliant !== false ? (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> PASS
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> CHECK
+                    </span>
+                  )}
                 </div>
               </div>
             </BentoTile>

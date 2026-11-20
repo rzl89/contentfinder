@@ -51,10 +51,9 @@ export const PricingPage: React.FC = () => {
     syncSubscriptionWithProfile,
   } = useSubscriptionStore();
 
-  const rawAdminWA =
-    useAdminStore((s) => s.settings.adminWhatsApp) ||
-    useSubscriptionStore((s) => s.adminWhatsApp) ||
-    '6285217975733';
+  const adminWAFromAdmin = useAdminStore((s) => s.settings.adminWhatsApp);
+  const adminWAFromSub = useSubscriptionStore((s) => s.adminWhatsApp);
+  const rawAdminWA = adminWAFromAdmin || adminWAFromSub || '6285217975733';
   const cleanAdminWA = (rawAdminWA.replace(/\D/g, '') || '6285217975733').replace(/^0/, '62');
 
   const duitkuConfig = useAdminStore((s) => s.settings.duitkuConfig);
