@@ -770,9 +770,9 @@ You MUST respond with a valid JSON object matching this schema:
           completionTokens,
           totalTokens,
           modelUsed: 'gpt-6.1-terra',
-          estimatedCreditCost: 1,
+          estimatedCreditCost: 5,
         },
-        estimatedCreditCost: 1,
+        estimatedCreditCost: 5,
       });
     }
 

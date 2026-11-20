@@ -666,9 +666,9 @@ export async function analyzeReferenceImage(
             completionTokens: data.usage?.completionTokens || 240,
             totalTokens: data.usage?.totalTokens || 1060,
             modelUsed: data.modelUsed || 'gpt-6.1-terra',
-            estimatedCreditCost: data.estimatedCreditCost || 1,
+            estimatedCreditCost: data.estimatedCreditCost || 5,
           },
-          creditCost: data.estimatedCreditCost || 1,
+          creditCost: data.estimatedCreditCost || 5,
           modelUsed: data.modelUsed || 'gpt-6.1-terra',
         };
       }
@@ -716,9 +716,9 @@ export async function analyzeReferenceImage(
       completionTokens: 250,
       totalTokens: 1090,
       modelUsed: 'gpt-6.1-terra',
-      estimatedCreditCost: 1,
+      estimatedCreditCost: 5,
     },
-    creditCost: 1,
+    creditCost: 5,
     modelUsed: 'gpt-6.1-terra',
   };
 }

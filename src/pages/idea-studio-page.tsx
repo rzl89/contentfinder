@@ -315,11 +315,11 @@ export const IdeaStudioPage: React.FC = () => {
   };
 
   const handleRunVisionAnalysis = async (imgUrl: string, type: 'product' | 'character', index: number) => {
-    if (!hasSufficientCredits(1)) {
+    if (!hasSufficientCredits(5)) {
       showToast({
         type: 'warning',
         title: 'Kredit AI Tidak Mencukupi',
-        message: 'Analisis visual GPT-6.1-Terra memerlukan 1 Kredit AI. Silakan top-up atau upgrade akun Anda.',
+        message: 'Analisis visual GPT-6.1-Terra memerlukan 5 Kredit AI. Silakan top-up atau upgrade akun Anda.',
       });
       return;
     }
@@ -330,7 +330,7 @@ export const IdeaStudioPage: React.FC = () => {
 
     try {
       const result = await analyzeReferenceImage(imgUrl, type);
-      await deductCredits(1, 'analyze_reference_image', {
+      await deductCredits(5, 'analyze_reference_image', {
         promptTokens: result.tokenUsage.promptTokens,
         completionTokens: result.tokenUsage.completionTokens,
         totalTokens: result.tokenUsage.totalTokens,
@@ -360,7 +360,7 @@ export const IdeaStudioPage: React.FC = () => {
       showToast({
         type: 'success',
         title: 'Analisis Visual GPT-6.1-Terra Selesai!',
-        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 1 Kredit AI. Prompt otomatis diselaraskan.`,
+        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 5 Kredit AI. Prompt otomatis diselaraskan.`,
       });
     } catch (err: any) {
       showToast({
@@ -1315,7 +1315,7 @@ ${idea.localizationNotes}`;
                               onClick={() => handleRunVisionAnalysis(imgUrl, 'product', idx)}
                               icon={analysisState ? <RefreshCw className="w-3 h-3 text-emerald-400" /> : <Eye className="w-3 h-3" />}
                             >
-                              {analysisState ? 'Analisis Ulang (1 Kredit)' : '🔍 Analisis GPT-6.1-Terra (1 Kredit)'}
+                              {analysisState ? 'Analisis Ulang (5 Kredit)' : '🔍 Analisis GPT-6.1-Terra (5 Kredit)'}
                             </Button>
                           </div>
                         );
@@ -1419,7 +1419,7 @@ ${idea.localizationNotes}`;
                               onClick={() => handleRunVisionAnalysis(imgUrl, 'character', idx)}
                               icon={analysisState ? <RefreshCw className="w-3 h-3 text-emerald-400" /> : <Eye className="w-3 h-3" />}
                             >
-                              {analysisState ? 'Analisis Ulang (1 Kredit)' : '🔍 Analisis GPT-6.1-Terra (1 Kredit)'}
+                              {analysisState ? 'Analisis Ulang (5 Kredit)' : '🔍 Analisis GPT-6.1-Terra (5 Kredit)'}
                             </Button>
                           </div>
                         );
@@ -1463,7 +1463,7 @@ ${idea.localizationNotes}`;
                     </div>
                     <div>
                       <span className="text-[10px] text-zinc-500 uppercase block font-mono">Credit Terpakai:</span>
-                      <span className="font-mono text-emerald-400 font-semibold">-1 Kredit AI</span>
+                      <span className="font-mono text-emerald-400 font-semibold">-5 Kredit AI</span>
                     </div>
                   </div>
                 )}

@@ -179,11 +179,11 @@ export const PromptDeskPage: React.FC = () => {
   const [isApplyingVision, setIsApplyingVision] = useState(false);
 
   const handleRunVisionInDesk = async (imgUrl: string, type: 'product' | 'character', index: number) => {
-    if (!hasSufficientCredits(1)) {
+    if (!hasSufficientCredits(5)) {
       showToast({
         type: 'warning',
         title: 'Kredit AI Tidak Mencukupi',
-        message: 'Analisis visual GPT-6.1-Terra memerlukan 1 Kredit AI. Silakan top-up atau upgrade akun Anda.',
+        message: 'Analisis visual GPT-6.1-Terra memerlukan 5 Kredit AI. Silakan top-up atau upgrade akun Anda.',
       });
       return;
     }
@@ -194,7 +194,7 @@ export const PromptDeskPage: React.FC = () => {
 
     try {
       const result = await analyzeReferenceImage(imgUrl, type);
-      await deductCredits(1, 'analyze_reference_image', {
+      await deductCredits(5, 'analyze_reference_image', {
         promptTokens: result.tokenUsage.promptTokens,
         completionTokens: result.tokenUsage.completionTokens,
         totalTokens: result.tokenUsage.totalTokens,
@@ -221,7 +221,7 @@ export const PromptDeskPage: React.FC = () => {
       showToast({
         type: 'success',
         title: 'Analisis Visual GPT-6.1-Terra Selesai!',
-        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 1 Kredit AI.`,
+        message: `Token: ${result.tokenUsage.totalTokens.toLocaleString()} tokens | Biaya: 5 Kredit AI.`,
       });
     } catch (err: any) {
       showToast({
@@ -875,7 +875,7 @@ export const PromptDeskPage: React.FC = () => {
                           loading={isAnalyzingThis}
                           disabled={isAnalyzingVision}
                           onClick={() => handleRunVisionInDesk(imgUrl, 'product', idx)}
-                          title="Analisis gambar dengan model gpt-6.1-terra (1 kredit)"
+                          title="Analisis gambar dengan model gpt-6.1-terra (5 kredit)"
                         >
                           {isAnalyzed ? 'Re-AI' : 'Analisis'}
                         </Button>
@@ -924,7 +924,7 @@ export const PromptDeskPage: React.FC = () => {
                           loading={isAnalyzingThis}
                           disabled={isAnalyzingVision}
                           onClick={() => handleRunVisionInDesk(imgUrl, 'character', idx)}
-                          title="Analisis gambar dengan model gpt-6.1-terra (1 kredit)"
+                          title="Analisis gambar dengan model gpt-6.1-terra (5 kredit)"
                         >
                           {isAnalyzed ? 'Re-AI' : 'Analisis'}
                         </Button>
@@ -968,7 +968,7 @@ export const PromptDeskPage: React.FC = () => {
                     </div>
                     <div className="p-1.5 rounded bg-zinc-900 border border-white/5">
                       <span className="text-[9px] text-zinc-500 uppercase block">Biaya:</span>
-                      <span className="text-emerald-400 font-semibold">-1 Kredit AI</span>
+                      <span className="text-emerald-400 font-semibold">-5 Kredit AI</span>
                     </div>
                   </div>
                 );

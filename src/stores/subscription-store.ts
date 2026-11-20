@@ -254,7 +254,7 @@ export function calculateActionCredits(
     generate_storyboard: 3,
     regenerate_storyboard: 3,
     regenerate_single_scene: 1,
-    analyze_reference_image: 1,
+    analyze_reference_image: 5,
   };
 
   const baseCost = baseCosts[action] ?? 1;

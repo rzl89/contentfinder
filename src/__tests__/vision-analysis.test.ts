@@ -68,10 +68,10 @@ describe('Vision AI (GPT-6.1-Terra) Analysis & Pipeline', () => {
     locked: false,
   };
 
-  it('calculateActionCredits should charge 1 credit for analyze_reference_image', () => {
+  it('calculateActionCredits should charge 5 credits for analyze_reference_image', () => {
     const calc = calculateActionCredits('analyze_reference_image');
-    expect(calc.baseCost).toBe(1);
-    expect(calc.totalCost).toBe(1);
+    expect(calc.baseCost).toBe(5);
+    expect(calc.totalCost).toBe(5);
     expect(calc.isExtended).toBe(false);
   });
 
@@ -80,7 +80,7 @@ describe('Vision AI (GPT-6.1-Terra) Analysis & Pipeline', () => {
 
     expect(result).toBeDefined();
     expect(result.modelUsed).toBe('gpt-6.1-terra');
-    expect(result.creditCost).toBe(1);
+    expect(result.creditCost).toBe(5);
     expect(result.tokenUsage).toBeDefined();
     expect(result.tokenUsage.totalTokens).toBeGreaterThan(0);
     expect(result.tokenUsage.promptTokens).toBeGreaterThan(0);
@@ -96,7 +96,7 @@ describe('Vision AI (GPT-6.1-Terra) Analysis & Pipeline', () => {
 
     expect(result).toBeDefined();
     expect(result.modelUsed).toBe('gpt-6.1-terra');
-    expect(result.creditCost).toBe(1);
+    expect(result.creditCost).toBe(5);
 
     const charAnalysis = result.analysis as CharacterVisionAnalysis;
     expect(charAnalysis.anchorDescription).toBeDefined();
