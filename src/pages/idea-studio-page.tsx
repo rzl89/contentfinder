@@ -5,6 +5,8 @@ import {
   getCategoryById,
   getLocalizedCategories,
   CONTEXT_PRESETS,
+  getContentArchetype,
+  getArchetypeLabels,
 } from '@/context-engine';
 import { MODEL_CAPABILITIES } from '@/lib/model-catalog';
 import { VISUAL_STYLES, getVisualStyleById } from '@/lib/visual-styles-catalog';
@@ -591,6 +593,10 @@ ${idea.localizationNotes}`;
     activeCategory.id === 'product-story' ||
     storyboardType === 'ad';
 
+  // Archetype-aware labels for idea cards
+  const activeArchetype = getContentArchetype(activeCategory.id);
+  const archetypeLabels = getArchetypeLabels(activeArchetype, language as 'id' | 'en');
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       {/* Top Hero Banner */}
@@ -840,16 +846,33 @@ ${idea.localizationNotes}`;
               ]}
             />
 
-            {/* 2. Tipe Storyboard */}
-            <Select
-              label="Tipe Storyboard"
-              value={storyboardType}
-              onChange={(e) => setStoryboardType(e.target.value as 'clip' | 'ad')}
-              options={[
-                { value: 'clip', label: '🎬 Movie, Drama, or Animated Clip' },
-                { value: 'ad', label: '🏷️ Product Ad / Commercial' },
-              ]}
-            />
+            {/* 2. Tipe Storyboard — hidden for non-commercial archetypes; archetype badge shown instead */}
+            {(activeArchetype === 'commercial' || isAdOrAffiliateCategory) ? (
+              <Select
+                label="Tipe Storyboard"
+                value={storyboardType}
+                onChange={(e) => setStoryboardType(e.target.value as 'clip' | 'ad')}
+                options={[
+                  { value: 'clip', label: '🎬 Movie, Drama, or Animated Clip' },
+                  { value: 'ad', label: '🏷️ Product Ad / Commercial' },
+                ]}
+              />
+            ) : (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  {language === 'en' ? 'Content Format (Auto)' : 'Format Konten (Otomatis)'}
+                </label>
+                <div className={`flex items-start gap-3 p-3 rounded-xl border ${archetypeLabels.colorClass}`}>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-xs font-bold tracking-wide">{archetypeLabels.badge}</span>
+                    <p className="text-[11px] opacity-80 mt-0.5 leading-snug">{archetypeLabels.description}</p>
+                  </div>
+                  <span className="text-[10px] opacity-60 shrink-0 mt-0.5">
+                    {language === 'en' ? 'Locked by category' : 'Dikunci oleh kategori'}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* 3. Gaya Visual dengan Preview Thumbnail & Galeri Contoh */}
             <div className="space-y-1.5">
@@ -1160,11 +1183,11 @@ ${idea.localizationNotes}`;
                 {/* Synopsis & Premise */}
                 <div className="space-y-2 text-xs">
                   <div>
-                    <span className="text-zinc-400 font-semibold">{t('Premis Inti: ', 'Core Premise: ')}</span>
+                    <span className="text-zinc-400 font-semibold">{archetypeLabels.primaryLabel}: </span>
                     <span className="text-zinc-200">{idea.premise}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-400 font-semibold">{t('Sinopsis Singkat: ', 'Brief Synopsis: ')}</span>
+                    <span className="text-zinc-400 font-semibold">{archetypeLabels.secondaryLabel}: </span>
                     <span className="text-zinc-300 leading-relaxed">{idea.synopsis}</span>
                   </div>
                 </div>
@@ -1172,7 +1195,7 @@ ${idea.localizationNotes}`;
                 {/* Story Beats */}
                 <div className="space-y-1.5 pt-2 border-t border-white/5">
                   <span className="text-xs font-semibold text-zinc-300 block">
-                    Alur Cerita (Story Beats):
+                    {archetypeLabels.beatsLabel}:
                   </span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                     {idea.storyBeats.map((beat, bIdx) => (
@@ -1190,7 +1213,7 @@ ${idea.localizationNotes}`;
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs border-t border-white/5">
                   <div className="p-2.5 rounded-lg bg-[#14141a] space-y-0.5">
                     <span className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold">
-                      Ending / Payoff
+                      {archetypeLabels.endingLabel}
                     </span>
                     <p className="text-zinc-300 text-[11px]">{idea.ending}</p>
                   </div>

@@ -114,6 +114,40 @@ export interface ContextProfile {
 }
 
 // ---------------------------------------------------------------------------
+// Content Archetype
+// ---------------------------------------------------------------------------
+
+/**
+ * Four top-level content production archetypes.
+ * Determines the system prompt engine, beat structure, and adaptive UI labels.
+ */
+export type ContentArchetype = 'how_to' | 'thought_experiment' | 'commercial' | 'storytelling';
+
+/** Localized display labels for a given archetype */
+export interface ArchetypeLabels {
+  /** Badge label shown in parameter form */
+  badge: string;
+  badgeEn: string;
+  /** Primary field label (replaces "Premis Inti") */
+  primaryLabel: string;
+  primaryLabelEn: string;
+  /** Secondary field label (replaces "Sinopsis Singkat") */
+  secondaryLabel: string;
+  secondaryLabelEn: string;
+  /** Story beats section label */
+  beatsLabel: string;
+  beatsLabelEn: string;
+  /** Ending/payoff section label */
+  endingLabel: string;
+  endingLabelEn: string;
+  /** Short description of what the archetype produces */
+  description: string;
+  descriptionEn: string;
+  /** Tailwind color classes for the badge */
+  colorClass: string;
+}
+
+// ---------------------------------------------------------------------------
 // Content Categories
 // ---------------------------------------------------------------------------
 
