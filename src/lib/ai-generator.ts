@@ -76,7 +76,7 @@ export async function generateContentIdeas(
         systemPromptOverride: admin?.systemPromptOverride?.trim() || undefined,
         payload: {
           model: admin?.defaultModel || 'gpt-6.1-terra',
-          temperature: admin?.temperature || 0.8,
+          temperature: admin?.temperature || 0.9,
           categoryId: config.categoryId || category.id,
           subcategoryId: config.subcategoryId || subcat?.id,
           categoryName: category.name,

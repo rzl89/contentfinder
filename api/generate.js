@@ -80,8 +80,8 @@ export default async function handler(req, res) {
     });
   }
 
-  // Model default: gpt-6.1-terra per user specification
-  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-6.1-terra';
+  // Model default: gpt-4o-mini (reliable, fast, cost-effective)
+  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const { action, payload } = req.body || {};
 
   /**
@@ -452,18 +452,28 @@ FORMAT REQUIREMENT:
 Respond with a JSON object containing a single key "ideas" which is an array of EXACTLY ${count} distinct idea objects with keys: title, hook, premise, synopsis, storyBeats, conflict, ending, suggestedLocation, localizationNotes, creativeRationale.`
         : defaultSystemPromptIdeas;
 
-      const userPrompt = `Generate EXACTLY ${count} uniquely distinct video ideas strictly referencing user parameters:
+      // Build a generation counter from the entropy seed to give the AI a strong uniqueness signal
+      const entropyVal = creativeEntropy || `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const entropyNum = parseInt(entropyVal.toString().replace(/\D/g, '').substring(0, 6), 10) || Math.floor(Math.random() * 999999);
+      const diversityInstruction = effectiveTopic
+        ? `Specific Concept / Keywords: "${effectiveTopic}" — explore a fresh angle not yet covered in history above.`
+        : `No specific topic given — freely explore DIVERSE, UNEXPECTED sub-angles across the full spectrum of this category. Each idea MUST differ in premise, setting, and emotional tone.`;
+
+      const userPrompt = `GENERATION SESSION: #${entropyNum} | Timestamp: ${entropyVal}
+⚠️ UNIQUENESS MANDATE: These ideas MUST be completely different from any previous generation. Use the session number above as a creative seed — start from an unexpected angle that you would not choose by default.
+
 Category: ${categoryName}
 Description: ${categoryDescription || ''}
 Content Archetype: ${contentArchetype} — ${contentArchetype === 'commercial' ? 'High-converting product commercial / affiliate ad' : contentArchetype === 'how_to' ? 'Practical step-by-step tutorial / DIY / demonstration' : contentArchetype === 'thought_experiment' ? 'Educational thought experiment / what-if / informational — NO fictional teen drama, NO romantic storylines' : 'Cinematic narrative / character-driven story / comedy / animation'}
-${effectiveTopic ? `Specific Concept / Idea / Keywords: ${effectiveTopic}` : 'Explore fresh, creative sub-angles for this category'}
+${diversityInstruction}
 Target Platform: ${platform}
 Target Duration: ${duration}
 Visual Style: ${visualStyle}
 Target AI Video Model: ${payload?.targetModel || 'universal-neutral'}
 Target Audience: ${targetAudience}
 Dialogue Language: ${languageInstruction}
-Entropy Seed: ${creativeEntropy || Date.now()}`;
+
+Generate EXACTLY ${count} uniquely distinct video ideas. Every idea must have a different title, different hook angle, and different core concept from each other AND from any history listed above.`;
 
       const { content, modelUsed, usage } = await callOpenAI(
         [
