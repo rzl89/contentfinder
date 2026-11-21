@@ -100,6 +100,10 @@ interface AdminState {
   fetchSystemPrompt: () => Promise<string>;
   saveSystemPrompt: (prompt: string) => Promise<void>;
 
+  // Dynamic Pricing Cloud Sync
+  fetchPricingConfig: () => Promise<{ proPriceMonthly: number; proPriceYearly: number }>;
+  savePricingConfig: (pricing: { proPriceMonthly: number; proPriceYearly: number }) => Promise<void>;
+
   // Real-time synchronization
   initRealtimeSync: () => () => void;
 }
@@ -603,11 +607,55 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     notifyAdminSync('system_prompt_override');
   },
 
+  fetchPricingConfig: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'pricing_config')
+        .maybeSingle();
+
+      if (!error && data && data.value) {
+        const val = data.value as { proPriceMonthly?: number; proPriceYearly?: number };
+        const proPriceMonthly = Number(val.proPriceMonthly) || 59000;
+        const proPriceYearly = Number(val.proPriceYearly) || 499000;
+        get().updateSettings({ proPriceMonthly, proPriceYearly });
+        return { proPriceMonthly, proPriceYearly };
+      }
+    } catch (e) {
+      console.warn('Failed to fetch pricing_config from Supabase', e);
+    }
+    return {
+      proPriceMonthly: get().settings.proPriceMonthly || 59000,
+      proPriceYearly: get().settings.proPriceYearly || 499000,
+    };
+  },
+
+  savePricingConfig: async (pricing) => {
+    const proPriceMonthly = Number(pricing.proPriceMonthly) || 59000;
+    const proPriceYearly = Number(pricing.proPriceYearly) || 499000;
+
+    get().updateSettings({ proPriceMonthly, proPriceYearly });
+
+    try {
+      await supabase.from('system_settings').upsert({
+        key: 'pricing_config',
+        value: { proPriceMonthly, proPriceYearly },
+        updated_at: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to persist pricing_config to Supabase', e);
+    }
+
+    notifyAdminSync('pricing_config');
+  },
+
   initRealtimeSync: () => {
     // 1. Initial fetch from remote Supabase
     void get().fetchPaymentMethods();
     void get().fetchDuitkuConfig();
     void get().fetchSystemPrompt();
+    void get().fetchPricingConfig();
 
     // 2. Multi-tab BroadcastChannel listener
     const bc = getBroadcastChannel();
@@ -620,10 +668,13 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           void get().fetchDuitkuConfig();
         } else if (data.key === 'system_prompt_override') {
           void get().fetchSystemPrompt();
+        } else if (data.key === 'pricing_config') {
+          void get().fetchPricingConfig();
         } else {
           void get().fetchPaymentMethods();
           void get().fetchDuitkuConfig();
           void get().fetchSystemPrompt();
+          void get().fetchPricingConfig();
         }
       }
     };
@@ -663,10 +714,21 @@ export const useAdminStore = create<AdminState>((set, get) => ({
             } else {
               void get().fetchSystemPrompt();
             }
+          } else if (rec?.key === 'pricing_config') {
+            if (rec.value) {
+              const val = rec.value as { proPriceMonthly?: number; proPriceYearly?: number };
+              get().updateSettings({
+                proPriceMonthly: Number(val.proPriceMonthly) || 59000,
+                proPriceYearly: Number(val.proPriceYearly) || 499000,
+              });
+            } else {
+              void get().fetchPricingConfig();
+            }
           } else {
             void get().fetchPaymentMethods();
             void get().fetchDuitkuConfig();
             void get().fetchSystemPrompt();
+            void get().fetchPricingConfig();
           }
         }
       )

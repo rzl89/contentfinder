@@ -195,7 +195,7 @@ export const PRICING_PLANS = {
     description: 'Langganan terjangkau untuk kreator video pendek tanpa batasan kuota.',
     features: [
       '350 Kredit AI / bulan (~70 naskah & storyboard video lengkap)',
-      'Semua 21 Kategori Konten Terbuka Penuh',
+      'Semua 31 Kategori Konten Terbuka Penuh',
       'Opsi Top-Up Kredit tambahan kapan saja mulai Rp 20.000',
       'Akses BYOK (Bring Your Own Key) Direct Video Generation Tanpa Kuota',
       'Story Studio lengkap dengan Continuity Anchors',

@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
       to: '/studio',
       label: t('Content Idea Studio', 'Content Idea Studio'),
       icon: <Lightbulb className="w-4 h-4" />,
-      badge: t('21 Kategori', '21 Categories'),
+      badge: t('31 Kategori', '31 Categories'),
     },
     {
       to: '/projects',

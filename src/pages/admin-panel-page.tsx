@@ -93,6 +93,7 @@ export const AdminPanelPage: React.FC = () => {
     fetchDuitkuConfig,
     saveDuitkuConfig,
     saveSystemPrompt,
+    savePricingConfig,
   } = useAdminStore();
 
   const { projects } = useProjectStore();
@@ -298,7 +299,19 @@ export const AdminPanelPage: React.FC = () => {
       }
     }
 
-    showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan konfigurasi LLM & System Prompt telah disimpan ke cloud dan lokal.' });
+    // Persist dynamic pricing to Supabase cloud sync & broadcast to all clients
+    if (cleanSettings.proPriceMonthly || cleanSettings.proPriceYearly) {
+      try {
+        await savePricingConfig({
+          proPriceMonthly: Number(cleanSettings.proPriceMonthly) || 59000,
+          proPriceYearly: Number(cleanSettings.proPriceYearly) || 499000,
+        });
+      } catch (e) {
+        console.warn('Failed cloud sync for pricing config', e);
+      }
+    }
+
+    showToast({ type: 'success', title: 'Pengaturan Disimpan', message: 'Semua perubahan konfigurasi LLM, Harga & System Prompt telah disimpan ke cloud dan tersinkronisasi realtime.' });
   };
 
   // Sync payment methods & Duitku config from Supabase on mount

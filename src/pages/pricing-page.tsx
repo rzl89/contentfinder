@@ -39,7 +39,7 @@ export const PricingPage: React.FC = () => {
   const location = useLocation();
   const { showToast } = useToast();
   const { language, t } = useLanguageStore();
-  const { fetchPaymentMethods, fetchDuitkuConfig } = useAdminStore();
+  const { fetchPaymentMethods, fetchDuitkuConfig, fetchPricingConfig } = useAdminStore();
   const { user, profile } = useAuthStore();
   const {
     subscription,
@@ -50,6 +50,13 @@ export const PricingPage: React.FC = () => {
     getRemainingTrialHours,
     syncSubscriptionWithProfile,
   } = useSubscriptionStore();
+
+  const { proPriceMonthly = 59000, proPriceYearly = 499000 } = useAdminStore((s) => s.settings);
+
+  // Dynamic pricing calculations
+  const monthlyEquivalent = Math.round(proPriceYearly / 12);
+  const yearlySavings = (proPriceMonthly * 12) - proPriceYearly;
+  const discountPct = Math.max(1, Math.round((yearlySavings / (proPriceMonthly * 12)) * 100));
 
   const adminWAFromAdmin = useAdminStore((s) => s.settings.adminWhatsApp);
   const adminWAFromSub = useSubscriptionStore((s) => s.adminWhatsApp);
@@ -82,11 +89,12 @@ export const PricingPage: React.FC = () => {
   }>({ type: null, orderId: null, message: '' });
   const [isCheckingReturnStatus, setIsCheckingReturnStatus] = useState(false);
 
-  // Sync dynamic payment methods and Duitku config on mount
+  // Sync dynamic payment methods, Duitku config, and pricing config on mount
   useEffect(() => {
     void fetchPaymentMethods();
     void fetchDuitkuConfig();
-  }, [fetchPaymentMethods, fetchDuitkuConfig]);
+    void fetchPricingConfig();
+  }, [fetchPaymentMethods, fetchDuitkuConfig, fetchPricingConfig]);
 
   // Keep customer form synced with user
   useEffect(() => {
@@ -177,7 +185,7 @@ export const PricingPage: React.FC = () => {
       return;
     }
 
-    const price = billingCycle === 'yearly' ? PRICING_PLANS.pro.yearlyPrice : PRICING_PLANS.pro.monthlyPrice;
+    const price = billingCycle === 'yearly' ? proPriceYearly : proPriceMonthly;
     setIsProcessingDuitku(true);
 
     try {
@@ -290,8 +298,8 @@ export const PricingPage: React.FC = () => {
         </h1>
         <p className="text-gray-400 text-sm sm:text-base">
           {t(
-            'Mulai dengan Free Trial 24 Jam untuk mencoba 3 kategori unggulan dan storyboard studio. Lanjutkan dengan langganan terjangkau mulai dari Rp 59.000 / bulan tanpa kartu kredit rumit — bayar via QRIS, BCA, Mandiri, atau E-Wallet.',
-            'Start with a 24-hour Free Trial to explore 3 featured categories and the storyboard studio. Continue with plans starting at Rp 59,000 / month with instant QRIS, BCA, and Mandiri activation.'
+            `Mulai dengan Free Trial 24 Jam untuk mencoba 3 kategori unggulan dan storyboard studio. Lanjutkan dengan langganan terjangkau mulai dari Rp ${proPriceMonthly.toLocaleString('id-ID')} / bulan tanpa kartu kredit rumit — bayar via QRIS, BCA, Mandiri, atau E-Wallet.`,
+            `Start with a 24-hour Free Trial to explore 3 featured categories and the storyboard studio. Continue with plans starting at Rp ${proPriceMonthly.toLocaleString('id-ID')} / month with instant QRIS, BCA, and Mandiri activation.`
           )}
         </p>
 
@@ -343,7 +351,7 @@ export const PricingPage: React.FC = () => {
           >
             <span>{t('Bayar Tahunan', 'Yearly Billing')}</span>
             <span className="bg-emerald-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-              {t('Hemat 30%', 'Save 30%')}
+              {t(`Hemat ${discountPct}%`, `Save ${discountPct}%`)}
             </span>
           </button>
         </div>
@@ -447,18 +455,27 @@ export const PricingPage: React.FC = () => {
             <div className="mb-6">
               {billingCycle === 'monthly' ? (
                 <div>
-                  <span className="text-4xl font-extrabold text-white">Rp 59.000</span>
+                  <span className="text-4xl font-extrabold text-white">
+                    Rp {proPriceMonthly.toLocaleString('id-ID')}
+                  </span>
                   <span className="text-gray-400 text-xs ml-1">{t('/ bulan', '/ month')}</span>
                 </div>
               ) : (
                 <div>
-                  <span className="text-4xl font-extrabold text-white">Rp 499.000</span>
+                  <span className="text-4xl font-extrabold text-white">
+                    Rp {proPriceYearly.toLocaleString('id-ID')}
+                  </span>
                   <span className="text-gray-400 text-xs ml-1">{t('/ tahun', '/ year')}</span>
                   <p className="text-[11px] text-emerald-400 mt-1 font-medium">
-                    {t(
-                      'Setara ~Rp 41.500 / bulan (Hemat Rp 209.000)',
-                      'Equivalent to ~Rp 41,500 / month (Save Rp 209,000)'
-                    )}
+                    {yearlySavings > 0
+                      ? t(
+                          `Setara ~Rp ${monthlyEquivalent.toLocaleString('id-ID')} / bulan (Hemat Rp ${yearlySavings.toLocaleString('id-ID')})`,
+                          `Equivalent to ~Rp ${monthlyEquivalent.toLocaleString('id-ID')} / month (Save Rp ${yearlySavings.toLocaleString('id-ID')})`
+                        )
+                      : t(
+                          `Setara ~Rp ${monthlyEquivalent.toLocaleString('id-ID')} / bulan`,
+                          `Equivalent to ~Rp ${monthlyEquivalent.toLocaleString('id-ID')} / month`
+                        )}
                   </p>
                 </div>
               )}
@@ -471,7 +488,7 @@ export const PricingPage: React.FC = () => {
               {PRICING_PLANS.pro.features.map((f, i) => {
                 const enProFeatures = [
                   '350 AI Credits / month (~70 full video scripts & storyboards)',
-                  'All 21 Content Categories Unlocked',
+                  'All 31 Content Categories Unlocked',
                   'Top-Up credit boosters available anytime from Rp 20,000',
                   'BYOK (Bring Your Own Key) Direct Video Generation with zero credit limits',
                   'Complete Story Studio with Continuity Anchors',
@@ -496,8 +513,14 @@ export const PricingPage: React.FC = () => {
             className="w-full py-3 text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black shadow-lg shadow-amber-500/20"
           >
             {billingCycle === 'yearly'
-              ? t('Pilih Paket Creator Pro (Rp 499rb/thn)', 'Select Creator Pro (Rp 499k/yr)')
-              : t('Pilih Paket Creator Pro (Rp 59rb/bln)', 'Select Creator Pro (Rp 59k/mo)')}
+              ? t(
+                  `Pilih Paket Creator Pro (Rp ${Math.round(proPriceYearly / 1000)}rb/thn)`,
+                  `Select Creator Pro (Rp ${Math.round(proPriceYearly / 1000)}k/yr)`
+                )
+              : t(
+                  `Pilih Paket Creator Pro (Rp ${Math.round(proPriceMonthly / 1000)}rb/bln)`,
+                  `Select Creator Pro (Rp ${Math.round(proPriceMonthly / 1000)}k/mo)`
+                )}
             <ArrowRight className="w-4 h-4 ml-1.5" />
           </Button>
         </BentoTile>
@@ -705,8 +728,8 @@ export const PricingPage: React.FC = () => {
                     <span className="text-amber-400 text-lg font-mono">
                       Rp{' '}
                       {(billingCycle === 'yearly'
-                        ? PRICING_PLANS.pro.yearlyPrice
-                        : PRICING_PLANS.pro.monthlyPrice
+                        ? proPriceYearly
+                        : proPriceMonthly
                       ).toLocaleString('id-ID')}
                     </span>
                   </div>

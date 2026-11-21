@@ -700,7 +700,7 @@ ${idea.localizationNotes}`;
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-medium text-emerald-300">
                   <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  Creator Pro: 21 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 350} Kredit
+                  Creator Pro: 31 Kategori Aktif • Saldo: {subscription.creditsBalance ?? 350} Kredit
                 </span>
               )}
             </div>

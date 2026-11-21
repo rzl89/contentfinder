@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
+import { useAdminStore } from '@/stores/admin-store';
 import { useLanguageStore } from '@/stores/language-store';
 import { CONTENT_CATEGORIES, getLocalizedCategories } from '@/context-engine';
 
@@ -33,6 +34,12 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { proPriceMonthly = 59000, proPriceYearly = 499000 } = useAdminStore((s) => s.settings);
+
+  // Dynamic pricing calculations
+  const monthlyEquivalent = Math.round(proPriceYearly / 12);
+  const yearlySavings = (proPriceMonthly * 12) - proPriceYearly;
+  const discountPct = Math.max(1, Math.round((yearlySavings / (proPriceMonthly * 12)) * 100));
   const { language, setLanguage, t } = useLanguageStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -125,7 +132,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('kategori')}
               className="hover:text-zinc-200 transition-colors cursor-pointer"
             >
-              {t('21 Kategori', '21 Categories')}
+              {t('31 Kategori', '31 Categories')}
             </button>
             <button
               type="button"
@@ -236,7 +243,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               onClick={() => scrollTo('kategori')}
               className="w-full text-left px-3 py-2 rounded-lg text-xs text-zinc-300 hover:bg-white/5 transition-colors"
             >
-              {t('21 Kategori', '21 Categories')}
+              {t('31 Kategori', '31 Categories')}
             </button>
             <button
               type="button"
@@ -668,7 +675,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
                   Creator Pro
                 </span>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-white">Rp 59.000</span>
+                  <span className="text-3xl font-extrabold text-white">
+                    Rp {proPriceMonthly.toLocaleString('id-ID')}
+                  </span>
                   <span className="text-xs text-zinc-400">/ {t('bulan', 'month')}</span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
@@ -682,7 +691,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
                   t('350 Kredit AI / bulan (~70 storyboard video lengkap)', '350 AI Credits / month (~70 complete video storyboards)'),
-                  t('Semua 21 Kategori Konten Terbuka Penuh', 'All 21 Short-Form Categories Unlocked'),
+                  t('Semua 31 Kategori Konten Terbuka Penuh', 'All 31 Short-Form Categories Unlocked'),
                   t('Regenerasi adegan & storyboard kapan saja', 'Unlimited scene & storyboard regeneration'),
                   t('Opsi Top-Up Booster mulai Rp 20.000 (tidak hangus)', 'Booster top-up packs available (credits never expire)'),
                   t('Konektor BYOK Video Vault aman (Kling, Veo 2, Runway)', 'Secure BYOK Video Vault (Kling, Veo 2, Runway, Hailuo)'),
@@ -713,14 +722,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-zinc-400 uppercase tracking-wider">
-                    {t('Tahunan (Hemat 30%)', 'Yearly Pass (Save 30%)')}
+                    {t(`Tahunan (Hemat ${discountPct}%)`, `Yearly Pass (Save ${discountPct}%)`)}
                   </span>
                   <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {t('Hemat Rp 209rb', 'Save ~30%')}
+                    {yearlySavings > 0
+                      ? t(`Hemat Rp ${Math.round(yearlySavings / 1000)}rb`, `Save ~${discountPct}%`)
+                      : t(`Hemat ${discountPct}%`, `Save ~${discountPct}%`)}
                   </span>
                 </div>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-white">Rp 499.000</span>
+                  <span className="text-3xl font-extrabold text-white">
+                    Rp {proPriceYearly.toLocaleString('id-ID')}
+                  </span>
                   <span className="text-xs text-zinc-500">/ {t('tahun', 'year')}</span>
                 </div>
                 <p className="text-xs text-zinc-400 mt-2">
@@ -734,7 +747,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
               <div className="space-y-2.5 text-xs text-zinc-300 pt-2 border-t border-white/5">
                 {[
                   t('Semua fitur Creator Pro selama 1 tahun penuh', 'All Creator Pro features for a full calendar year'),
-                  t('Hemat 30% (Setara ~Rp 41.500 / bulan)', 'Save 30% (~Rp 41,500 effective monthly rate)'),
+                  t(
+                    `Hemat ${discountPct}% (Setara ~Rp ${monthlyEquivalent.toLocaleString('id-ID')} / bulan)`,
+                    `Save ${discountPct}% (~Rp ${monthlyEquivalent.toLocaleString('id-ID')} effective monthly rate)`
+                  ),
                   t('Prioritas update prompt model video baru', 'Priority updates for newly released AI video models'),
                   t('Garansi aktivasi instan via QRIS, BCA, Mandiri', 'Instant activation via QRIS, BCA, and Mandiri'),
                 ].map((feat, i) => (
