@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { useProjectStore } from '@/stores/project-store';
 import { useSubscriptionStore, calculateActionCredits } from '@/stores/subscription-store';
+import { useAdminStore } from '@/stores/admin-store';
 import { useLanguageStore } from '@/stores/language-store';
 import { generateContentIdeas, developStoryFromIdea } from '@/lib/ai-generator';
 import type {
@@ -61,6 +62,8 @@ export const IdeaStudioPage: React.FC = () => {
     hasSufficientCredits,
     deductCredits,
   } = useSubscriptionStore();
+  const proPriceMonthly = useAdminStore((s) => s.settings.proPriceMonthly || 59000);
+  const proPriceLabel = `Rp ${Math.round(proPriceMonthly / 1000)}rb/bln`;
 
   const routeState = (location.state || {}) as { categoryId?: string; topic?: string };
 
@@ -278,7 +281,7 @@ ${idea.localizationNotes}`;
       showToast({
         type: 'warning',
         title: 'Fitur Eksklusif Creator Pro',
-        message: `Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Kategori "${activeCategory.name}" terbuka penuh di paket Creator Pro.`,
+        message: `Fitur ini eksklusif Creator Pro — ${proPriceLabel}. Kategori "${activeCategory.name}" terbuka penuh di paket Creator Pro.`,
       });
       navigate('/pricing');
       return;
@@ -746,7 +749,7 @@ ${idea.localizationNotes}`;
             <div className="flex items-center gap-2 text-zinc-300">
               <Lock className="w-4 h-4 text-amber-400 shrink-0" />
               <span>
-                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 31 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
+                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — {proPriceLabel}.</strong> Akses seluruh 31 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
               </span>
             </div>
             <Button
@@ -773,7 +776,7 @@ ${idea.localizationNotes}`;
                     showToast({
                       type: 'warning',
                       title: 'Fitur Eksklusif Creator Pro',
-                      message: `Fitur ini eksklusif Creator Pro — Rp 59rb/bln. Kategori "${cat.name}" terbuka penuh di paket Creator Pro.`,
+                      message: `Fitur ini eksklusif Creator Pro — ${proPriceLabel}. Kategori "${cat.name}" terbuka penuh di paket Creator Pro.`,
                     });
                     return;
                   }

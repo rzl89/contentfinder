@@ -481,7 +481,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       // fallback
     }
 
-    let cleanWA = adminWA.replace(/\\D/g, '');
+    let cleanWA = adminWA.replace(/\D/g, '');
     if (cleanWA.startsWith('0')) {
       cleanWA = '62' + cleanWA.slice(1);
     } else if (!cleanWA.startsWith('62')) {

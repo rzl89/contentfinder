@@ -34,6 +34,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { fetchPricingConfig } = useAdminStore();
   const { proPriceMonthly = 59000, proPriceYearly = 499000 } = useAdminStore((s) => s.settings);
 
   // Dynamic pricing calculations
@@ -42,6 +43,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ scrollToSection }) => 
   const discountPct = Math.max(1, Math.round((yearlySavings / (proPriceMonthly * 12)) * 100));
   const { language, setLanguage, t } = useLanguageStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Sync pricing config on mount
+  useEffect(() => {
+    void fetchPricingConfig();
+  }, [fetchPricingConfig]);
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
