@@ -132,7 +132,7 @@ function formatQCFieldLabel(field: string): string {
 export const PromptDeskPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { language, t } = useLanguageStore();
+  const { t } = useLanguageStore();
   const {
     projects,
     currentProject,
@@ -168,7 +168,7 @@ export const PromptDeskPage: React.FC = () => {
     if (currentProject?.targetModel) {
       setActiveModelId(currentProject.targetModel);
     }
-  }, [currentProject?.id]);
+  }, [currentProject?.id, currentProject?.targetModel]);
 
   // Auto-connect first project if no active project is currently selected
   useEffect(() => {

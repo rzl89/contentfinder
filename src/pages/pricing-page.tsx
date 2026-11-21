@@ -143,7 +143,7 @@ export const PricingPage: React.FC = () => {
         setIsCheckingReturnStatus(false);
       }
     },
-    [syncSubscriptionWithProfile, user?.id]
+    [syncSubscriptionWithProfile, user]
   );
 
   useEffect(() => {
@@ -398,7 +398,7 @@ export const PricingPage: React.FC = () => {
                   'Prompt Compiler Preview (Universal, Kling, Veo 2, Runway)',
                   'Character & World Bible Story Studio',
                   'Active for 24 hours from initial signup',
-                  'BYOK Connector & 18 other categories exclusive to Creator Pro',
+                  'BYOK Connector & 28 other categories exclusive to Creator Pro',
                 ];
                 return (
                   <div key={i} className="flex items-start gap-2 text-xs text-gray-300">

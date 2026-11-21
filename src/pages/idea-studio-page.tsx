@@ -95,7 +95,7 @@ export const IdeaStudioPage: React.FC = () => {
   const [platform, setPlatform] = useState<Platform>(() => savedStudioPrefs?.defaultPlatform || 'tiktok');
   const [duration, setDuration] = useState<DurationRange>(() => savedStudioPrefs?.defaultDuration || '10s');
   const [visualStyle, setVisualStyle] = useState<VisualStyle>(() => savedStudioPrefs?.defaultVisualStyle || 'cinematic_realistic');
-  const [contextPreset, setContextPreset] = useState<ContextProfilePreset>('indonesia_natural');
+  const [contextPreset] = useState<ContextProfilePreset>('indonesia_natural');
   const [dialogLanguage, setDialogLanguage] = useState<DialogLanguage>(() => savedStudioPrefs?.defaultDialogLanguage || 'indonesian');
   const [additionalTheme, setAdditionalTheme] = useState(routeState.topic || '');
   const [ideaCount, setIdeaCount] = useState<number>(5);
@@ -612,15 +612,15 @@ ${idea.localizationNotes}`;
         <div className="space-y-1.5 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>AI Content Idea Studio — 21 Creative Frameworks</span>
+            <span>AI Content Idea Studio — 31 Creative Frameworks</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-white">
             {t('Eksplorasi Ide Konten & Narasi Video Pendek', 'Short-Form Content Ideas & Storytelling Studio')}
           </h2>
           <p className="text-xs text-zinc-400 leading-relaxed">
             {t(
-              'Pilih dari 21 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.',
-              'Select from 21 specialized short-form categories, ground narrative context with natural cultural personas, and develop ideas into multi-scene storyboards.'
+              'Pilih dari 31 kategori dengan creative logic spesifik, kunci konteks Indonesia natural tanpa stereotip, dan kembangkan ide menjadi storyboard adegan siap prompt.',
+              'Select from 31 specialized short-form categories, ground narrative context with natural cultural personas, and develop ideas into multi-scene storyboards.'
             )}
           </p>
         </div>
@@ -706,8 +706,8 @@ ${idea.localizationNotes}`;
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
               {subscription.tier === 'pro'
-                ? 'Seluruh 21 kategori terbuka dengan creative framework dan hook style spesifik.'
-                : 'Free Trial membuka 3 kategori unggulan. Upgrade ke Creator Pro untuk membuka seluruh 21 kategori.'}
+                ? 'Seluruh 31 kategori terbuka dengan creative framework dan hook style spesifik.'
+                : 'Free Trial membuka 3 kategori unggulan. Upgrade ke Creator Pro untuk membuka seluruh 31 kategori.'}
             </p>
           </div>
 
@@ -746,7 +746,7 @@ ${idea.localizationNotes}`;
             <div className="flex items-center gap-2 text-zinc-300">
               <Lock className="w-4 h-4 text-amber-400 shrink-0" />
               <span>
-                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 21 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
+                <strong className="text-amber-300">Fitur ini eksklusif Creator Pro — Rp 59rb/bln.</strong> Akses seluruh 31 kategori konten, kuota storyboard tanpa batas, dan BYOK video generation.
               </span>
             </div>
             <Button
@@ -760,7 +760,7 @@ ${idea.localizationNotes}`;
           </div>
         )}
 
-        {/* 19 Categories Grid */}
+        {/* 31 Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[360px] overflow-y-auto p-1 pr-2">
           {filteredCategories.map((cat) => {
             const isSelected = selectedCategoryId === cat.id;

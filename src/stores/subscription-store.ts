@@ -184,7 +184,7 @@ export const PRICING_PLANS = {
       'Preview Prompt Compiler (Universal, Kling, Veo 2, Runway)',
       'Character & World Bible Story Studio',
       'Masa aktif 24 jam sejak pertama dibuka',
-      'Konektor BYOK & 16 Kategori lainnya khusus Creator Pro',
+      'Konektor BYOK & 28 Kategori lainnya khusus Creator Pro',
     ],
   },
   pro: {
