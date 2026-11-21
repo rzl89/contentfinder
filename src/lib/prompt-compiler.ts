@@ -474,22 +474,16 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
   }
 
   return {
-    task: '8-panel infographic storyboard poster, single image',
+    task: '8-panel storyboard contact sheet grid, single image',
     style: cleanStyle,
     aspect_ratio: aspectRatio,
-    header: {
-      video_title: project.name || 'AI Playbook How-To Guide',
-      total_video_time: `${totalDurationStr} | 8 SHOTS`,
-      keywords: ['Educational', 'How-To', 'Cinematic'],
-      legend_icons: ['ACTION', 'REACTION', 'TIME', 'KEY OBJECT', 'MAIN CHARACTER'],
-    },
     grid_layout: {
       total_panels: 8,
       rows: 4,
       columns: 2,
       reading_order: 'left to right, top to bottom 2x4 grid: Row 1 (Panels 1 & 2), Row 2 (Panels 3 & 4), Row 3 (Panels 5 & 6), Row 4 (Panels 7 & 8)',
-      panel_borders: 'clean black borders with white spacing',
-      panel_numbers: 'bold panel title headers on each panel frame',
+      panel_borders: 'clean thin black borders with white spacing',
+      panel_numbers: 'bold panel numbers on each panel frame',
     },
     global_consistency: {
       anchor_description: charAnchor,
@@ -498,10 +492,8 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
       environment: envDesc,
     },
     on_screen_text: {
-      rule: 'Top poster title header and clean panel title badges only (e.g. "1 Opener", "2 Preparation"). STRICTLY FORBIDDEN: do not render camera directions, technical metadata, subtitles, or speech bubbles as text boxes on the image.',
-      placements: [
-        { panel: 1, text: project.name || 'Mastery Guide', style: 'bold header typography at top of poster' },
-      ],
+      rule: 'STRICT ZERO TEXT OUTSIDE PANELS: No top header banner, no poster title, no legend icons. 100% pure visual cinematic frames optimized for AI video generation.',
+      placements: [],
     },
     ingredients_references: [
       {
@@ -512,7 +504,7 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
     ],
     panels,
     negative_prompt:
-      'missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, blurry panels, deformed fingers, extra limbs, inconsistent character, watermark',
+      'top header banner, poster title bar, legend icons bar, text at top of image, missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, blurry panels, deformed fingers, extra limbs, inconsistent character, watermark',
   };
 }
 
@@ -550,15 +542,15 @@ export function generateStoryboardNaturalPrompt(project: Project): string {
     const p8 = s[7]?.summary || s[7]?.characterActions || 'Final reveal showing finished result, satisfying payoff';
 
     return [
-      `8-panel infographic storyboard poster, single high-resolution image, balanced 2x4 grid layout (exactly 2 columns across by 4 rows down = 8 rectangular panels).`,
-      `Style: ${cleanStyle}, commercial storyboard quality, clean white background, thin black borders separating panels. Aspect ratio 9:16 vertical poster.`,
-      `Top Header: bold title "${title.toUpperCase()}" • ${totalDurationStr} | 8 SHOTS • clean legend icons (Action, Reaction, Time, Key Object, Main Character).`,
+      `8-panel cinematic storyboard contact sheet, single high-resolution image, balanced 2x4 grid layout (exactly 2 columns across by 4 rows down = 8 rectangular panels).`,
+      `Style: ${cleanStyle}, commercial storyboard quality, clean neutral background, thin black borders separating panels. Aspect ratio 9:16 vertical.`,
+      `STRICT CLEAN GRID: Pure visual contact sheet without any top header bar, poster title banner, or legend icons (100% pure visual panels optimized for Image-to-Video generation).`,
       `Consistent Subject: ${charAnchor} across all scenes with identical face and appearance.`,
       `Row 1: [Panel 1 - Opener] ${p1}. Label: "1 Opener" | [Panel 2 - Preparation] ${p2}. Label: "2 Preparation".`,
       `Row 2: [Panel 3 - First Action] ${p3}. Label: "3 First Action" | [Panel 4 - Transformation] ${p4}. Label: "4 Transformation".`,
       `Row 3: [Panel 5 - Progress] ${p5}. Label: "5 Progress" | [Panel 6 - Creative Angle] ${p6}. Label: "6 Creative Angle".`,
       `Row 4: [Panel 7 - Final Step] ${p7}. Label: "7 Final Step" | [Panel 8 - Final Reveal] ${p8}. Label: "8 Final Reveal".`,
-      `STRICT COMPLETENESS: All 8 panels must be fully rendered in the 2x4 grid from top to bottom. No panels may be omitted, cropped, or cut off. Do NOT print camera technical metadata or speech bubbles as text banners on the image. --ar 9:16 --v 6.1`
+      `STRICT COMPLETENESS: All 8 panels must be fully rendered in the 2x4 grid from top to bottom. No panels may be omitted, cropped, or cut off. Do NOT print top header banners, camera technical metadata, or speech bubbles as text banners on the image. --ar 9:16 --v 6.1`
     ].join('\n\n');
   }
 

@@ -50,6 +50,7 @@ import {
   Crown,
   CheckCircle2,
   Grid,
+  Mic,
 } from 'lucide-react';
 
 const FRAMING_OPTIONS = [
@@ -229,6 +230,30 @@ export const PromptDeskPage: React.FC = () => {
       .map((s) => `// Scene ${s.sceneNumber}: ${s.beatTitle}\n${s.videoPrompt}`)
       .join('\n\n');
     handleCopyText(text, 'Semua Video Prompts');
+  };
+
+  const handleCopyVoiceover = async () => {
+    if (!currentProject || scenes.length === 0) {
+      showToast({ type: 'warning', title: 'Belum Ada Storyboard', message: 'Generate storyboard terlebih dahulu.' });
+      return;
+    }
+    const lines = scenes
+      .map((s, i) => {
+        const vo = (s as any).voiceoverLine || s.dialogue || s.narration || '';
+        return vo.trim() ? `[Panel ${i + 1} – ${s.beatTitle || `Adegan ${i + 1}`}]\n${vo.trim()}` : '';
+      })
+      .filter((l) => l.length > 0)
+      .join('\n\n');
+    if (!lines) {
+      showToast({ type: 'warning', title: 'Naskah Voiceover Kosong', message: 'Pastikan setiap adegan memiliki baris voiceover.' });
+      return;
+    }
+    await navigator.clipboard.writeText(lines);
+    showToast({
+      type: 'success',
+      title: 'Naskah Voiceover Tersalin!',
+      message: 'Tempelkan ke ElevenLabs, CapCut TTS, atau TikTok Voice untuk dubbing audio.',
+    });
   };
 
   const handleOpenExport = (format: 'markdown' | 'json') => {
@@ -746,6 +771,16 @@ export const PromptDeskPage: React.FC = () => {
             title="Salin seluruh teks prompt video ke clipboard"
           >
             Salin Semua Video
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Mic className="w-3.5 h-3.5 text-purple-400" />}
+            onClick={handleCopyVoiceover}
+            title="Salin seluruh naskah voiceover untuk dubbing TTS (ElevenLabs / CapCut / TikTok Voice)"
+            className="border-purple-500/40 text-purple-300 hover:bg-purple-500/10"
+          >
+            Salin Voiceover TTS
           </Button>
           <Button
             variant="emerald"

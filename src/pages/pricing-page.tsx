@@ -52,6 +52,8 @@ export const PricingPage: React.FC = () => {
   } = useSubscriptionStore();
 
   const { proPriceMonthly = 59000, proPriceYearly = 499000 } = useAdminStore((s) => s.settings);
+  // Reactive selector — re-renders this component whenever admin deletes/adds a payment method
+  const customPaymentMethods = useAdminStore((s) => s.settings.customPaymentMethods);
 
   // Dynamic pricing calculations
   const monthlyEquivalent = Math.round(proPriceYearly / 12);
@@ -233,7 +235,10 @@ export const PricingPage: React.FC = () => {
     }
   };
 
-  const paymentAccounts = getPaymentAccounts();
+  // Use reactive customPaymentMethods from admin store (re-renders when admin deletes/adds methods)
+  const paymentAccounts = customPaymentMethods && customPaymentMethods.length > 0
+    ? customPaymentMethods
+    : getPaymentAccounts();
   const activeAccounts = paymentAccounts.filter((a) => a.isActive !== false);
   const selectedAccountInfo =
     activeAccounts.find((a) => a.id === selectedPayment) || activeAccounts[0] || paymentAccounts[0];

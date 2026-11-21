@@ -758,12 +758,10 @@ STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
      • Row 4 (bottom): Panel 7 (left) & Panel 8 (right)
    - STRICT COMPLETENESS RULE: ALL 8 PANELS MUST BE FULLY RENDERED AND VISIBLE ON THE POSTER. Never omit, drop, or cut off panels 5, 6, 7, or 8!
    - Total video duration: EXACTLY ${totalSec} SECONDS (${is15s ? 'optimized for Seedance' : 'optimized for Omni Flesh'}).
-2. HEADER AT TOP:
-   - Must include:
-     • VIDEO TITLE: Clean and bold
-     • TOTAL VIDEO TIME: "${totalSec} Seconds | 8 SHOTS"
-     • Three matching keywords
-     • Legend icons for: ACTION, REACTION, TIME, KEY OBJECT, MAIN CHARACTER.
+2. STRICT ZERO POSTER HEADER BANNER (MANDATORY FOR AI VIDEO GENERATION):
+   - DO NOT render any top header banner, poster title, total time badge, keywords bar, or legend icons at the top of the image!
+   - The entire image canvas must consist 100% purely of the 8 visual cinematic panels in a clean 2x4 grid.
+   - Any text banner across the top of the poster is STRICTLY FORBIDDEN as it ruins AI Image-to-Video generation.
 ${thoughtExperimentPanels}
 4. METADATA PER PANEL & NO TECHNICAL TEXT ON IMAGE:
    - Every panel must define: Panel title, camera angle, action, reaction, time hint, key object, emotion, and one short English voice-over sentence (5-12 words).
@@ -771,7 +769,6 @@ ${thoughtExperimentPanels}
    - The ONLY allowed text on each panel is the clean numbered panel title header on the frame (e.g. "1 Opener", "2 Preparation"). No speech bubbles, subtitles, or paragraphs inside panels.
 5. CHARACTER & OBJECT CONSISTENCY:
    - Maintain 100% consistency throughout every panel and video shot (same face, hair, clothing, accessories, body proportions, colors, identity).
-6. VOICE-OVER SCRIPT:
 6. VOICE-OVER SCRIPT:
    - Exactly 8 narration lines (one per panel), 5 to 12 words each. ${storyArchetype === 'thought_experiment' ? 'Educational, factual, thought-provoking — Kurzgesagt narrator tone.' : 'Friendly, educational, natural, easy to understand.'} ALL voiceover / narration lines MUST be in ${languageInstruction}. STRICTLY FORBIDDEN to use English if languageInstruction is not English.
    - Multi-shot sequence based exactly on the 8 storyboard panels representing ${totalSec} seconds.
@@ -928,7 +925,7 @@ ${thoughtExperimentPanels}
   "planSummary": [
     "Style and Aspect Ratio: ...",
     "Narrative arc and beat structure (8 shots): ...",
-    "Infographic typography and header layout: ...",
+    "Strict zero header: pure 8-panel visual grid only, no top banner ...",
     "Voice-over plan (8 lines, 5-12 words each): ..."
   ],
   "character": {
@@ -986,15 +983,9 @@ ${thoughtExperimentPanels}
     }
   ],
   "imagePromptJson": {
-    "task": "8-panel infographic storyboard poster, single image",
+    "task": "8-panel storyboard contact sheet grid, single image, clean visual panels only",
     "style": "${resolvedVisualStyle}",
     "aspect_ratio": "${targetAspectRatio}",
-    "header": {
-      "video_title": "string",
-      "total_video_time": "${totalSec} Seconds | 8 SHOTS",
-      "keywords": ["keyword1", "keyword2", "keyword3"],
-      "legend_icons": ["ACTION", "REACTION", "TIME", "KEY OBJECT", "MAIN CHARACTER"]
-    },
     "grid_layout": {
       "total_panels": 8,
       "rows": 4,
@@ -1010,9 +1001,8 @@ ${thoughtExperimentPanels}
       "environment": "string"
     },
     "on_screen_text": {
-      "rule": "minimal typography for panel titles and headers",
+      "rule": "STRICT ZERO TEXT OUTSIDE PANELS: No top header banner, no poster title bar, no legend icons bar. Pure visual cinematic panels only.",
       "placements": [
-        { "panel": 1, "text": "Header / Hook", "style": "bold modern sans-serif" }
       ]
     },
     "ingredients_references": [
@@ -1033,7 +1023,7 @@ ${thoughtExperimentPanels}
         "voiceover": "string"
       }
     ],
-    "negative_prompt": "missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
+    "negative_prompt": "top header banner, poster title header, total time header, legend icons bar, text at top of image, missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
   },
   "videoPromptJson": {
     "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the 8-panel storyboard grid",
@@ -1152,3 +1142,4 @@ Ensure every panel in imagePromptJson and every timeline shot in videoPromptJson
     });
   }
 }
+
