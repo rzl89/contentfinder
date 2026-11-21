@@ -748,21 +748,27 @@ CRITICAL RULES (FOLLOW STRICTLY):
 Your objective: create professional storyboard image prompts and AI video prompts that are cinematic, easy to understand, visually engaging, and optimized for viral short-form content.
 ${storyFoundationalDirective}
 STORYBOARD SPECIFICATIONS (EXACTLY 8 PANELS):
-1. LAYOUT & FORMAT:
+1. BALANCED 2x4 GRID LAYOUT (MANDATORY):
    - Create a crisp, clean infographic storyboard poster on a white background with clean black borders and bold modern typography.
    - Commercial storyboard quality, ultra-detailed, highly organized layout, premium cinematic 3D stylized rendering.
-   - Exactly EIGHT (8) storyboard panels arranged in a clean structured infographic column (1x8) or balanced 2x4 poster.
+   - EXACTLY EIGHT (8) storyboard panels arranged in a balanced 2-column by 4-row grid (2x4 = 8 panels total):
+     • Row 1 (top): Panel 1 (left) & Panel 2 (right)
+     • Row 2 (upper-mid): Panel 3 (left) & Panel 4 (right)
+     • Row 3 (lower-mid): Panel 5 (left) & Panel 6 (right)
+     • Row 4 (bottom): Panel 7 (left) & Panel 8 (right)
+   - STRICT COMPLETENESS RULE: ALL 8 PANELS MUST BE FULLY RENDERED AND VISIBLE ON THE POSTER. Never omit, drop, or cut off panels 5, 6, 7, or 8!
    - Total video duration: EXACTLY ${totalSec} SECONDS (${is15s ? 'optimized for Seedance' : 'optimized for Omni Flesh'}).
-2. HEADER:
+2. HEADER AT TOP:
    - Must include:
      • VIDEO TITLE: Clean and bold
      • TOTAL VIDEO TIME: "${totalSec} Seconds | 8 SHOTS"
      • Three matching keywords
      • Legend icons for: ACTION, REACTION, TIME, KEY OBJECT, MAIN CHARACTER.
 ${thoughtExperimentPanels}
-4. METADATA PER PANEL:
+4. METADATA PER PANEL & NO TECHNICAL TEXT ON IMAGE:
    - Every panel must define: Panel title, camera angle, action, reaction, time hint, key object, emotion, and one short English voice-over sentence (5-12 words).
-   - No speech bubbles or paragraphs inside panels.
+   - STRICT: DO NOT render camera angles, shot types, or technical metadata (such as "Wide, table-height 3/4 view", "action:", "Tape flag", etc.) as text labels on the image!
+   - The ONLY allowed text on each panel is the clean numbered panel title header on the frame (e.g. "1 Opener", "2 Preparation"). No speech bubbles, subtitles, or paragraphs inside panels.
 5. CHARACTER & OBJECT CONSISTENCY:
    - Maintain 100% consistency throughout every panel and video shot (same face, hair, clothing, accessories, body proportions, colors, identity).
 6. VOICE-OVER SCRIPT:
@@ -991,11 +997,11 @@ ${thoughtExperimentPanels}
     },
     "grid_layout": {
       "total_panels": 8,
-      "rows": 8,
-      "columns": 1,
-      "reading_order": "top to bottom, vertical sequence",
-      "panel_borders": "clean black borders with white spacing",
-      "panel_numbers": "small clear number badges"
+      "rows": 4,
+      "columns": 2,
+      "reading_order": "left to right, top to bottom: Row 1 (Panels 1 & 2), Row 2 (Panels 3 & 4), Row 3 (Panels 5 & 6), Row 4 (Panels 7 & 8)",
+      "panel_borders": "clean black borders with crisp white spacing",
+      "panel_numbers": "small clear number badges on top of each panel frame"
     },
     "global_consistency": {
       "anchor_description": "ONE exact detailed string reused across all panels",
@@ -1027,7 +1033,7 @@ ${thoughtExperimentPanels}
         "voiceover": "string"
       }
     ],
-    "negative_prompt": "weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
+    "negative_prompt": "missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, weapons, blood, disturbing visuals, watermark, blurry, deformed fingers, extra limbs, inconsistent character"
   },
   "videoPromptJson": {
     "task": "image-to-video, single continuous ${totalSec}-second multi-shot video built from the 8-panel storyboard grid",

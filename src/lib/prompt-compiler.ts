@@ -463,7 +463,7 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
       beat: beatName,
       shot_type: shotType,
       camera: cameraInfo,
-      description: `[Panel ${i}: ${beatName}] ${shotType}. ${cameraInfo}. Main Character: ${charAnchor} Action: ${actionDesc}. Key Object: ${keyObj}. Emotion: ${emotion}. Setting: ${envDesc}. Voice-over: "${vo}". Infographic storyboard panel.`,
+      description: `[Panel ${i}: ${beatName}] ${shotType}. ${actionDesc}. Subject: ${charAnchor}. Key tool/prop: ${keyObj}. Setting: ${envDesc}. Note: clean visual frame without text labels or camera metadata.`,
       action: actionDesc,
       reaction: sceneSource?.reaction || 'Natural focus',
       time_hint: project.selectedIdea?.estimatedDuration === '15s' ? '1.8s' : '1.2s',
@@ -485,11 +485,11 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
     },
     grid_layout: {
       total_panels: 8,
-      rows: 8,
-      columns: 1,
-      reading_order: 'top to bottom, vertical sequence',
+      rows: 4,
+      columns: 2,
+      reading_order: 'left to right, top to bottom 2x4 grid: Row 1 (Panels 1 & 2), Row 2 (Panels 3 & 4), Row 3 (Panels 5 & 6), Row 4 (Panels 7 & 8)',
       panel_borders: 'clean black borders with white spacing',
-      panel_numbers: 'bold panel title headers',
+      panel_numbers: 'bold panel title headers on each panel frame',
     },
     global_consistency: {
       anchor_description: charAnchor,
@@ -498,9 +498,9 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
       environment: envDesc,
     },
     on_screen_text: {
-      rule: 'Header and panel titles only. No speech bubbles inside panels.',
+      rule: 'Top poster title header and clean panel title badges only (e.g. "1 Opener", "2 Preparation"). STRICTLY FORBIDDEN: do not render camera directions, technical metadata, subtitles, or speech bubbles as text boxes on the image.',
       placements: [
-        { panel: 1, text: project.name || 'Mastery Guide', style: 'bold header typography' },
+        { panel: 1, text: project.name || 'Mastery Guide', style: 'bold header typography at top of poster' },
       ],
     },
     ingredients_references: [
@@ -512,8 +512,64 @@ export function generateStoryboardImageJson(project: Project): StoryboardImagePr
     ],
     panels,
     negative_prompt:
-      'weapons, blood, disturbing visuals, watermark, blurry panels, deformed fingers, extra limbs, inconsistent character',
+      'missing panels, fewer than 8 panels, dropped panels 5 6 7 8, truncated poster, cropped grid, camera instructions printed as text, technical labels on image, subtitle banners on panels, speech bubbles, gibberish labels, blurry panels, deformed fingers, extra limbs, inconsistent character, watermark',
   };
+}
+
+/**
+ * Generates a clean, compact natural text prompt optimized for AI image tools like
+ * Midjourney (--ar 9:16), Flux.1, Ideogram, and DALL-E 3.
+ * Fits within token limits and guarantees that all panels (2x4 grid or 3x3 grid)
+ * are cleanly described without missing panels or technical text leakage.
+ */
+export function generateStoryboardNaturalPrompt(project: Project): string {
+  const isAdOrAffiliate =
+    project.categoryId === 'affiliate-marketing' || project.categoryId === 'product-story';
+  const isPlaybook =
+    !isAdOrAffiliate &&
+    (project.scenes?.length === 8 ||
+      project.categoryId?.startsWith('howto-') ||
+      Boolean(project.selectedIdea?.creativeFramework?.includes('AI PLAYBOOK')));
+
+  const charAnchor = getProjectAnchorDescription(project);
+  const rawStyle = project.selectedIdea?.visualStyle || project.contextProfile?.visualStyle || 'cinematic realistic';
+  const cleanStyle = rawStyle.replace(/_/g, ' ');
+  const title = (project.name || 'Mastery Guide').trim();
+  const is15s = project.selectedIdea?.estimatedDuration === '15s';
+  const totalDurationStr = is15s ? '15 Seconds' : '10 Seconds';
+
+  if (isPlaybook) {
+    const s = project.scenes || [];
+    const p1 = s[0]?.summary || s[0]?.characterActions || 'Opener introducing the situation and main prop';
+    const p2 = s[1]?.summary || s[1]?.characterActions || 'Preparation with necessary materials and tools revealed';
+    const p3 = s[2]?.summary || s[2]?.characterActions || 'First action step begins, tactile physical interaction';
+    const p4 = s[3]?.summary || s[3]?.characterActions || 'Core transformation, satisfying visual metamorphosis';
+    const p5 = s[4]?.summary || s[4]?.characterActions || 'Progress continues, step-by-step improvement';
+    const p6 = s[5]?.summary || s[5]?.characterActions || 'Creative dynamic angle or POV showing key detail';
+    const p7 = s[6]?.summary || s[6]?.characterActions || 'Final step nearing completion, anticipation builds';
+    const p8 = s[7]?.summary || s[7]?.characterActions || 'Final reveal showing finished result, satisfying payoff';
+
+    return [
+      `8-panel infographic storyboard poster, single high-resolution image, balanced 2x4 grid layout (exactly 2 columns across by 4 rows down = 8 rectangular panels).`,
+      `Style: ${cleanStyle}, commercial storyboard quality, clean white background, thin black borders separating panels. Aspect ratio 9:16 vertical poster.`,
+      `Top Header: bold title "${title.toUpperCase()}" • ${totalDurationStr} | 8 SHOTS • clean legend icons (Action, Reaction, Time, Key Object, Main Character).`,
+      `Consistent Subject: ${charAnchor} across all scenes with identical face and appearance.`,
+      `Row 1: [Panel 1 - Opener] ${p1}. Label: "1 Opener" | [Panel 2 - Preparation] ${p2}. Label: "2 Preparation".`,
+      `Row 2: [Panel 3 - First Action] ${p3}. Label: "3 First Action" | [Panel 4 - Transformation] ${p4}. Label: "4 Transformation".`,
+      `Row 3: [Panel 5 - Progress] ${p5}. Label: "5 Progress" | [Panel 6 - Creative Angle] ${p6}. Label: "6 Creative Angle".`,
+      `Row 4: [Panel 7 - Final Step] ${p7}. Label: "7 Final Step" | [Panel 8 - Final Reveal] ${p8}. Label: "8 Final Reveal".`,
+      `STRICT COMPLETENESS: All 8 panels must be fully rendered in the 2x4 grid from top to bottom. No panels may be omitted, cropped, or cut off. Do NOT print camera technical metadata or speech bubbles as text banners on the image. --ar 9:16 --v 6.1`
+    ].join('\n\n');
+  }
+
+  // 9-panel commercial grid
+  return [
+    `9-panel sequential storyboard contact sheet, single image, 3x3 grid layout (3 columns across by 3 rows down, panels numbered 1 to 9).`,
+    `Style: ${cleanStyle}, 35mm cinematic lens, high production commercial still frame, thin white gutters separating panels. Aspect ratio 16:9.`,
+    `Consistent Protagonist/Product: ${charAnchor} consistent across all 9 panels.`,
+    `Panels 1-9: Hook, Pain Point, Product Reveal, Feature Demo, Benefit, Social Proof, Offer, Urgency, End-Card.`,
+    `STRICT: exactly 9 panels visible, no missing panels, minimal premium typography on panel 1 and 9 only. --ar 16:9 --v 6.1`
+  ].join('\n\n');
 }
 
 export function generateStoryboardVideoJson(

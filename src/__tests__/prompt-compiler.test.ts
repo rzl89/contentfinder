@@ -4,6 +4,8 @@ import {
   compileProjectPrompts,
   exportProductionSheetMarkdown,
   exportProjectJSON,
+  generateStoryboardNaturalPrompt,
+  generateStoryboardImageJson,
 } from '../lib/prompt-compiler';
 import { DEFAULT_CONTEXT_PROFILE } from '../context-engine';
 import type { Scene, Project } from '@/types';
@@ -114,5 +116,34 @@ describe('Prompt Compiler & Exporter', () => {
 
     const sheet = exportProductionSheetMarkdown(projectWithRefs);
     expect(sheet).toContain('PRODUCT REFERENCE (IMAGE-TO-VIDEO & MIDJOURNEY CREF)');
+  });
+
+  it('should generate an 8-panel balanced 2x4 grid layout with completeness enforcement', () => {
+    const playbookProject = {
+      ...sampleProject,
+      categoryId: 'howto-diy',
+      scenes: Array(8).fill(null).map((_, idx) => ({
+        ...sampleScene,
+        sceneNumber: idx + 1,
+        beatTitle: `Step ${idx + 1}`,
+        summary: `Action step number ${idx + 1}`,
+      })),
+    };
+
+    const imageJson = generateStoryboardImageJson(playbookProject);
+    expect(imageJson.grid_layout.total_panels).toBe(8);
+    expect(imageJson.grid_layout.rows).toBe(4);
+    expect(imageJson.grid_layout.columns).toBe(2);
+    expect(imageJson.negative_prompt).toContain('missing panels');
+    expect(imageJson.negative_prompt).toContain('dropped panels 5 6 7 8');
+
+    const naturalPrompt = generateStoryboardNaturalPrompt(playbookProject);
+    expect(naturalPrompt).toContain('balanced 2x4 grid layout');
+    expect(naturalPrompt).toContain('Row 1:');
+    expect(naturalPrompt).toContain('Row 2:');
+    expect(naturalPrompt).toContain('Row 3:');
+    expect(naturalPrompt).toContain('Row 4:');
+    expect(naturalPrompt).toContain('STRICT COMPLETENESS: All 8 panels must be fully rendered');
+    expect(naturalPrompt).toContain('--ar 9:16');
   });
 });

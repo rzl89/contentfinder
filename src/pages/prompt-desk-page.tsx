@@ -21,6 +21,7 @@ import {
   exportProjectJSON,
   generateStoryboardImageJson,
   generateStoryboardVideoJson,
+  generateStoryboardNaturalPrompt,
   validateStoryboardPackage,
 } from '@/lib/prompt-compiler';
 import type {
@@ -160,6 +161,7 @@ export const PromptDeskPage: React.FC = () => {
   const [isRegeneratingScene, setIsRegeneratingScene] = useState(false);
   const [studioTab, setStudioTab] = useState<'master_image' | 'master_video' | 'scenes' | 'validation'>('master_image');
   const [copiedBlock, setCopiedBlock] = useState<'block1' | 'block2' | null>(null);
+  const [copiedNatural, setCopiedNatural] = useState(false);
 
   // Sync activeModelId when currentProject changes
   useEffect(() => {
@@ -613,6 +615,25 @@ export const PromptDeskPage: React.FC = () => {
     }
   };
 
+  const handleCopyNaturalPrompt = async () => {
+    if (!currentProject) return;
+    try {
+      const text = generateStoryboardNaturalPrompt(currentProject);
+      await navigator.clipboard.writeText(text);
+      setCopiedNatural(true);
+      showToast({
+        type: 'success',
+        title: 'Prompt Midjourney / Flux Tersalin!',
+        message: isPlaybookFormat
+          ? 'Prompt teks 8-panel format grid 2×4 siap ditempel ke Midjourney (--ar 9:16), Flux, atau Ideogram.'
+          : 'Prompt teks 9-panel contact sheet siap ditempel ke Midjourney (--ar 16:9), Flux, atau Ideogram.',
+      });
+      setTimeout(() => setCopiedNatural(false), 2500);
+    } catch {
+      // fallback
+    }
+  };
+
   const qc = currentProject?.qcResult;
 
   return (
@@ -918,23 +939,32 @@ export const PromptDeskPage: React.FC = () => {
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
                   {isPlaybookFormat
-                    ? 'Infographic storyboard poster 1×8 untuk Midjourney, Flux, Imagen, atau Ideogram. Berisi header metadata, panel legend, dan 8 panel vertikal berurutan.'
+                    ? 'Infographic storyboard poster 2×4 grid (8 panel) untuk Midjourney, Flux, Imagen, atau Ideogram. Berisi header metadata, panel legend, dan 8 panel berurutan rapi tanpa panel hilang.'
                     : 'Prompt gambar tunggal dengan tata letak 3x3 contact sheet bernomor 1–9 dan gutter putih bersih untuk Google Flow, Midjourney, Flux, atau Ideogram.'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   variant="primary"
                   size="sm"
-                  icon={copiedBlock === 'block1' ? <CheckCircle2 className="w-4 h-4 text-black" /> : <Copy className="w-4 h-4 text-black" />}
-                  onClick={() => handleCopyCodeBlock('block1', masterImageJson)}
-                  className="font-bold shadow-lg shadow-amber-500/20"
+                  icon={copiedNatural ? <CheckCircle2 className="w-4 h-4 text-black" /> : <Sparkles className="w-4 h-4 text-black" />}
+                  onClick={handleCopyNaturalPrompt}
+                  className="font-bold shadow-lg shadow-amber-500/20 bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:from-amber-300 hover:to-amber-400"
                 >
-                  {copiedBlock === 'block1' ? 'Tersalin ke Clipboard!' : 'Salin CODE BLOCK 1 (Image JSON)'}
+                  {copiedNatural ? 'Teks Tersalin!' : 'Salin Prompt Midjourney / Flux (Teks)'}
                 </Button>
                 <Button
                   variant="secondary"
+                  size="sm"
+                  icon={copiedBlock === 'block1' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  onClick={() => handleCopyCodeBlock('block1', masterImageJson)}
+                  className="font-medium"
+                >
+                  {copiedBlock === 'block1' ? 'JSON Tersalin!' : 'Salin CODE BLOCK 1 (JSON)'}
+                </Button>
+                <Button
+                  variant="ghost"
                   size="sm"
                   icon={<Download className="w-3.5 h-3.5" />}
                   onClick={() => {
@@ -953,19 +983,19 @@ export const PromptDeskPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Panel Preview — adaptive grid vs vertical list */}
+            {/* Panel Preview — balanced 2x4 grid vs 3x3 grid */}
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-zinc-400">
+              <div className="flex items-center justify-between text-xs text-zinc-400 flex-wrap gap-2">
                 <span className="font-semibold text-zinc-300">
-                  {isPlaybookFormat ? 'Layout Infographic Poster (1×8 Vertical):' : 'Layout Contact Sheet (3×3 Adaptive Grid):'}
+                  {isPlaybookFormat ? 'Layout Infographic Poster (2×4 Grid, 8 Panel):' : 'Layout Contact Sheet (3×3 Adaptive Grid, 9 Panel):'}
                 </span>
                 <span className="font-mono text-amber-400">
-                  Rasio {masterImageJson.aspect_ratio || '16:9'} • {panelCount} Panel {isPlaybookFormat ? 'Infographic' : 'Terstruktur'}
+                  Rasio {masterImageJson.aspect_ratio || (isPlaybookFormat ? '9:16' : '16:9')} • {panelCount} Panel {isPlaybookFormat ? 'Infographic (2 Kolom × 4 Baris)' : 'Terstruktur'}
                 </span>
               </div>
 
-              {/* Playbook: 1-col vertical list; Commercial: 3-col grid */}
-              <div className={`${isPlaybookFormat ? 'flex flex-col gap-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-3'} p-3 rounded-2xl bg-black/60 border border-white/5`}>
+              {/* Playbook: 2-col balanced grid (Row 1: P1&P2, Row 2: P3&P4, Row 3: P5&P6, Row 4: P7&P8); Commercial: 3-col grid */}
+              <div className={`grid ${isPlaybookFormat ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'} gap-3 p-3 rounded-2xl bg-black/60 border border-white/5`}>
                 {(masterImageJson.panels || []).map((p: any) => (
                   <div
                     key={p.panel}
