@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Check,
@@ -78,8 +78,10 @@ export const PricingPage: React.FC = () => {
 
   // Duitku Checkout State
   const [checkoutMode, setCheckoutMode] = useState<'duitku' | 'manual'>(isDuitkuEnabled ? 'duitku' : 'manual');
-  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
-  const [customerName, setCustomerName] = useState(profile?.display_name || '');
+  const [customEmail, setCustomEmail] = useState<string | null>(null);
+  const [customName, setCustomName] = useState<string | null>(null);
+  const customerEmail = customEmail !== null ? customEmail : user?.email || '';
+  const customerName = customName !== null ? customName : profile?.display_name || '';
   const [customerPhone, setCustomerPhone] = useState('');
   const [isProcessingDuitku, setIsProcessingDuitku] = useState(false);
 
@@ -97,16 +99,6 @@ export const PricingPage: React.FC = () => {
     void fetchDuitkuConfig();
     void fetchPricingConfig();
   }, [fetchPaymentMethods, fetchDuitkuConfig, fetchPricingConfig]);
-
-  // Keep customer form synced with user
-  useEffect(() => {
-    if (user?.email && !customerEmail) {
-      setCustomerEmail(user.email);
-    }
-    if (profile?.display_name && !customerName) {
-      setCustomerName(profile.display_name);
-    }
-  }, [user, profile, customerEmail, customerName]);
 
   // Inspect return URL for Duitku
   const checkDuitkuStatus = useCallback(
@@ -154,7 +146,10 @@ export const PricingPage: React.FC = () => {
     const orderIdParam = params.get('orderId');
 
     if (statusParam === 'duitku_return' && orderIdParam) {
-      void checkDuitkuStatus(orderIdParam);
+      const timer = setTimeout(() => {
+        void checkDuitkuStatus(orderIdParam);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [location.search, checkDuitkuStatus]);
 
@@ -163,7 +158,7 @@ export const PricingPage: React.FC = () => {
   const isPaidActive = subscription.status === 'active' && subscription.tier === 'pro';
 
   const handleSelectPlan = (tier: PlanTier) => {
-    const order = createOrder(tier, billingCycle, selectedPayment);
+    const order = createOrder(tier, billingCycle, effectivePayment);
     setCurrentOrder(order);
     setIsCheckoutOpen(true);
   };
@@ -236,12 +231,23 @@ export const PricingPage: React.FC = () => {
   };
 
   // Use reactive customPaymentMethods from admin store (re-renders when admin deletes/adds methods)
-  const paymentAccounts = customPaymentMethods && customPaymentMethods.length > 0
-    ? customPaymentMethods
-    : getPaymentAccounts();
-  const activeAccounts = paymentAccounts.filter((a) => a.isActive !== false);
+  const paymentAccounts = useMemo(() => {
+    return customPaymentMethods && customPaymentMethods.length > 0
+      ? customPaymentMethods
+      : getPaymentAccounts();
+  }, [customPaymentMethods]);
+
+  const activeAccounts = useMemo(() => {
+    return paymentAccounts.filter((a) => a.isActive !== false);
+  }, [paymentAccounts]);
+
+  // Derived effective payment method: if selectedPayment was deleted or inactive, auto-fallback to first active account
+  const effectivePayment = (activeAccounts.find((a) => a.id === selectedPayment)?.id ||
+    activeAccounts[0]?.id ||
+    'qris') as PaymentMethodType;
+
   const selectedAccountInfo =
-    activeAccounts.find((a) => a.id === selectedPayment) || activeAccounts[0] || paymentAccounts[0];
+    activeAccounts.find((a) => a.id === effectivePayment) || activeAccounts[0] || paymentAccounts[0];
 
   return (
     <div className="space-y-8 animate-fade-in pb-16">
@@ -782,7 +788,7 @@ export const PricingPage: React.FC = () => {
                     type="email"
                     placeholder="email@anda.com"
                     value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    onChange={(e) => setCustomEmail(e.target.value)}
                     helperText={t('Pastikan sesuai dengan email akun login Anda.', 'Make sure it matches your logged-in account email.')}
                   />
 
@@ -791,7 +797,7 @@ export const PricingPage: React.FC = () => {
                       label={t('Nama Pemesan', 'Customer Name')}
                       placeholder="Nama Lengkap"
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
+                      onChange={(e) => setCustomName(e.target.value)}
                     />
                     <Input
                       label={t('Nomor HP / WhatsApp', 'Phone Number')}
@@ -871,11 +877,11 @@ export const PricingPage: React.FC = () => {
                         onClick={() => {
                           setSelectedPayment(account.id);
                           if (currentOrder) {
-                            currentOrder.paymentMethod = account.id;
+                            setCurrentOrder({ ...currentOrder, paymentMethod: account.id });
                           }
                         }}
                         className={`p-2.5 rounded-lg border text-left text-xs transition-all flex items-center gap-2 ${
-                          selectedPayment === account.id
+                          effectivePayment === account.id
                             ? 'border-amber-500 bg-amber-500/10 text-white font-semibold'
                             : 'border-white/10 bg-field text-gray-400 hover:text-white'
                         }`}

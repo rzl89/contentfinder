@@ -969,12 +969,12 @@ export const PromptDeskPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Badge variant="amber">CODE BLOCK 1</Badge>
                   <h3 className="text-base font-bold text-white">
-                    {isPlaybookFormat ? '8-Panel Infographic Storyboard Poster' : '9-Panel Storyboard Grid Image Prompt'}
+                    {isPlaybookFormat ? '8-Panel Storyboard Contact Sheet (2×4 Grid)' : '9-Panel Storyboard Grid Image Prompt'}
                   </h3>
                 </div>
                 <p className="text-xs text-zinc-400 mt-1">
                   {isPlaybookFormat
-                    ? 'Infographic storyboard poster 2×4 grid (8 panel) untuk Midjourney, Flux, Imagen, atau Ideogram. Berisi header metadata, panel legend, dan 8 panel berurutan rapi tanpa panel hilang.'
+                    ? 'Storyboard contact sheet 2×4 grid (8 panel visual murni) untuk Midjourney, Flux, Imagen, atau Ideogram. Bersih tanpa banner header agar hasil video jernih dan panel berurutan rapi tanpa panel hilang.'
                     : 'Prompt gambar tunggal dengan tata letak 3x3 contact sheet bernomor 1–9 dan gutter putih bersih untuk Google Flow, Midjourney, Flux, atau Ideogram.'}
                 </p>
               </div>
@@ -1662,7 +1662,7 @@ export const PromptDeskPage: React.FC = () => {
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-black/40 border border-white/5">
                   <span className="text-zinc-300">
                     {isPlaybookFormat
-                      ? 'Header metadata lengkap (title, time, keywords, legend):'
+                      ? 'Format visual murni 2×4 grid (bebas banner teks luar):'
                       : 'On-screen text minimal (≤ 3 penempatan, 3–6 kata):'}
                   </span>
                   {validationReport.onScreenTextRuleCompliant !== false ? (
@@ -1713,10 +1713,10 @@ export const PromptDeskPage: React.FC = () => {
                   </span>
                   <div>
                     <strong className="text-white block">
-                      {isPlaybookFormat ? 'Generate Poster Infographic Storyboard:' : 'Generate Gambar Storyboard:'}
+                      {isPlaybookFormat ? 'Generate Gambar Storyboard Contact Sheet:' : 'Generate Gambar Storyboard:'}
                     </strong>
                     {isPlaybookFormat
-                      ? 'Salin CODE BLOCK 1. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan poster vertikal 8-panel infographic yang kaya metadata & emosi visual.'
+                      ? 'Salin CODE BLOCK 1 (atau Prompt Midjourney/Flux teks). Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Hasilnya adalah grid 2×4 berisi 8 panel visual bersih tanpa banner header atas yang mengganggu video.'
                       : 'Salin CODE BLOCK 1. Tempelkan ke image generator favorit Anda (Midjourney, Flux, Ideogram, Imagen). Pastikan hasil gambar menampilkan 9 panel contact sheet bersih bernomor 1–9.'}
                   </div>
                 </div>
@@ -1730,7 +1730,7 @@ export const PromptDeskPage: React.FC = () => {
                       {isPlaybookFormat ? `Import ke AI Video Tool (${targetModelName}):` : 'Import ke Google Flow:'}
                     </strong>
                     {isPlaybookFormat
-                      ? `Buka AI Video Generator pilihan Anda (${targetModelName}). Import gambar poster 8-panel hasil langkah 1 sebagai visual keyframe panduan kontinuitas.`
+                      ? `Buka AI Video Generator pilihan Anda (${targetModelName}). Import gambar contact sheet 8-panel hasil langkah 1 sebagai visual keyframe panduan kontinuitas.`
                       : 'Buka Google Flow, aktifkan mode OMNI FLASH. Import foto referensi (jika ada) dan gambar 9-panel storyboard hasil langkah 1.'}
                   </div>
                 </div>
@@ -1746,6 +1746,18 @@ export const PromptDeskPage: React.FC = () => {
                     {isPlaybookFormat
                       ? `Atur durasi video = ${videoDuration} detik. Salin dan tempelkan CODE BLOCK 2 ke prompt input video generator. Klik Generate untuk merangkai video ${videoDuration} detik naratif!`
                       : 'Atur panjang video = 10 detik. Salin dan tempelkan CODE BLOCK 2. Klik Generate dan saksikan video 10 detik terangkai utuh!'}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold font-mono text-xs shrink-0 mt-0.5">
+                    4
+                  </span>
+                  <div>
+                    <strong className="text-white block">
+                      Dubbing Suara Naskah (Voiceover TTS):
+                    </strong>
+                    Model video AI (Kling, Runway, Hailuo, Veo) hanya menghasilkan video visual + efek suara foley. Untuk menambahkan suara narasi, klik tombol ungu <strong>Salin Voiceover TTS</strong> di toolbar atas, lalu tempelkan naskahnya ke ElevenLabs, CapCut TTS, atau TikTok Voice untuk dubbing audio yang sinkron.
                   </div>
                 </div>
               </div>
