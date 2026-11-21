@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Vercel Serverless Function — Secure AI Gateway
  * Protected backend endpoint: reads process.env.OPENAI_API_KEY securely.
  * Default Model: gpt-6.1-terra (with resilient automatic fallback)
@@ -772,8 +772,8 @@ ${thoughtExperimentPanels}
 5. CHARACTER & OBJECT CONSISTENCY:
    - Maintain 100% consistency throughout every panel and video shot (same face, hair, clothing, accessories, body proportions, colors, identity).
 6. VOICE-OVER SCRIPT:
-   - Exactly 8 narration lines (one per panel), 5 to 12 words each. ${storyArchetype === 'thought_experiment' ? 'Educational, factual, thought-provoking — Kurzgesagt narrator tone.' : 'Friendly, educational, natural, easy to understand.'}
-7. AI VIDEO PROMPT (${aiPlaybookEngine}):
+6. VOICE-OVER SCRIPT:
+   - Exactly 8 narration lines (one per panel), 5 to 12 words each. ${storyArchetype === 'thought_experiment' ? 'Educational, factual, thought-provoking — Kurzgesagt narrator tone.' : 'Friendly, educational, natural, easy to understand.'} ALL voiceover / narration lines MUST be in ${languageInstruction}. STRICTLY FORBIDDEN to use English if languageInstruction is not English.
    - Multi-shot sequence based exactly on the 8 storyboard panels representing ${totalSec} seconds.
    - Smooth cinematic transitions, realistic object interaction, accurate physics, premium realism, depth of field.
    - MUST strictly end with this exact sentence:
@@ -830,8 +830,8 @@ ${thoughtExperimentPanels}
         "framing": "string"
       },
       "lighting": "string",
-      "dialogue": "string in ${languageInstruction}",
-      "narration": "string",
+      "dialogue": "string in ${languageInstruction} — WAJIB gunakan ${languageInstruction}. DILARANG menggunakan bahasa Inggris untuk field ini",
+      "narration": "string in ${languageInstruction} — WAJIB dalam ${languageInstruction}. Bukan English",
       "continuityAnchors": ["string"],
       "imagePrompt": "string in English",
       "videoPrompt": "string in English",
@@ -962,7 +962,7 @@ ${thoughtExperimentPanels}
       "timeHint": "string (e.g. 1s or 1.5s)",
       "keyObject": "string (primary focal tool or prop)",
       "emotion": "string (e.g. Excited, Focused, Amazed)",
-      "voiceoverLine": "string (5-12 words voiceover line)",
+      "voiceoverLine": "string (5-12 words voiceover line in ${languageInstruction} — WAJIB dalam ${languageInstruction}. Bukan English)",
       "location": {
         "environmentType": "indoor",
         "description": "string",
@@ -977,8 +977,8 @@ ${thoughtExperimentPanels}
         "framing": "string"
       },
       "lighting": "string",
-      "dialogue": "string in ${languageInstruction}",
-      "narration": "string",
+      "dialogue": "string in ${languageInstruction} — WAJIB gunakan ${languageInstruction}. DILARANG menggunakan bahasa Inggris untuk field ini",
+      "narration": "string in ${languageInstruction} — WAJIB dalam ${languageInstruction}. Bukan English",
       "continuityAnchors": ["string"],
       "imagePrompt": "string in English",
       "videoPrompt": "string in English",
@@ -1115,7 +1115,7 @@ ${isAdOrAffiliate && resolvedProductBrand ? `- Product / Brand Name: ${resolvedP
 - Visual Style: ${resolvedVisualStyle}
 - Total Duration: ${totalSec} Seconds
 - Dialogue & Narration Language: ${languageInstruction}
-- Target AI Video Model: ${isAdOrAffiliate ? resolvedTargetModel : aiPlaybookEngine} (Apply vendor-specific video prompting rules)
+- Dialogue, Narration & Voiceover Language: ${languageInstruction} — MANDATORY. ALL dialogue, narration, and voiceoverLine fields in every scene MUST be written in ${languageInstruction}. Writing these fields in English when languageInstruction is not English is a CRITICAL ERROR.
 ${resolvedAudience ? `- Target Audience: ${resolvedAudience}` : ''}
 
 === STORY IDEA TO DEVELOP ===
