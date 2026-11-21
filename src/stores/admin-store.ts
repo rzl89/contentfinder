@@ -200,7 +200,7 @@ export const DEFAULT_PAYMENT_ACCOUNTS: DynamicPaymentMethod[] = [
 
 // ─── Default Settings ────────────────────────────────────────────────────────
 export const DEFAULT_ADMIN_SETTINGS: AdminSettings = {
-  defaultModel: 'gpt-4o-mini',
+  defaultModel: 'gpt-6.1-terra',
   temperature: 0.9,
   openAiApiKey: '',
   systemPromptOverride: '',

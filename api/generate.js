@@ -80,8 +80,8 @@ export default async function handler(req, res) {
     });
   }
 
-  // Model default: gpt-4o-mini (reliable, fast, cost-effective)
-  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  // Model default: gpt-6.1-terra per user specification
+  const requestedModel = req.body?.payload?.model || process.env.OPENAI_MODEL || 'gpt-6.1-terra';
   const { action, payload } = req.body || {};
 
   /**
@@ -89,10 +89,17 @@ export default async function handler(req, res) {
    */
   async function callOpenAI(messages, temperature = 0.75, targetModel = requestedModel) {
     let activeModel = targetModel;
-    const isLunaOrReasoning =
+
+    // Models that do NOT support the `temperature` parameter:
+    // - OpenAI o1/o3/o4 reasoning series
+    // - gpt-6.1-terra and gpt-6.x series (uses reasoning_effort instead)
+    // - Any model with 'luna' in the name
+    const isNoTemperatureModel =
       activeModel.includes('luna') ||
       activeModel.startsWith('o1') ||
-      activeModel.startsWith('o3');
+      activeModel.startsWith('o3') ||
+      activeModel.startsWith('o4') ||
+      activeModel.startsWith('gpt-6.');
 
     const requestBody = {
       model: activeModel,
@@ -100,9 +107,12 @@ export default async function handler(req, res) {
       response_format: { type: 'json_object' },
     };
 
-    // Luna & reasoning models only support default temperature (1) or omitting temperature
-    if (!isLunaOrReasoning) {
+    // Only attach temperature for models that support it.
+    // Reasoning models (gpt-6.1-terra, o1, o3, etc.) use reasoning_effort instead of temperature.
+    if (!isNoTemperatureModel) {
       requestBody.temperature = temperature;
+    } else {
+      requestBody.reasoning_effort = 'medium';
     }
 
     let response = await fetch('https://api.openai.com/v1/chat/completions', {
