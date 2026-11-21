@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Vercel Serverless Function — Secure AI Gateway
  * Protected backend endpoint: reads process.env.OPENAI_API_KEY securely.
  * Default Model: gpt-6.1-terra (with resilient automatic fallback)
